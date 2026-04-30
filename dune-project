@@ -5,22 +5,22 @@
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (codeberg AlephLang/alc))
 
-(authors "Author Name <author@example.com>")
+(authors "Nyvyme <uflatsshlif123@gmail.com>")
 
-(maintainers "Maintainer Name <maintainer@example.com>")
+(maintainers "Nyvyme <uflatsshlif123@gmail.com>")
 
-(license LICENSE)
+; TODO: provide license
+; (license LICENSE)
 
-(documentation https://url/to/documentation)
+; TODO: provide documentation
+; (documentation https://url/to/documentation)
 
 (package
  (name alc)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "Aleph language compiler.")
+ (description "Aleph language compiler.")
  (depends ocaml)
  (tags
-  ("add topics" "to describe" your project)))
-
-; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
+  ("compiler" "llvm" "aleph")))

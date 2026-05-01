@@ -8,3 +8,7 @@ let pp_binint ppf x =
         let chr = string_of_int (x land 1) in
         getstr_bin (x lsr 1) ^ chr in
     getstr_bin x
+
+let is_space x =
+  let x = int_of_char x in
+  (x >= 9 && x <= 13) || x = 32

@@ -54,8 +54,8 @@ let show token =
     | NumberBin x -> sprintf "NumberBin { %i 0x%X 0b%a %#o }" x x Util.pp_binint x x
     | NumberOct x -> sprintf "NumberOct { %i 0x%X 0b%a %#o }" x x Util.pp_binint x x
     | NumberFloat x -> sprintf "NumberFloat { %f }" x
-    | String x -> sprintf "String { \"%s\" }" (Util.preproc_str x)
-    | Symbol x -> sprintf "Symbol { '%s' }" (Util.preproc_str x)
+    | String x -> sprintf "String { \"%s\" }" @@ Util.preproc_str x
+    | Symbol x -> sprintf "Symbol { '%s' }" @@ Util.preproc_str x
     | LParen -> "LParen"
     | RParen -> "RParen"
     | LBrack -> "LBrack"

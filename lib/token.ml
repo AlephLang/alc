@@ -44,16 +44,6 @@ and t = {
 
 let show token =
   let open Printf in
-  let preproc_str s =
-    let b = ref "" in
-    for i = 0 to String.length s - 1 do
-      match s.[i] with
-      | '\n' -> b := !b ^ "\\n"
-      | '\r' -> b := !b ^ "\\r"
-      | '\t' -> b := !b ^ "\\t"
-      | _ -> b := !b ^ String.make 1 s.[i]
-    done;
-    !b in
   let showkind kind =
     match kind with
     | Eof -> "Eof"
@@ -64,8 +54,8 @@ let show token =
     | NumberBin x -> sprintf "NumberBin { %i 0x%X 0b%a %#o }" x x Util.pp_binint x x
     | NumberOct x -> sprintf "NumberOct { %i 0x%X 0b%a %#o }" x x Util.pp_binint x x
     | NumberFloat x -> sprintf "NumberFloat { %f }" x
-    | String x -> sprintf "String { \"%s\" }" (preproc_str x)
-    | Symbol x -> sprintf "Symbol { '%s' }" (preproc_str x)
+    | String x -> sprintf "String { \"%s\" }" (Util.preproc_str x)
+    | Symbol x -> sprintf "Symbol { '%s' }" (Util.preproc_str x)
     | LParen -> "LParen"
     | RParen -> "RParen"
     | LBrack -> "LBrack"

@@ -12,3 +12,14 @@ let pp_binint ppf x =
 let is_space x =
   let x = int_of_char x in
   (x >= 9 && x <= 13) || x = 32
+
+let preproc_str s =
+  let b = ref "" in
+  for i = 0 to String.length s - 1 do
+    match s.[i] with
+    | '\n' -> b := !b ^ "\\n"
+    | '\r' -> b := !b ^ "\\r"
+    | '\t' -> b := !b ^ "\\t"
+    | _ -> b := !b ^ String.make 1 s.[i]
+  done;
+  !b

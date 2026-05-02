@@ -14,7 +14,9 @@ let () =
         let _, tokens = Alc.Lexer.tokenize @@ Alc.Lexer.create src in
         let tokens_str = ref "" in
         for j = 0 to List.length tokens - 1 do
-          tokens_str := !tokens_str ^ Printf.sprintf "(%i) Token %a\n" j Alc.Token.pp @@ List.nth tokens j
+          tokens_str := !tokens_str
+                      ^ Printf.sprintf "(%i) Token %a\n" j Alc.Token.pp
+                     @@ List.nth tokens j
         done;
         print_endline !tokens_str
       with e ->

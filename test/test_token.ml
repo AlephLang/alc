@@ -16,7 +16,8 @@ let suite =
   let expected_string str =
     Printf.sprintf "{ kind: %s, line: 0, pos: 0, length: 0, has_whitespace_after: true }" str in
 
-  [ "error", `Quick,
+  [ "eof", `Quick, check_token (gen_tok @@ Alc.Token.Eof) @@ expected_string "Eof"
+  ; "error", `Quick,
     check_token (gen_tok @@ Alc.Token.Error "error")
     @@ expected_string "Error { \"error\" }"
   ; "identifier", `Quick,

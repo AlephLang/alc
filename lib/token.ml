@@ -1,4 +1,5 @@
 type kind =
+  | Eof
   | Error of string
   | Identifier of string
   | Number of int
@@ -55,6 +56,7 @@ let show token =
     !b in
   let showkind kind =
     match kind with
+    | Eof -> "Eof"
     | Error x -> sprintf "Error { \"%s\" }" x
     | Identifier x -> sprintf "Identifier { \"%s\" }" x
     | Number x -> sprintf "Number { %i 0x%X 0b%a %#o }" x x Util.pp_binint x x

@@ -18,7 +18,11 @@ let () =
                       ^ Printf.sprintf "(%i) Token %a\n" j Alc.Token.pp
                      @@ List.nth tokens j
         done;
-        print_endline !tokens_str
+        print_endline !tokens_str;
+
+        (* Parse *)
+        let parser, ast = Alc.Parser.parse @@ Alc.Parser.create tokens in
+        print_endline @@ Alc.Ast.show ast
       with e ->
         close_in_noerr file;
         raise e

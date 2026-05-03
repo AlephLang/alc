@@ -69,13 +69,13 @@ let check_lexer () =
     ] in
     _strs_to_str _lines in
 
-  let _, tokens = Alc.Lexer.create input |> Alc.Lexer.tokenize in
+  let _, tokens, errors = Alc.Lexer.create input |> Alc.Lexer.tokenize in
   let token_strs =
     let rec _get_strs tokens i =
       match tokens with
       | [] -> ""
       | x :: xs -> Printf.sprintf "(%i) Token %a" i Alc.Token.pp x ^ "\n" ^ _get_strs xs @@ i + 1 in
-    _get_strs tokens 0 in
+    _get_strs (errors @ tokens) 0 in
   check string "" expected token_strs
 
 let suite = [ "tokenize", `Quick, check_lexer ]

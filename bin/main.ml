@@ -11,7 +11,7 @@ let () =
         close_in file;
 
         (* Tokenize *)
-        let _, tokens = Alc.Lexer.tokenize @@ Alc.Lexer.create src in
+        let _, tokens, errors = Alc.Lexer.tokenize @@ Alc.Lexer.create src in
         let tokens_str = ref "" in
         for j = 0 to List.length tokens - 1 do
           tokens_str := !tokens_str

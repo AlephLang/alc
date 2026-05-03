@@ -7,4 +7,4 @@ type t = {
 }
 
 val create : string -> t
-val tokenize : t -> t * Token.t list
+val tokenize : t -> t * Token.t list * Token.t list

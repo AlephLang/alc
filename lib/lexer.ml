@@ -352,7 +352,10 @@ let rec tokenize l =
   | None -> tokenize l
   | Some x ->
       match x.kind with
-      | Token.Eof -> l, []
+      | Token.Eof -> l, [], []
+      | Token.Error _ ->
+          let l, tokens, errors = tokenize l in
+          l, tokens, x :: errors
       | _ ->
-          let l, tokens = tokenize l in
-          l, x :: tokens
+          let l, tokens, errors = tokenize l in
+          l, x :: tokens, errors

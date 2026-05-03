@@ -23,3 +23,9 @@ let preproc_str s =
     | _ -> b := !b ^ String.make 1 s.[i]
   done;
   !b
+
+let number_length n =
+  let rec _len n =
+    if n = 0 then 0
+    else 1 + (_len @@ n / 10) in
+  if n = 0 then 1 else _len n

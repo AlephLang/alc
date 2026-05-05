@@ -7,14 +7,13 @@ let parse_import p =
   match m with
   | None -> p, None
   | Some x ->
-      match peek p 0 with
-      | None -> add_error_eof p, None
-      | Some y ->
-          match y.kind with
-          | Token.Semicolon ->
-              let import_ast : Ast.t = {
-                kind = Ast.Import { m = x };
-                pos = pos;
-              } in
-              advance p 1, Some import_ast
-          | _ -> advance (add_error_unexpected p @@ Token.Semicolon) 1, None
+      let tok = peek p 0 in
+      match tok.kind with
+      | Token.Semicolon ->
+          let import_ast : Ast.t = {
+            kind = Ast.Import { m = x };
+            pos = pos;
+          } in
+          advance p 1, Some import_ast
+      | Token.Eof -> add_error_eof p, None
+      | _ -> advance (add_error_unexpected p Token.Semicolon) 1, None

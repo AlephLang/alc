@@ -1,4 +1,4 @@
-let pp_binint ppf x =
+let pp_binint () x =
   let open Printf in
   if x = 0 then "0"
   else
@@ -29,3 +29,9 @@ let number_length n =
     if n = 0 then 0
     else 1 + (_len @@ n / 10) in
   if n = 0 then 1 else _len n
+
+
+let rec strings_to_string strs =
+  match strs with
+  | [] -> ""
+  | x :: xs -> x ^ "\n" ^ strings_to_string xs

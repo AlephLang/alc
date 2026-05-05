@@ -1,6 +1,16 @@
 open Parser_core
 
-let rec parse_module p =
+let rec try_parse_submodule p =
+  match peek p 0, peek p 1 with
+  | Some i, Some k ->
+      (match i.kind, k.kind with
+      | Token.Colon, Token.Colon
+        when not i.has_whitespace_after && not k.has_whitespace_after ->
+            advance p 2 |> parse_module
+      | _, _ -> p, None)
+  | _, _ -> p, None
+
+and parse_module p =
   let pos = p.pos in
   match peek p 0 with
   | None -> add_error_eof p, None
@@ -8,15 +18,7 @@ let rec parse_module p =
       match x.kind with
       | Token.Identifier value ->
           let p = advance p 1 in
-          let p, subm =
-            match peek p 0, peek p 1 with
-            | Some i, Some k ->
-                (match i.kind, k.kind with
-                | Token.Colon, Token.Colon
-                  when not i.has_whitespace_after && not k.has_whitespace_after ->
-                      advance p 2 |> parse_module
-                | _, _ -> p, None)
-            | _, _ -> p, None in
+          let p, subm = try_parse_submodule p in
           let module_ast : Ast.t = {
             kind = Ast.Module { name = value; subm = subm };
             pos = pos;

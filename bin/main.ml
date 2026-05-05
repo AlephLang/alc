@@ -32,10 +32,16 @@ let () =
         Errorhandler.handle_lexer_errors errorhandler filename lexer_errors;
         exit @@ -2
       end;
+      let errorhandler = Errorhandler.set_tokens errorhandler tokens in
 
       (* Parse *)
       let parser, ast = Alc.Parser.parse @@ Alc.Parser.create tokens in
       print_endline @@ Alc.Ast.show ast;
+
+      if List.length parser.errors > 0 then begin
+        Errorhandler.handle_parser_errors errorhandler filename parser.errors;
+        exit @@ -3
+      end;
     with e ->
       if not !closed then close_in_noerr file
       else ();

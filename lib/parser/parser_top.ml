@@ -1,5 +1,6 @@
 open Parser_core
 open Parser_import
+open Parser_typedef
 
 let parse_top p =
   let token = peek p 0 in
@@ -13,6 +14,7 @@ let parse_top p =
   | Token.Identifier value ->
       (match value with
       | "import" -> parse_import p
+      | "using" -> parse_typedef p
       | _ -> advance (add_error_unexpected p @@ Token.Error "") 1, None)
   | Token.Eof -> add_error_eof p, None
   | _ -> advance (add_error_unexpected p @@ Token.Error "") 1, None

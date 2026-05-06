@@ -30,8 +30,11 @@ let number_length n =
     else 1 + (_len @@ n / 10) in
   if n = 0 then 1 else _len n
 
-
 let rec strings_to_string strs =
   match strs with
   | [] -> ""
   | x :: xs -> x ^ "\n" ^ strings_to_string xs
+
+let todo file line msg =
+  Printf.eprintf "(%s:%d): Not implemented: %s\n" file line msg;
+  exit @@ -1

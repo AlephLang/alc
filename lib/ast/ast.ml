@@ -187,7 +187,7 @@ let rec to_string ast =
   | TypePlain { name } -> [sprintf "TypePlain { name: \"%s\" }" name]
   | TypePointer { type_ } -> buildtree "TypePointer" [to_string type_]
   | TypeArray { type_; size_expression } ->
-      buildtree "TypePointer" @@ [to_string type_] @ option_to_string size_expression
+      buildtree "TypeArray" @@ [to_string type_] @ option_to_string size_expression
   | TypeFunctionPointer { argument_list; return_type } ->
       buildtree "TypeFunctionPointer" @@ [to_string argument_list] @ option_to_string return_type
   | TypeTypeOf { expression } -> buildtree "TypeTypeOf" [to_string expression]

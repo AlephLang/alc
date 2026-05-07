@@ -1,7 +1,9 @@
+module ExprOperator = Ast_exproperator
+
 type kind =
   | Root of { toplevel_statements: t list }
-  | Expr of { lhs: t; operator: exprOperator; rhs: t }
-  | PrefixExpr of { operators: exprOperator list; operand: t }
+  | Expr of { lhs: t; operator: ExprOperator.t; rhs: t }
+  | PrefixExpr of { operators: ExprOperator.t list; operand: t }
   | Module of { name: string; subm: t option }
   | Import of { m: t }
   | TypeDef of { name: string
@@ -92,11 +94,3 @@ and t = {
   kind: kind;
   pos: int;
 }
-and exprOperator =
-  | BinaryAdd | BinarySub | BinaryMul | BinaryDiv | BinaryMod | BinaryShl | BinaryShr | BinaryAnd
-  | BinaryOr | BinaryXor
-  | CompareEq | CompareNotEq | CompareLThan | CompareGThan | CompareLThanEq | CompareGThanEq
-  | BooleanAnd | BooleanOr
-  | AssignEq | AssignAddEq | AssignSubEq | AssignMulEq | AssignDivEq | AssignModEq | AssignShlEq
-  | AssignShrEq | AssignAndEq | AssignOrEq | AssignXorEq
-  | PrefixNot | PrefixBooleanNot | PrefixNegative | PrefixDereference | PrefixAddress

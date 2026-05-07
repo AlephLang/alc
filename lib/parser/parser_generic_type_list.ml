@@ -21,8 +21,7 @@ let rec parse_types_in_generic_type_list p first =
             let p, remaining = parse_types_in_generic_type_list p false in
             match remaining with
             | None -> p, None
-            | Some y ->
-                p, Some (x :: y)
+            | Some y -> p, Some (x :: y)
 
 let parse_generic_type_list p =
   let pos = p.pos in

@@ -14,7 +14,7 @@ let parse_typedef p =
         | Token.ExclMark ->
             let newp, type_list = parse_generic_type_list p in
             (match type_list with
-            | Some x -> newp, type_list, true
+            | Some _ -> newp, type_list, true
             | None -> newp, None, false)
         | _ -> p, None, true in
       if not success then p, None

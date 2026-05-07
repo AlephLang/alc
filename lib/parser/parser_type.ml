@@ -41,30 +41,34 @@ let rec parse_type_array p ast =
   | Token.LBrack ->
       let pos = p.pos in
       let p = advance p 1 in
-      let p, size_expression = 
+      let p, size_expression, success = 
         match (peek p 0).kind with
-        | Token.RBrack -> p, None
+        | Token.RBrack -> p, None, true
         | _ -> Util.todo __FILE__ __LINE__ "Array type with explicit size." in
-      (match (peek p 0).kind with
-      | Token.RBrack ->
-          let arr : Ast.t = {
-            kind = Ast.TypeArray {
-              type_ = ast;
-              size_expression = size_expression;
-            };
-            pos = pos;
-          } in
-          parse_type_array (advance p 1) arr
-      | Token.Eof -> add_error_eof p, None
-      | _ -> advance (add_error_unexpected p @@ Token.RBrack) 1, None)
-  | _ -> p, Some ast
+      if not success then p, None, false
+      else
+        (match (peek p 0).kind with
+        | Token.RBrack ->
+            let arr : Ast.t = {
+              kind = Ast.TypeArray {
+                type_ = ast;
+                size_expression = size_expression;
+              };
+              pos = pos;
+            } in
+            parse_type_array (advance p 1) arr
+        | Token.Eof -> add_error_eof p, None, false
+        | _ -> advance (add_error_unexpected p @@ Token.RBrack) 1, None, false)
+  | _ -> p, Some ast, true
 
 let parse_type p =
   let p, type_raw = parse_type_raw p in
   match type_raw with
   | None -> p, None
   | Some x ->
-      let p, array_type = parse_type_array p x in
-      match array_type with
-      | Some y -> p, array_type
-      | None -> p, None
+      let p, array_type, success = parse_type_array p x in
+      if not success then p, None
+      else
+        match array_type with
+        | Some y -> p, array_type
+        | None -> p, None

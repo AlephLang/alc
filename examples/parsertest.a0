@@ -2,3 +2,4 @@ import std::io;
 
 using super_duper_int = s32;
 using turbo_mega_float = f32;
+using generic_stuff!<s32, f32, ***f64[]> = bool;

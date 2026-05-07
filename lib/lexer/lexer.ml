@@ -64,7 +64,7 @@ let next_token l =
           if not @@ is_processable c then process_error l
           else if is_start_of_id c then process_id l
           else if is_digit c then process_num l
-          else l, None (* Should not be reached *)
+          else Util.not_reached __FILE__ __LINE__
 
 let rec tokenize l =
   let l, token = next_token l in

@@ -37,4 +37,8 @@ let rec strings_to_string strs =
 
 let todo file line msg =
   Printf.eprintf "(%s:%d): Not implemented: %s\n" file line msg;
-  exit @@ -1
+  exit @@ -128
+
+let not_reached file line =
+  Printf.eprintf "(%s:%d): Reached a point that should not be reached.\n" file line;
+  exit @@ -127

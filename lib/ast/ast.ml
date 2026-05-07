@@ -201,8 +201,14 @@ let rec to_string ast =
       @@ option_to_string attribute_list @ option_to_string type_ @ [to_string expression]
   | ExprOperandVoid -> ["ExprOperandVoid"]
   | ExprOperandIdentifier { name } -> [sprintf "ExprOperandIdentifier { name: \"%s\" }" name]
-  | ExprOperandNumber { value } -> [sprintf "ExprOperandNumber { value: %i }" value]
-  | ExprOperandNumberFloat { value } -> [sprintf "ExprOperandNumberFloat { value: %f }" value]
+  | ExprOperandNumber { value; typespec } ->
+      [sprintf "ExprOperandNumber { value: %i, typespec = \"%s\" }"
+               value
+            @@ Option.value typespec ~default:""]
+  | ExprOperandNumberFloat { value; typespec } ->
+      [sprintf "ExprOperandNumberFloat { value: %f, typespec = \"%s\" }"
+               value
+            @@ Option.value typespec ~default:""]
   | ExprOperandArrayElement { array; index_expression } ->
       buildtree "ExprOperandArrayElement" [to_string array; to_string index_expression]
   | ExprOperandCastTo { type_; expression } ->

@@ -71,8 +71,8 @@ type kind =
   | VarDef of { name: string; type_: t option; expression: t; attribute_list: t option }
   | ExprOperandVoid
   | ExprOperandIdentifier of { name: string }
-  | ExprOperandNumber of { value: int }
-  | ExprOperandNumberFloat of { value: float }
+  | ExprOperandNumber of { value: int; typespec: string option }
+  | ExprOperandNumberFloat of { value: float; typespec: string option }
   | ExprOperandArrayElement of { array: t; index_expression: t }
   | ExprOperandCastTo of { type_: t; expression: t }
   | ExprOperandCall of { callee_name: string; arguments: t list }

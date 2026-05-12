@@ -66,8 +66,8 @@ type kind =
   | ExprOperandCastTo of { type_: t; expression: t }
   | ExprOperandCall of { callee_name: string; arguments: t list }
   | ExprOperandGenericCall of { callee_name: string; generic_type_list: t; arguments: t list }
-  | ExprOperandString of { contents: string }
-  | ExprOperandSymbol of { contents: string }
+  | ExprOperandString of { contents: string; typespec: string option }
+  | ExprOperandSymbol of { contents: string; typespec: string option }
   | ExprOperandAccessMember of { from: t; what: t }
   | ExprOperandSizeOf of { type_: t }
   | ExprOperandAlignOf of { expression: t }

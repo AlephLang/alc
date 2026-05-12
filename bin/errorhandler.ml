@@ -139,6 +139,8 @@ let get_parser_error_reason (h: t) (error: Alc.Parser.error) =
   | UnknownSpecialCharacter -> "unknown special character"
   | ExpressionIsEmpty -> "expression is empty"
   | NoOperandAfterPrefixOperatorInExpression -> "no operand after prefix operator in expression"
+  | NonPrefixOperatorAtTheBeginningOfAnExpression ->
+      "non-prefix operator at the beginning of expression"
   | PrefixOperatorAfterAnOperand -> "prefix operator after an operand"
   | AssignOperatorInNonToplevelExpression -> "assign operator in non-toplevel expression"
   | TwoNonPrefixOperators -> "two non-prefix operators in a row"

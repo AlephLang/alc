@@ -13,6 +13,7 @@ and errorkind =
   | UnknownSpecialCharacter
   | ExpressionIsEmpty
   | NoOperandAfterPrefixOperatorInExpression
+  | NonPrefixOperatorAtTheBeginningOfAnExpression
   | PrefixOperatorAfterAnOperand
   | AssignOperatorInNonToplevelExpression
   | TwoNonPrefixOperators
@@ -43,9 +44,15 @@ let add_error p error = {
   pos = p.pos;
 }
 
-let add_error_eof p = add_error p { kind = UnexpectedEof; pos = p.pos; len = 1; }
+let add_error_eof p = add_error p { kind = UnexpectedEof; pos = p.pos; len = 1 }
 let add_error_unexpected p expected_token_kind =
-  add_error p { kind = Unexpected { expected = expected_token_kind }; pos = p.pos; len = 1; }
+  add_error p { kind = Unexpected { expected = expected_token_kind }; pos = p.pos; len = 1 }
+let add_error_whitespace p expected_token_kind =
+  add_error p {
+    kind = UnexpectedWhitespace { expected = expected_token_kind };
+    pos = p.pos;
+    len = 1;
+  }
 
 let peek (p: t) adv =
   if p.pos + adv < List.length p.tokens then

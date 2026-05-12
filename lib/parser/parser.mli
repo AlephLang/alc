@@ -18,6 +18,7 @@ and errorkind =
   | UnknownSpecialCharacter
   | ExpressionIsEmpty
   | NoOperandAfterPrefixOperatorInExpression
+  | NonPrefixOperatorAtTheBeginningOfAnExpression
   | PrefixOperatorAfterAnOperand
   | AssignOperatorInNonToplevelExpression
   | TwoNonPrefixOperators

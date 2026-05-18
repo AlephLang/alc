@@ -18,7 +18,7 @@ let parse_return p =
   (*        ^~~~~~~~~~~~~~~~   *)
   and _expr p =
     match (peek p 0).kind with
-    | Token.Semicolon -> _semicolon (advance p 1) None
+    | Token.Semicolon -> _semicolon p None
     | _ ->
         let p, value =
           match (peek p 0).kind with

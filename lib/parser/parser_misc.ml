@@ -17,3 +17,8 @@ let is_numeric_token (kind : Token.kind) =
   | Token.NumberOct _
   | Token.NumberFloat _ -> true
   | _ -> false
+
+let is_qualifier value =
+  match value with
+  | "const" | "local" | "persist" | "inline" -> true
+  | _ -> false

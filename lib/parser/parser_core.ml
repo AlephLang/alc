@@ -5,8 +5,9 @@ type error = {
 }
 and errorkind =
   | Unknown
-  | Unexpected of { expected: Token.kind }
+  | Unexpected of { expected_list: Token.kind list }
   | UnexpectedEof
+  | UnexpectedValue of { expected_list: string list }
   | InvalidExpression
   | UnexpectedWhitespace of { expected: Token.kind }
   | NoCharAfterBackslash
@@ -46,13 +47,19 @@ let add_error p error = {
 
 let add_error_eof p = add_error p { kind = UnexpectedEof; pos = p.pos; len = 1 }
 let add_error_unexpected p expected_token_kind =
-  add_error p { kind = Unexpected { expected = expected_token_kind }; pos = p.pos; len = 1 }
+  add_error p { kind = Unexpected { expected_list = [expected_token_kind] }; pos = p.pos; len = 1 }
+let add_error_unexpected_s p list =
+  add_error p { kind = Unexpected { expected_list = list }; pos = p.pos; len = 1 }
 let add_error_whitespace p expected_token_kind =
   add_error p {
     kind = UnexpectedWhitespace { expected = expected_token_kind };
     pos = p.pos;
     len = 1;
   }
+let add_error_value p expected_value =
+  add_error p { kind = UnexpectedValue { expected_list = [expected_value] }; pos = p.pos; len = 1 }
+let add_error_value_s p list =
+  add_error p { kind = UnexpectedValue { expected_list = list }; pos = p.pos; len = 1 }
 
 let peek (p: t) adv =
   if p.pos + adv < List.length p.tokens then

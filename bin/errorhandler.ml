@@ -133,6 +133,12 @@ let get_parser_error_reason (h: t) (error: Alc.Parser.error) =
       ^ Ansi.to_ansi []
       ^ "'"
   | UnexpectedEof -> "unexpected end of file"
+  | UnexpectedValue value -> (* Should apply only to identifiers, so I guess this is valid *)
+      "unexpected value '"
+      ^ Ansi.to_ansi [Ansi.Graphics_Bold]
+      ^ token_kind_to_string (List.nth h.tokens error.pos).kind
+      ^ Ansi.to_ansi []
+      ^ "'"
   | InvalidExpression -> "invalid expression"
   | UnexpectedWhitespace _ -> "unexpected whitespace"
   | NoCharAfterBackslash -> "no symbol after backslash"
@@ -176,8 +182,15 @@ let rec handle_parser_errors h filename (errors: Alc.Parser.error list) =
           let msg = get_parser_error_reason h x ^ "\n" in
           let msg_after =
             match x.kind with
-            | Alc.Parser.Unexpected { expected }
-            | Alc.Parser.UnexpectedWhitespace { expected }->
+            | Alc.Parser.Unexpected { expected_list } ->
+                let rec _tokens_to_string list first =
+                  match list with
+                  | [] -> ""
+                  | x :: xs ->
+                      let str = (if not first then ", " else "") ^ token_kind_to_string x in
+                      str ^ _tokens_to_string xs false in
+                _tokens_to_string expected_list true
+            | Alc.Parser.UnexpectedWhitespace { expected } ->
                 token_kind_to_string expected
             | _ -> "" in
           let highlight = get_highlighted_token h

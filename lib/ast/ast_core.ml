@@ -20,6 +20,7 @@ type kind =
   | Enum of { name: string; elements: t list; attribute_list: t option }
   | EnumElement of { name: string; expression: t option }
   | Func of { name: string
+            ; function_type: function_type
             ; argument_list: t
             ; return_type: t option
             ; body: t
@@ -80,6 +81,7 @@ type kind =
                      ; children: t list
                      ; attribute_list: t option }
   | GenericFunc of { name: string
+                   ; function_type: function_type
                    ; generic_placeholder_type_list: t
                    ; argument_list: t
                    ; return_type: t option
@@ -90,6 +92,10 @@ type kind =
   | GenericTypeList of { types: t list }
   | GenericType of { name: string; generic_type_list: t }
   | GenericNamespace of { name: string; generic_type_list: t; subobject: t }
+and function_type =
+  | FunctionTypeDefault
+  | FunctionTypeExplicit
+  | FunctionTypeExported
 and t = {
   kind: kind;
   pos: int;

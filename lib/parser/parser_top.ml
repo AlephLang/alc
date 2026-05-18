@@ -1,6 +1,8 @@
 open Parser_core
 open Parser_import
 open Parser_typedef
+open Parser_decldef
+open Parser_attributes
 
 let parse_top p =
   let token = peek p 0 in
@@ -15,6 +17,11 @@ let parse_top p =
       (match value with
       | "import" -> parse_import p
       | "using" -> parse_typedef p
-      | _ -> advance (add_error_unexpected p @@ Token.Error "") 1, None)
+      | _ -> parse_decldef p None (*advance (add_error_unexpected p @@ Token.Error "") 1, None*))
+  | Token.LBrack ->
+      let p, attribs = parse_attribute_list p in
+      (match attribs with
+      | None -> p, None
+      | Some _ -> parse_decldef p attribs)
   | Token.Eof -> add_error_eof p, None
   | _ -> advance (add_error_unexpected p @@ Token.Error "") 1, None

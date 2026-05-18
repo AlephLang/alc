@@ -1,5 +1,7 @@
 open Parser_core
-open Parser_type
+
+let __parse_type : (t -> t * Ast.t option) ref =
+  ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 
 let rec parse_types_in_generic_type_list p first =
   match (peek p 0).kind with
@@ -14,7 +16,7 @@ let rec parse_types_in_generic_type_list p first =
         else p, true in
       if not can_continue then p, None
       else
-        let p, type_ = parse_type p in
+        let p, type_ = !__parse_type p in
         match type_ with
         | None -> p, None
         | Some x ->

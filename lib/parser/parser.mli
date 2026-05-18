@@ -10,8 +10,9 @@ and error = {
 }
 and errorkind =
   | Unknown
-  | Unexpected of { expected: Token.kind }
+  | Unexpected of { expected_list: Token.kind list }
   | UnexpectedEof
+  | UnexpectedValue of { expected_list: string list }
   | InvalidExpression
   | UnexpectedWhitespace of { expected: Token.kind }
   | NoCharAfterBackslash

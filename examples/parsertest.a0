@@ -3,3 +3,23 @@ import std::io;
 using super_duper_int = s32;
 using turbo_mega_float = f32;
 using generic_stuff!<s32, f32, ***f64[]> = bool;
+
+x: s32 = a!<a>(1) * x!<s32, f32, bool>()[3];
+
+[[attrib1(1, 2, 3), attrib2("arg1", "arg2")]] y := 123;
+
+z := { 0u, .abc = x, [123] = x };
+
+my_func :: () {
+  return { // initlist
+    .x = 1,
+    123,
+    [0] = z.abc + 12
+  };
+}
+
+func my_explicit_func :: (x: s32, y: s32, z: s32) -> f32 $ x * y * z;
+
+my_generic_func :: <T, U, V>(x: T, y: U, z: V) -> Vec!<T,U,V> { return {}; }
+
+x: (a: s32, b: f32, c: ()) -> s32 = 0;

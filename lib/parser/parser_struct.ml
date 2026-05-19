@@ -2,6 +2,7 @@ open Parser_core
 open Parser_stmt
 open Parser_attributes
 open Parser_decldef
+open Parser_generic_placeholder_type_list
 
 let rec parse_struct p =
   (* pos + 1 because we want to get the name of the structure, not the "struct" keyword *)
@@ -20,34 +21,52 @@ let rec parse_struct p =
   (*        ^~~~                                 *)
   and _name p =
     match (peek p 0).kind with
-    | Token.Identifier value -> _attribs (advance p 1) value
+    | Token.Identifier value -> _generic (advance p 1) value
     | Token.Eof -> add_error_eof p, None
     | _ -> advance (add_error_unexpected p @@ Token.Identifier "") 1, None
 
-  (* struct name [[attrs...]] { [field/method/func]s... } *)
-  (*             ^~~~~~~~~~~~                             *)
-  and _attribs p name =
+  (* struct name <types...> ... { [field/method/func]s... } *)
+  (*             ^~~~~~~~~~                                 *)
+  and _generic p name =
+    match (peek p 0).kind with
+    | Token.LArrow ->
+        let p, generic_placeholder_type_list = parse_generic_placeholder_type_list p in
+        (match generic_placeholder_type_list with
+        | None -> p, None
+        | Some _ -> _attribs p name generic_placeholder_type_list)
+    | _ -> _attribs p name None
+
+  (* struct name ... [[attrs...]] { [field/method/func]s... } *)
+  (*                 ^~~~~~~~~~~~                             *)
+  and _attribs p name gptl_opt =
     match (peek p 0).kind with
     | Token.LBrack ->
         let p, attribs = parse_attribute_list p in
         (match attribs with
         | None -> p, None
-        | Some _ -> _children p name attribs)
-    | _ -> _children p name None
+        | Some _ -> _children p name gptl_opt attribs)
+    | _ -> _children p name gptl_opt None
 
   (* struct name ... { [field/method/func]s... } *)
   (*                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~ *)
-  and _children p name attribs_opt =
+  and _children p name gptl_opt attribs_opt =
     match (peek p 0).kind with
     | Token.LCBrack ->
         let p, children = advance p 1 |> _get_children in
         (match children with
         | None -> p, None
         | Some x ->
+            let kind =
+              match gptl_opt with
+              | None -> Ast.Struct { name = name
+                                   ; children = x
+                                   ; attribute_list = attribs_opt }
+              | Some y -> Ast.GenericStruct { name = name 
+                                            ; generic_placeholder_type_list = y
+                                            ; children = x
+                                            ; attribute_list = attribs_opt } in
             let struct_ast : Ast.t = {
-              kind = Ast.Struct { name = name
-                                ; children = x
-                                ; attribute_list = attribs_opt };
+              kind = kind;
               pos = pos;
             } in
             p, Some struct_ast)

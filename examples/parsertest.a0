@@ -49,3 +49,5 @@ struct TestStruct [[attrib]] {
     struct StructInFunction { }
   }
 }
+
+struct GenericStruct <T, U, V = s32> { }

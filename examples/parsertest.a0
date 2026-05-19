@@ -51,3 +51,5 @@ struct TestStruct [[attrib]] {
 }
 
 struct GenericStruct <T, U, V = s32> { }
+
+union MyUnion {}

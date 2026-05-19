@@ -6,6 +6,7 @@ let __parse_while : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached
 let __parse_dowhile : (t -> t * Ast.t option) ref =
   ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_struct : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
+let __parse_union: (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 
 let rec parse_stmt p =
   match (peek p 0).kind with
@@ -55,6 +56,7 @@ let rec parse_stmt p =
           | Token.Eof -> add_error_eof p, None
           | _ -> advance (add_error_unexpected p Token.Semicolon) 1, None)
       | "struct" -> !__parse_struct p
+      | "union" -> !__parse_union p
       | _ -> advance p 1, None)
   | Token.LCBrack -> parse_stmt_block p
   | Token.Eof -> add_error_eof p, None

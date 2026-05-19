@@ -32,6 +32,10 @@ let parse parser =
   Parser_stmt.__parse_while := Parser_while.parse_while;
   Parser_stmt.__parse_dowhile := Parser_dowhile.parse_dowhile;
   Parser_stmt.__parse_struct := Parser_struct.parse_struct;
+  Parser_stmt.__parse_union := Parser_union.parse_union;
+
+  (* For 'Parser_struct' *)
+  Parser_struct.__parse_union := Parser_union.parse_union;
 
   let parser, toplevels = parse_toplevels parser in
   let root : Ast.t = {

@@ -4,6 +4,8 @@ open Parser_attributes
 open Parser_decldef
 open Parser_generic_placeholder_type_list
 
+let __parse_union : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
+
 let rec parse_struct p =
   (* pos + 1 because we want to get the name of the structure, not the "struct" keyword *)
   let pos = p.pos + 1 in
@@ -81,7 +83,7 @@ let rec parse_struct p =
         match (peek p 0).kind with
         | Token.Identifier "struct" -> parse_struct p
         | Token.Identifier "enum" -> Util.todo __FILE__ __LINE__ "Parse enums in structs."
-        | Token.Identifier "union" -> Util.todo __FILE__ __LINE__ "Parse unions in structs."
+        | Token.Identifier "union" -> !__parse_union p
         | Token.LBrack ->
             let p, attribs = parse_attribute_list p in
             (match attribs with

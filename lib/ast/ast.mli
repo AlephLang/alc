@@ -56,6 +56,7 @@ type kind =
                ; attribute_list: t option }
   | StmtDoWhile of { condition: t; body: t; attribute_list: t option }
   | StmtLoop of { body: t }
+  | StmtForeach of { item_name: string; iteratable: t; body: t; attribute_list: t option }
   | StmtExpr of { expression: t }
   | StmtSwitch of { expression: t; cases: t list }
   | StmtCase of { expression: t; body: t }

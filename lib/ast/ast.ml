@@ -171,6 +171,11 @@ let rec to_string ast =
       @@ option_to_string attribute_list
       @ [to_string condition; to_string body]
   | StmtLoop { body } -> buildtree "StmtLoop" [to_string body]
+  | StmtForeach { item_name; iteratable; body; attribute_list } ->
+      buildtree
+      (sprintf "StmtForeach { item_name: \"%s\" }" item_name)
+      @@ [to_string iteratable; to_string body]
+      @ option_to_string attribute_list
   | StmtExpr { expression } -> buildtree "StmtExpr" [to_string expression]
   | StmtSwitch { expression; cases } ->
       buildtree "StmtSwitch" @@ [to_string expression] @ get_xs_of cases

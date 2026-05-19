@@ -113,8 +113,9 @@ let rec parse_call_arguments p =
 
 and parse_operands p =
   let _typespec p =
-    match (peek p 0).kind with
-    | Token.Identifier value -> advance p 1, Some value
+    let tok0, tok1 = peek p @@ -1, peek p 0 in
+    match tok1.kind with
+    | Token.Identifier value when not tok0.has_whitespace_after -> advance p 1, Some value
     | _ -> p, None in
 
   match (peek p 0).kind with

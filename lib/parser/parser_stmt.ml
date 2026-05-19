@@ -1,16 +1,17 @@
 open Parser_core
 open Parser_return
 
-let parse_stmt p =
+let rec parse_stmt p =
   match (peek p 0).kind with
   | Token.Identifier value ->
       (match value with
       | "return" -> parse_return p
       | _ -> advance p 1, None)
+  | Token.LCBrack -> parse_stmt_block p
   | Token.Eof -> add_error_eof p, None
   | _ -> advance (add_error_unexpected p @@ Token.Error "") 1, None
 
-let parse_stmt_block p =
+and parse_stmt_block p =
   let rec _stmts p =
     match (peek p 0).kind with
     | Token.RCBrack -> advance p 1, Some []

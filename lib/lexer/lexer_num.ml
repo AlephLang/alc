@@ -130,7 +130,7 @@ let process_num l =
                 line = l.line;
                 pos = l.pos - l.llp;
                 length = 1;
-                has_whitespace_after = true;
+                has_whitespace_after = Util.is_space c;
               } in
               advance l, Some token
   else

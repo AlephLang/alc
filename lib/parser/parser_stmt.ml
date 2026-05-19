@@ -8,6 +8,12 @@ let __parse_dowhile : (t -> t * Ast.t option) ref =
 
 let rec parse_stmt p =
   match (peek p 0).kind with
+  | Token.Semicolon ->
+      let none_ast : Ast.t = {
+        kind = Ast.None;
+        pos = p.pos;
+      } in
+      advance p 1, Some none_ast
   | Token.Identifier value ->
       (match value with
       | "return" -> parse_return p

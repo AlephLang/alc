@@ -64,6 +64,9 @@ struct TestStruct [[attrib]] {
     z := 32;
 
     goto @label;
+
+    if (false);
+    if [[unlikely]] (false) { } else if (true) { } else { }
   }
 }
 

@@ -2,6 +2,7 @@ open Parser_core
 open Parser_import
 open Parser_typedef
 open Parser_export
+open Parser_struct
 open Parser_decldef
 open Parser_attributes
 
@@ -19,6 +20,7 @@ let parse_top p =
       | "import" -> parse_import p
       | "using" -> parse_typedef p
       | "export" -> parse_export p
+      | "struct" -> parse_struct p
       | _ -> parse_decldef p None (*advance (add_error_unexpected p @@ Token.Error "") 1, None*))
   | Token.LBrack ->
       let p, attribs = parse_attribute_list p in

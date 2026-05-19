@@ -3,6 +3,8 @@ open Parser_return
 
 let __parse_defer : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_while : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
+let __parse_dowhile : (t -> t * Ast.t option) ref =
+  ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 
 let rec parse_stmt p =
   match (peek p 0).kind with
@@ -11,6 +13,7 @@ let rec parse_stmt p =
       | "return" -> parse_return p
       | "defer" -> !__parse_defer p
       | "while" -> !__parse_while p
+      | "do" -> !__parse_dowhile p
       | _ -> advance p 1, None)
   | Token.LCBrack -> parse_stmt_block p
   | Token.Eof -> add_error_eof p, None

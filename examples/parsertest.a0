@@ -28,6 +28,9 @@ export my_exported_function :: (x: s32, y: s32, z: s32) {
   while (false * 1) { defer {} }
   while [[attrib]] (false) {}
 
+  do return 0; while (false);
+  do { return 0; } while [[attrib]] (false);
+
   defer return -1;
 
   { return 0; }

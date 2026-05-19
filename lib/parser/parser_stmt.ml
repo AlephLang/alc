@@ -3,6 +3,8 @@ open Parser_return
 open Parser_enum
 open Parser_expr
 open Parser_attributes
+open Parser_goto
+open Parser_label
 
 let __parse_defer : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_for : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
@@ -72,6 +74,7 @@ let rec parse_stmt p =
       | "enum" -> parse_enum p
       | "union" -> !__parse_union p
       | "func" -> !__parse_decldef p None
+      | "goto" -> parse_goto p
       | _ ->
           let tok2, tok3, tok4 = peek p 1, peek p 2, peek p 3 in
           match tok2.kind, tok3.kind, tok4.kind with
@@ -79,8 +82,8 @@ let rec parse_stmt p =
           | Token.Colon, Token.Colon, Token.LParen -> !__parse_decldef p None
           | Token.Colon, Token.Colon, _ -> parse_stmt_expr p
           | Token.Colon, _, _ -> !__parse_decldef p None
-          | _ -> parse_stmt_expr p
-      )
+          | _ -> parse_stmt_expr p)
+  | Token.At -> parse_label p
   | Token.LCBrack -> parse_stmt_block p
   | Token.LBrack ->
       let p, attribs = parse_attribute_list p in

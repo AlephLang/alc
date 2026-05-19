@@ -67,6 +67,12 @@ struct TestStruct [[attrib]] {
 
     if (false);
     if [[unlikely]] (false) { } else if (true) { } else { }
+
+    switch (y) {
+    case 123: { return 0; }
+    case -123: { return 0; }
+    default: { return 0; }
+    }
   }
 }
 

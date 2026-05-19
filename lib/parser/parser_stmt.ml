@@ -19,6 +19,7 @@ let __parse_union : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached
 let __parse_decldef : (t -> Ast.t option -> t * Ast.t option) ref =
   ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_if : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
+let __parse_switch : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 
 let rec parse_stmt p =
   let tok1 = peek p 0 in
@@ -77,6 +78,7 @@ let rec parse_stmt p =
       | "func" -> !__parse_decldef p None
       | "goto" -> parse_goto p
       | "if" -> !__parse_if p
+      | "switch" -> !__parse_switch p
       | _ ->
           let tok2, tok3, tok4 = peek p 1, peek p 2, peek p 3 in
           match tok2.kind, tok3.kind, tok4.kind with

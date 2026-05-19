@@ -29,6 +29,7 @@ let parse parser =
 
   (* For 'Parser_stmt' *)
   Parser_stmt.__parse_defer := Parser_defer.parse_defer;
+  Parser_stmt.__parse_for := Parser_for.parse_for;
   Parser_stmt.__parse_while := Parser_while.parse_while;
   Parser_stmt.__parse_dowhile := Parser_dowhile.parse_dowhile;
   Parser_stmt.__parse_loop := Parser_loop.parse_loop;

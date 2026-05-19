@@ -3,6 +3,7 @@ open Parser_return
 open Parser_enum
 
 let __parse_defer : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
+let __parse_for : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_while : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_dowhile : (t -> t * Ast.t option) ref =
   ref (fun _ -> Util.not_reached __FILE__ __LINE__)
@@ -22,6 +23,7 @@ let rec parse_stmt p =
       (match value with
       | "return" -> parse_return p
       | "defer" -> !__parse_defer p
+      | "for" -> !__parse_for p
       | "while" -> !__parse_while p
       | "do" -> !__parse_dowhile p
       | "loop" -> !__parse_loop p

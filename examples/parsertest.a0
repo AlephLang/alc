@@ -49,6 +49,9 @@ struct TestStruct [[attrib]] {
     struct StructInFunction { }
 
     loop { }
+
+    for (;;) {}
+    for (defer {} x != 0; x += 123) return {};
   }
 }
 

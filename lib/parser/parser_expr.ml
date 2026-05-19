@@ -118,7 +118,12 @@ and parse_operands p =
     | _ -> p, None in
 
   match (peek p 0).kind with
-  | Token.Identifier _ -> parse_namespaces_and_identifier_operands p
+  | Token.Identifier value ->
+      (match value with
+      | "sizeof" -> parse_sizeof p
+      | "alignof" -> parse_alignof p
+      | "cast" -> parse_cast p
+      | _ -> parse_namespaces_and_identifier_operands p)
   | Token.Number value
   | Token.NumberHex value
   | Token.NumberBin value
@@ -155,7 +160,6 @@ and parse_operands p =
       } in
       p, Some symbol_ast
   | _ -> advance (add_error_unexpected p @@ Token.Error "") 1, None
-
 
 and parse_namespaces_and_identifier_operands p =
   if is_generic_call_or_namespace p then parse_generic_call_or_namespace p
@@ -310,6 +314,143 @@ and parse_generic_namespace p =
             pos = pos;
           } in
           p, Some generic_namespace_ast
+
+and parse_sizeof p =
+  let pos = p.pos in
+
+  (* sizeof ( type ) *)
+  (* ^~~~~~          *)
+  let rec _sizeof p =
+    match (peek p 0).kind with
+    | Token.Identifier "sizeof" -> advance p 1 |> _lparen
+    | Token.Identifier _ -> advance (add_error_value p "sizeof") 1, None
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p @@ Token.Identifier "sizeof") 1, None
+
+  (* sizeof ( type ) *)
+  (*        ^        *)
+  and _lparen p =
+    match (peek p 0).kind with
+    | Token.LParen -> advance p 1 |> _type
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p Token.LParen) 1, None
+
+  (* sizeof ( type ) *)
+  (*          ^~~~   *)
+  and _type p =
+    let p, type_ = !__parse_type p in
+    match type_ with
+    | None -> p, None
+    | Some x -> _rparen p x
+
+  (* sizeof ( type ) *)
+  (*               ^ *)
+  and _rparen p type_ =
+    match (peek p 0).kind with
+    | Token.RParen ->
+        let sizeof_ast : Ast.t = {
+          kind = Ast.ExprOperandSizeOf { type_ = type_ };
+          pos = pos;
+        } in
+        advance p 1, Some sizeof_ast
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p Token.RParen) 1, None in
+
+  _sizeof p
+
+and parse_alignof p =
+  let pos = p.pos in
+
+  (* alignof ( expr ) *)
+  (* ^~~~~~~          *)
+  let rec _alignof p =
+    match (peek p 0).kind with
+    | Token.Identifier "alignof" -> advance p 1 |> _lparen
+    | Token.Identifier _ -> advance (add_error_value p "alignof") 1, None
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p @@ Token.Identifier "alignof") 1, None
+
+  (* alignof ( expr ) *)
+  (*         ^        *)
+  and _lparen p =
+    match (peek p 0).kind with
+    | Token.LParen -> advance p 1 |> _expr
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p Token.LParen) 1, None
+
+  (* alignof ( expr ) *)
+  (*           ^~~~   *)
+  and _expr p =
+    let p, expr = parse_expr p false in
+    match expr with
+    | None -> p, None
+    | Some x -> _rparen p x
+
+  (* alignof ( expr ) *)
+  (*                ^ *)
+  and _rparen p expr =
+    match (peek p 0).kind with
+    | Token.RParen ->
+        let alignof_ast : Ast.t = {
+          kind = Ast.ExprOperandAlignOf { expression = expr };
+          pos = pos;
+        } in
+        advance p 1, Some alignof_ast
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p Token.RParen) 1, None in
+
+  _alignof p
+
+and parse_cast p =
+  let pos = p.pos in
+
+  (* cast ( type ) expr *)
+  (* ^~~~               *)
+  let rec _cast p =
+    match (peek p 0).kind with
+    | Token.Identifier "cast" -> advance p 1 |> _lparen
+    | Token.Identifier _ -> advance (add_error_value p "cast") 1, None
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p @@ Token.Identifier "cast") 1, None
+
+  (* cast ( type ) expr *)
+  (*      ^             *)
+  and _lparen p =
+    match (peek p 0).kind with
+    | Token.LParen -> advance p 1 |> _type
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p Token.LParen) 1, None
+
+  (* cast ( type ) expr *)
+  (*        ^~~~        *)
+  and _type p =
+    let p, type_ = !__parse_type p in
+    match type_ with
+    | None -> p, None
+    | Some x -> _rparen p x
+
+  (* cast ( type ) expr *)
+  (*             ^      *)
+  and _rparen p type_ =
+    match (peek p 0).kind with
+    | Token.RParen -> _expr (advance p 1) type_
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p Token.RParen) 1, None
+
+  (* cast ( type ) expr *)
+  (*               ^~~~ *)
+  and _expr p type_ =
+    let p, expr = parse_expr p false in
+    match expr with
+    | None -> p, None
+    | Some x ->
+        let cast_ast : Ast.t = {
+          kind = Ast.ExprOperandCastTo { type_ = type_; expression = x };
+          pos = pos;
+        } in
+        p, Some cast_ast in
+
+  _cast p
 
 and parse_expr_data p =
   (* WARNING: Things that come after are very messy *)

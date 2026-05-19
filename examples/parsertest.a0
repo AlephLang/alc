@@ -26,6 +26,7 @@ x: (a: s32, b: f32, c: ()) -> s32 = 0;
 
 export my_exported_function :: (x: s32, y: s32, z: s32) {
   while (false * 1) { defer {} }
+  while [[attrib]] (false) {}
 
   defer return -1;
 

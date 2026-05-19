@@ -40,7 +40,7 @@ type kind =
   | StmtWhile of { condition: t; body: t; attribute_list: t option }
   | StmtFor of { init_statement: t option
                ; condition: t option
-               ; advance_statement: t option
+               ; expression: t option
                ; body: t
                ; attribute_list: t option }
   | StmtDoWhile of { condition: t; body: t; attribute_list: t option }

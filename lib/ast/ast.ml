@@ -159,12 +159,12 @@ let rec to_string ast =
       buildtree "StmtWhile"
       @@ option_to_string attribute_list
       @ [to_string condition; to_string body]
-  | StmtFor { init_statement; condition; advance_statement; body; attribute_list } ->
+  | StmtFor { init_statement; condition; expression; body; attribute_list } ->
       buildtree "StmtFor"
       @@ option_to_string attribute_list
       @ option_to_string init_statement
       @ option_to_string condition
-      @ option_to_string advance_statement
+      @ option_to_string expression
       @ [to_string body]
   | StmtDoWhile { condition; body; attribute_list } ->
       buildtree "StmtDoWhile"

@@ -25,7 +25,7 @@ my_generic_func :: <T, U, V>(x: T, y: U, z: V) -> Vec!<T,U,V> { return {}; }
 x: (a: s32, b: f32, c: ()) -> s32 = 0;
 
 export my_exported_function :: (x: s32, y: s32, z: s32) {
-  while (false * 1) { defer {} }
+  while (alignof(1)) { defer {} }
   while [[attrib]] (false) {}
 
   do return 0; while (false);
@@ -37,3 +37,5 @@ export my_exported_function :: (x: s32, y: s32, z: s32) {
 
   { return 0; }
 }
+
+test :: () -> s32 $ alignof(123) * sizeof(s32) + cast(s32[123])123u;

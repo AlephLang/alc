@@ -1,6 +1,7 @@
 open Parser_core
 open Parser_function_arguments
 open Parser_generic_type_list
+open Parser_expr
 
 let rec get_pointer_indirections p =
   match (peek p 0).kind with
@@ -42,7 +43,11 @@ and parse_type_array p ast =
       let p, size_expression, success = 
         match (peek p 0).kind with
         | Token.RBrack -> p, None, true
-        | _ -> Util.todo __FILE__ __LINE__ "Array type with explicit size." in
+        | _ ->
+            let p, expr = parse_expr p false in
+            match expr with
+            | None -> p, None, false
+            | Some x -> p, expr, true in
       if not success then p, None, false
       else
         (match (peek p 0).kind with

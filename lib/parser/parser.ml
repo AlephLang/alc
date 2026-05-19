@@ -29,6 +29,7 @@ let parse parser =
 
   (* For 'Parser_stmt' *)
   Parser_stmt.__parse_defer := Parser_defer.parse_defer;
+  Parser_stmt.__parse_while := Parser_while.parse_while;
 
   let parser, toplevels = parse_toplevels parser in
   let root : Ast.t = {

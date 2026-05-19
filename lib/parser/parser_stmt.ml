@@ -8,6 +8,8 @@ let __parse_while : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached
 let __parse_dowhile : (t -> t * Ast.t option) ref =
   ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_loop : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
+let __parse_foreach : (t -> t * Ast.t option) ref =
+  ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_struct : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_union : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 
@@ -27,6 +29,7 @@ let rec parse_stmt p =
       | "while" -> !__parse_while p
       | "do" -> !__parse_dowhile p
       | "loop" -> !__parse_loop p
+      | "foreach" -> !__parse_foreach p
       | "continue" ->
           let pos, p = p.pos, advance p 1 in
           (match (peek p 0).kind with

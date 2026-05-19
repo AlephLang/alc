@@ -52,6 +52,8 @@ struct TestStruct [[attrib]] {
 
     for (;;) {}
     for (defer {} x != 0; x += 123) return {};
+
+    foreach (c : "my string") { }
   }
 }
 

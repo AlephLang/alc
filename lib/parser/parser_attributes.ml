@@ -78,7 +78,11 @@ let parse_attribute_list p =
             match (peek p 0).kind with
             | Token.Comma -> advance p 1, true
             | Token.Eof -> add_error_eof p, false
-            | _ -> advance (add_error_unexpected p Token.Comma) 1, false
+            | _ ->
+                (* NOTE: Adding LParen as a possible input because it is possible when parsing
+                 * an attribute
+                 *)
+                advance (add_error_unexpected_s p [Token.Comma; Token.LParen]) 1, false
           else
             p, true in
         if not success then p, None

@@ -66,3 +66,8 @@ enum MyEnum {
   ELEMENT2,
   ELEMENT3,
 }
+
+extern extern_func_1 :: (x: s32) -> s32;
+extern extern_func_2 :: (x: s32);
+
+extern extern_var: s32;

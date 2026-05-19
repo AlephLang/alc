@@ -20,6 +20,39 @@ let rec parse_stmt p =
       | "defer" -> !__parse_defer p
       | "while" -> !__parse_while p
       | "do" -> !__parse_dowhile p
+      | "continue" ->
+          let pos, p = p.pos, advance p 1 in
+          (match (peek p 0).kind with
+          | Token.Semicolon ->
+              let continue_ast : Ast.t = {
+                kind = Ast.StmtContinue;
+                pos = pos;
+              } in
+              advance p 1, Some continue_ast
+          | Token.Eof -> add_error_eof p, None
+          | _ -> advance (add_error_unexpected p Token.Semicolon) 1, None)
+      | "break" ->
+          let pos, p = p.pos, advance p 1 in
+          (match (peek p 0).kind with
+          | Token.Semicolon ->
+              let break_ast : Ast.t = {
+                kind = Ast.StmtBreak;
+                pos = pos;
+              } in
+              advance p 1, Some break_ast
+          | Token.Eof -> add_error_eof p, None
+          | _ -> advance (add_error_unexpected p Token.Semicolon) 1, None)
+      | "fallthrough" ->
+          let pos, p = p.pos, advance p 1 in
+          (match (peek p 0).kind with
+          | Token.Semicolon ->
+              let fallthrough_ast : Ast.t = {
+                kind = Ast.StmtFallthrough;
+                pos = pos;
+              } in
+              advance p 1, Some fallthrough_ast
+          | Token.Eof -> add_error_eof p, None
+          | _ -> advance (add_error_unexpected p Token.Semicolon) 1, None)
       | _ -> advance p 1, None)
   | Token.LCBrack -> parse_stmt_block p
   | Token.Eof -> add_error_eof p, None

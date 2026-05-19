@@ -33,5 +33,7 @@ export my_exported_function :: (x: s32, y: s32, z: s32) {
 
   defer return -1;
 
+  continue; break; fallthrough;
+
   { return 0; }
 }

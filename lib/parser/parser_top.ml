@@ -27,7 +27,7 @@ let parse_top p =
       | "enum" -> parse_enum p
       | "union" -> parse_union p
       | "extern" -> parse_extern p
-      | _ -> parse_decldef p None (*advance (add_error_unexpected p @@ Token.Error "") 1, None*))
+      | _ -> parse_decldef p None)
   | Token.LBrack ->
       let p, attribs = parse_attribute_list p in
       (match attribs with

@@ -22,6 +22,7 @@ let rec apply_pointer_type raw_pos pointer_indirections ast =
 
 let rec parse_type_raw p =
   match (peek p 0).kind with
+  | Token.Identifier "typeof" -> parse_typeof p
   | Token.Identifier value ->
       (match (peek p 1).kind with
       | Token.ExclMark -> parse_generic_type_or_namespace p
@@ -196,6 +197,49 @@ and parse_namespace p =
   | Token.Identifier value, _, _ -> advance (add_error_unexpected (advance p 1) Token.Colon) 1, None
   | Token.Eof, _, _ -> add_error_eof p, None
   | _ -> advance (add_error_unexpected p @@ Token.Identifier "") 1, None
+
+and parse_typeof p =
+  let pos = p.pos in
+
+  (* typeof ( expr ) *)
+  (* ^~~~~~          *)
+  let rec _typeof p =
+    match (peek p 0).kind with
+    | Token.Identifier "typeof" -> advance p 1 |> _lparen
+    | Token.Identifier _ -> advance (add_error_value p "typeof") 1, None
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p @@ Token.Identifier "typeof") 1, None
+
+  (* typeof ( expr ) *)
+  (*        ^        *)
+  and _lparen p =
+    match (peek p 0).kind with
+    | Token.LParen -> advance p 1 |> _expr
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p Token.LParen) 1, None
+
+  (* typeof ( expr ) *)
+  (*          ^~~~   *)
+  and _expr p =
+    let p, expr = parse_expr p false in
+    match expr with
+    | None -> p, None
+    | Some x -> _rparen p x
+
+  (* typeof ( expr ) *)
+  (*               ^ *)
+  and _rparen p expr =
+    match (peek p 0).kind with
+    | Token.RParen ->
+        let typeof_type_ast : Ast.t = {
+          kind = Ast.TypeTypeOf { expression = expr };
+          pos = pos;
+        } in
+        advance p 1, Some typeof_type_ast
+    | Token.Eof -> add_error_eof p, None
+    | _ -> advance (add_error_unexpected p Token.RParen) 1, None in
+
+  _typeof p
 
 and parse_type p =
   let pos = p.pos in

@@ -39,3 +39,5 @@ export my_exported_function :: (x: s32, y: s32, z: s32) {
 }
 
 test :: () -> s32 $ alignof(123) * sizeof(s32) + cast(s32[123])123u;
+
+thing: typeof(123);

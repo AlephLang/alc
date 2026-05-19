@@ -31,6 +31,7 @@ let parse parser =
   Parser_stmt.__parse_defer := Parser_defer.parse_defer;
   Parser_stmt.__parse_while := Parser_while.parse_while;
   Parser_stmt.__parse_dowhile := Parser_dowhile.parse_dowhile;
+  Parser_stmt.__parse_loop := Parser_loop.parse_loop;
   Parser_stmt.__parse_struct := Parser_struct.parse_struct;
   Parser_stmt.__parse_union := Parser_union.parse_union;
 

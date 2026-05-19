@@ -47,6 +47,8 @@ struct TestStruct [[attrib]] {
 
   func my_func :: () {
     struct StructInFunction { }
+
+    loop { }
   }
 }
 

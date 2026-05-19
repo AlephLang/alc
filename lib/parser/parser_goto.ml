@@ -20,7 +20,7 @@ let parse_goto p =
     | Token.At, Token.Identifier value when not tok1.has_whitespace_after ->
         _semicolon (advance p 2) value
     | Token.At, Token.Identifier _ ->
-        advance (add_error_whitespace p @@ Token.Identifier "") 1, None
+        advance (add_error_whitespace p @@ Token.Identifier "label name") 1, None
     | Token.At, Token.Eof -> add_error_eof (advance p 1), None
     | Token.At, _ -> advance (add_error_unexpected (advance p 1) @@ Token.Identifier "") 1, None
     | Token.Eof, _ -> add_error_eof p, None

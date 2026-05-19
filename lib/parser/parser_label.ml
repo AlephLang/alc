@@ -15,7 +15,7 @@ let parse_label p =
     when not tok1.has_whitespace_after ->
       advance (add_error_whitespace (advance p 1) Token.Colon) 1, None
   | Token.At, Token.Identifier _, Token.Colon ->
-      advance (add_error_whitespace p Token.Colon) 1, None
+      advance (add_error_whitespace p @@ Token.Identifier "label name") 1, None
   | Token.At, Token.Identifier _, Token.Eof -> add_error_eof (advance p 2), None
   | Token.At, Token.Identifier _, _ ->
       advance (add_error_unexpected (advance p 2) Token.Colon) 1, None

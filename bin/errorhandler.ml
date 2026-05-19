@@ -187,7 +187,10 @@ let rec handle_parser_errors h filename (errors: Alc.Parser.error list) =
                   match list with
                   | [] -> ""
                   | x :: xs ->
-                      let str = (if not first then ", " else "") ^ token_kind_to_string x in
+                      let tokstr_value = token_kind_to_string x in
+                      let str =
+                        if tokstr_value = "" then ""
+                        else (if not first then ", '" else "'") ^ tokstr_value ^ "'" in
                       str ^ _tokens_to_string xs false in
                 _tokens_to_string expected_list true
             | Alc.Parser.UnexpectedWhitespace { expected } ->

@@ -1,5 +1,6 @@
 open Parser_core
 open Parser_return
+open Parser_enum
 
 let __parse_defer : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_while : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
@@ -56,6 +57,7 @@ let rec parse_stmt p =
           | Token.Eof -> add_error_eof p, None
           | _ -> advance (add_error_unexpected p Token.Semicolon) 1, None)
       | "struct" -> !__parse_struct p
+      | "enum" -> parse_enum p
       | "union" -> !__parse_union p
       | _ -> advance p 1, None)
   | Token.LCBrack -> parse_stmt_block p

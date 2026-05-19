@@ -53,3 +53,9 @@ struct TestStruct [[attrib]] {
 struct GenericStruct <T, U, V = s32> { }
 
 union MyUnion {}
+
+enum MyEnum {
+  ELEMENT1 = 1,
+  ELEMENT2,
+  ELEMENT3,
+}

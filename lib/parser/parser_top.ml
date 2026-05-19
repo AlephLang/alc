@@ -3,6 +3,7 @@ open Parser_import
 open Parser_typedef
 open Parser_export
 open Parser_struct
+open Parser_enum
 open Parser_union
 open Parser_decldef
 open Parser_attributes
@@ -22,6 +23,7 @@ let parse_top p =
       | "using" -> parse_typedef p
       | "export" -> parse_export p
       | "struct" -> parse_struct p
+      | "enum" -> parse_enum p
       | "union" -> parse_union p
       | _ -> parse_decldef p None (*advance (add_error_unexpected p @@ Token.Error "") 1, None*))
   | Token.LBrack ->

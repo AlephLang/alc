@@ -2,6 +2,7 @@ open Parser_core
 open Parser_decldef
 open Parser_attributes
 open Parser_struct
+open Parser_enum
 
 let rec parse_union p =
   let pos = p.pos + 1 in
@@ -58,7 +59,7 @@ let rec parse_union p =
       let p, cur =
         match (peek p 0).kind with
         | Token.Identifier "struct" -> parse_struct p
-        | Token.Identifier "enum" -> Util.todo __FILE__ __LINE__ "Parse enums in structs."
+        | Token.Identifier "enum" -> parse_enum p
         | Token.Identifier "union" -> parse_union p
         | Token.LBrack ->
             let p, attribs = parse_attribute_list p in

@@ -36,6 +36,7 @@ let parse parser =
   Parser_stmt.__parse_foreach := Parser_foreach.parse_foreach;
   Parser_stmt.__parse_struct := Parser_struct.parse_struct;
   Parser_stmt.__parse_union := Parser_union.parse_union;
+  Parser_stmt.__parse_decldef := Parser_decldef.parse_decldef;
 
   (* For 'Parser_struct' *)
   Parser_struct.__parse_union := Parser_union.parse_union;

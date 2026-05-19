@@ -1,6 +1,8 @@
 open Parser_core
 open Parser_return
 open Parser_enum
+open Parser_expr
+open Parser_attributes
 
 let __parse_defer : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_for : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
@@ -12,9 +14,12 @@ let __parse_foreach : (t -> t * Ast.t option) ref =
   ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_struct : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_union : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
+let __parse_decldef : (t -> Ast.t option -> t * Ast.t option) ref =
+  ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 
 let rec parse_stmt p =
-  match (peek p 0).kind with
+  let tok1 = peek p 0 in
+  match tok1.kind with
   | Token.Semicolon ->
       let none_ast : Ast.t = {
         kind = Ast.None;
@@ -66,10 +71,24 @@ let rec parse_stmt p =
       | "struct" -> !__parse_struct p
       | "enum" -> parse_enum p
       | "union" -> !__parse_union p
-      | _ -> advance p 1, None)
+      | "func" -> !__parse_decldef p None
+      | _ ->
+          let tok2, tok3, tok4 = peek p 1, peek p 2, peek p 3 in
+          match tok2.kind, tok3.kind, tok4.kind with
+          | Token.Colon, Token.Colon, Token.LArrow
+          | Token.Colon, Token.Colon, Token.LParen -> !__parse_decldef p None
+          | Token.Colon, Token.Colon, _ -> parse_stmt_expr p
+          | Token.Colon, _, _ -> !__parse_decldef p None
+          | _ -> parse_stmt_expr p
+      )
   | Token.LCBrack -> parse_stmt_block p
+  | Token.LBrack ->
+      let p, attribs = parse_attribute_list p in
+      (match attribs with
+      | None -> p, None
+      | Some _ -> !__parse_decldef p attribs)
   | Token.Eof -> add_error_eof p, None
-  | _ -> advance (add_error_unexpected p @@ Token.Error "") 1, None
+  | _ -> parse_stmt_expr p
 
 and parse_stmt_block p =
   let rec _stmts p =

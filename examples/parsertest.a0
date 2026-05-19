@@ -54,9 +54,15 @@ struct TestStruct [[attrib]] {
     for (defer {} x != 0; x += 123) return {};
 
     foreach (c : "my string") { }
+
+    func nested_func :: () {}
+
+    x : s32;
+    y : s32 = 123;
+    z := 32;
   }
 }
-
+/*
 struct GenericStruct <T, U, V = s32> { }
 
 union MyUnion {}
@@ -70,4 +76,4 @@ enum MyEnum {
 extern extern_func_1 :: (x: s32) -> s32;
 extern extern_func_2 :: (x: s32);
 
-extern extern_var: s32;
+extern extern_var: s32;*/

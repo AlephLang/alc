@@ -1,13 +1,14 @@
 open Parser_core
 open Parser_return
-open Parser_defer
+
+let __parse_defer : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 
 let rec parse_stmt p =
   match (peek p 0).kind with
   | Token.Identifier value ->
       (match value with
       | "return" -> parse_return p
-      | "defer" -> parse_defer p
+      | "defer" -> !__parse_defer p
       | _ -> advance p 1, None)
   | Token.LCBrack -> parse_stmt_block p
   | Token.Eof -> add_error_eof p, None

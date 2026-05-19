@@ -27,8 +27,8 @@ let parse parser =
   (* For 'Parser_generic_type_list' *)
   Parser_generic_type_list.__parse_type := Parser_type.parse_type;
 
-  (* For 'Parser_defer' *)
-  Parser_defer.__parse_stmt := Parser_stmt.parse_stmt;
+  (* For 'Parser_stmt' *)
+  Parser_stmt.__parse_defer := Parser_defer.parse_defer;
 
   let parser, toplevels = parse_toplevels parser in
   let root : Ast.t = {

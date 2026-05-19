@@ -1,12 +1,11 @@
 open Parser_core
-
-let __parse_stmt : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
+open Parser_stmt
 
 let parse_defer p =
   match (peek p 0).kind with
   | Token.Identifier "defer" ->
       let pos = p.pos in
-      let p, stmt = advance p 1 |> !__parse_stmt in
+      let p, stmt = advance p 1 |> parse_stmt in
       (match stmt with
       | None -> p, None
       | Some x ->

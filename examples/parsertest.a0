@@ -25,5 +25,7 @@ my_generic_func :: <T, U, V>(x: T, y: U, z: V) -> Vec!<T,U,V> { return {}; }
 x: (a: s32, b: f32, c: ()) -> s32 = 0;
 
 export my_exported_function :: (x: s32, y: s32, z: s32) {
+  defer return -1;
+
   { return 0; }
 }

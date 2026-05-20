@@ -5,6 +5,7 @@ open Parser_expr
 open Parser_attributes
 open Parser_goto
 open Parser_label
+open Parser_typedef
 
 let __parse_defer : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_for : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
@@ -33,6 +34,7 @@ let rec parse_stmt p =
   | Token.Identifier value ->
       (match value with
       | "return" -> parse_return p
+      | "using" -> parse_typedef p
       | "defer" -> !__parse_defer p
       | "for" -> !__parse_for p
       | "while" -> !__parse_while p

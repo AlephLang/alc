@@ -2,7 +2,7 @@ import std::io;
 
 using super_duper_int = s32;
 using turbo_mega_float = f32;
-using generic_stuff!<s32, f32, ***f64[]> = bool;
+using generic_stuff<T, U, V> = bool;
 
 x: s32 = a!<a>(1) * x!<s32, f32, bool>()[3];
 

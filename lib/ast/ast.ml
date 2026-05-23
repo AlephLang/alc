@@ -91,10 +91,10 @@ let rec to_string ast =
        | None -> [header]
        | Some x -> buildtree header [to_string x])
   | Import { m } -> buildtree "Import" [to_string m]
-  | TypeDef { name; generic_type_list; aliased_type; attribute_list } ->
+  | TypeDef { name; generic_placeholder_type_list; aliased_type; attribute_list } ->
       buildtree
       (sprintf "TypeDef { name: \"%s\" }" name)
-      @@ option_to_string generic_type_list
+      @@ option_to_string generic_placeholder_type_list
       @ option_to_string attribute_list
       @ [to_string aliased_type]
   | ExternFunc { name; argument_list; return_type } ->

@@ -7,7 +7,7 @@ type kind =
   | Module of { name: string; subm: t option }
   | Import of { m: t }
   | TypeDef of { name: string
-               ; generic_type_list: t option
+               ; generic_placeholder_type_list: t option
                ; aliased_type: t
                ; attribute_list: t option }
   | ExternFunc of { name: string; argument_list: t; return_type: t option }

@@ -6,6 +6,7 @@ open Parser_attributes
 open Parser_goto
 open Parser_label
 open Parser_typedef
+open Parser_misc
 
 let __parse_defer : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 let __parse_for : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
@@ -88,7 +89,9 @@ let rec parse_stmt p =
           | Token.Colon, Token.Colon, Token.LParen -> !__parse_decldef p None
           | Token.Colon, Token.Colon, _ -> parse_stmt_expr p
           | Token.Colon, _, _ -> !__parse_decldef p None
-          | _ -> parse_stmt_expr p)
+          | _ ->
+              if is_qualifier value then !__parse_decldef p None
+              else parse_stmt_expr p)
   | Token.At -> parse_label p
   | Token.LCBrack -> parse_stmt_block p
   | Token.LBrack ->

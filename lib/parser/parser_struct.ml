@@ -4,6 +4,8 @@ open Parser_attributes
 open Parser_decldef
 open Parser_enum
 open Parser_generic_placeholder_type_list
+open Parser_misc
+open Parser_visibility_marker
 
 let __parse_union : (t -> t * Ast.t option) ref = ref (fun _ -> Util.not_reached __FILE__ __LINE__)
 
@@ -85,6 +87,7 @@ let rec parse_struct p =
         | Token.Identifier "struct" -> parse_struct p
         | Token.Identifier "enum" -> parse_enum p
         | Token.Identifier "union" -> !__parse_union p
+        | Token.Identifier value when is_visibility_marker value -> parse_visibility_marker p
         | Token.LBrack ->
             let p, attribs = parse_attribute_list p in
             (match attribs with

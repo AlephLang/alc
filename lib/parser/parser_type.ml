@@ -5,7 +5,7 @@ open Parser_expr
 
 type ptrOrRef = Ptr | Ref
 
-let rec handle_pointers_and_references p =
+let rec gather_pointers_and_references p =
   let ptr_or_ref_opt =
     match (peek p 0).kind with
     | Token.Asterisk -> Some Ptr
@@ -14,7 +14,7 @@ let rec handle_pointers_and_references p =
   match ptr_or_ref_opt with
   | None -> p, []
   | Some x ->
-      let p, rest = advance p 1 |> handle_pointers_and_references in
+      let p, rest = advance p 1 |> gather_pointers_and_references in
       p, rest @ [x]
 
 let rec apply_pointers_and_references raw_pos ptr_ref_list ast =
@@ -253,7 +253,7 @@ and parse_typeof p =
 
 and parse_type p =
   let pos = p.pos in
-  let p, pointers_and_references = handle_pointers_and_references p in
+  let p, pointers_and_references = gather_pointers_and_references p in
   let p, type_raw = parse_type_raw p in
   match type_raw with
   | None -> p, None

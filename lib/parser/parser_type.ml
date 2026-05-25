@@ -3,22 +3,32 @@ open Parser_function_arguments
 open Parser_generic_type_list
 open Parser_expr
 
-let rec get_pointer_indirections p =
-  match (peek p 0).kind with
-  | Token.Asterisk ->
-      let p, remaining = advance p 1 |> get_pointer_indirections in
-      p, 1 + remaining
-  | _ -> p, 0
+type ptrOrRef = Ptr | Ref
 
-let rec apply_pointer_type raw_pos pointer_indirections ast =
-  if pointer_indirections = 0 then ast
-  else
-    let ast = apply_pointer_type raw_pos (pointer_indirections - 1) ast in
-    let out_ast : Ast.t = {
-      kind = Ast.TypePointer { type_ = ast };
-      pos = raw_pos - pointer_indirections;
-    } in
-    out_ast
+let rec handle_pointers_and_references p =
+  let ptr_or_ref_opt =
+    match (peek p 0).kind with
+    | Token.Asterisk -> Some Ptr
+    | Token.Ampersand -> Some Ref
+    | _ -> None in
+  match ptr_or_ref_opt with
+  | None -> p, []
+  | Some x ->
+      let p, rest = advance p 1 |> handle_pointers_and_references in
+      p, rest @ [x]
+
+let rec apply_pointers_and_references raw_pos ptr_ref_list ast =
+  match ptr_ref_list with
+  | [] -> ast
+  | x :: xs ->
+      let kind = match x with
+                 | Ptr -> Ast.TypePointer { type_ = ast }
+                 | Ref -> Ast.TypeReference { type_ = ast } in
+      let ast : Ast.t = {
+        kind = kind;
+        pos = raw_pos + List.length ptr_ref_list - 1;
+      } in
+      apply_pointers_and_references raw_pos xs ast
 
 let rec parse_type_raw p =
   match (peek p 0).kind with
@@ -243,12 +253,12 @@ and parse_typeof p =
 
 and parse_type p =
   let pos = p.pos in
-  let p, pointer_indirections = get_pointer_indirections p in
+  let p, pointers_and_references = handle_pointers_and_references p in
   let p, type_raw = parse_type_raw p in
   match type_raw with
   | None -> p, None
   | Some x ->
-      let type_ptr = apply_pointer_type pos pointer_indirections x in
+      let type_ptr = apply_pointers_and_references pos pointers_and_references x in
       let p, array_type, success = parse_type_array p type_ptr in
       if not success then p, None
       else

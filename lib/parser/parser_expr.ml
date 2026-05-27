@@ -273,7 +273,7 @@ and parse_namespace p =
       && not tok2.has_whitespace_after
       && not tok3.has_whitespace_after ->
         let pos = p.pos in
-        let p, subobject = advance p 3 |> parse_identifier in
+        let p, subobject = advance p 3 |> parse_namespaces_and_identifier_operands in
         (match subobject with
         | None -> p, None
         | Some x ->

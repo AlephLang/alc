@@ -177,11 +177,13 @@ let rec to_string ast =
       @@ [to_string iteratable; to_string body]
       @ option_to_string attribute_list
   | StmtExpr { expression } -> buildtree "StmtExpr" [to_string expression]
-  | StmtSwitch { expression; cases } ->
-      buildtree "StmtSwitch" @@ [to_string expression] @ get_xs_of cases
-  | StmtCase { expression; body } ->
-      buildtree "StmtCase" [to_string expression; to_string body]
-  | StmtDefault { body } -> buildtree "StmtDefault" [to_string body]
+  | StmtSwitch { expression; case_chains } ->
+      buildtree "StmtSwitch" @@ [to_string expression] @ get_xs_of case_chains
+  | StmtCaseChain { cases; body } ->
+      buildtree "StmtCaseChain" @@ get_xs_of cases @ option_to_string body
+  | StmtCase { expression } ->
+      buildtree "StmtCase" [to_string expression]
+  | StmtDefault -> ["StmtDefault"]
   | StmtDefer { body } -> buildtree "StmtDefer" [to_string body]
   | StmtIf { condition; body; else_statement; attribute_list } ->
       buildtree "StmtIf"

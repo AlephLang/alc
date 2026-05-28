@@ -47,9 +47,10 @@ type kind =
   | StmtLoop of { body: t }
   | StmtForeach of { item_name: string; iteratable: t; body: t; attribute_list: t option }
   | StmtExpr of { expression: t }
-  | StmtSwitch of { expression: t; cases: t list }
-  | StmtCase of { expression: t; body: t }
-  | StmtDefault of { body: t }
+  | StmtSwitch of { expression: t; case_chains: t list }
+  | StmtCaseChain of { cases: t list; body: t option }
+  | StmtCase of { expression: t }
+  | StmtDefault
   | StmtDefer of { body: t }
   | StmtIf of { condition: t; body: t; else_statement: t option; attribute_list: t option }
   | StmtElse of { body: t }

@@ -195,6 +195,14 @@ let rec handle_parser_errors h filename (errors: Alc.Parser.error list) =
                 _tokens_to_string expected_list true
             | Alc.Parser.UnexpectedWhitespace { expected } ->
                 token_kind_to_string expected
+            | Alc.Parser.UnexpectedValue { expected_list } ->
+                let rec _value_sequence list first =
+                  match list with
+                  | [] -> ""
+                  | x :: xs ->
+                      let str = (if not first then ", '" else "'") ^ x ^ "'" in
+                      str ^ _value_sequence xs false in
+                _value_sequence expected_list true
             | _ -> "" in
           let highlight = get_highlighted_token h
                                                 token

@@ -1,92 +1,261 @@
+// Ast.Import + Ast.Module
+import std;
 import std::io;
 
-using super_duper_int = s32;
-using turbo_mega_float = f32;
-using generic_stuff<T, U, V> = bool;
+// Ast.TypeDef
+using int32_t = s32;
+using vec_s32_t = Vec!<s32>;
+using funny_vec<T> = Vec!<T>;
+using [[packed]] s32_arr16 = s32[16];
 
-x: s32 = a!<a>(1) * x!<s32, f32, bool>()[3];
+// Ast.None
+;
 
-[[attrib1(1, 2, 3), attrib2("arg1", "arg2")]] y := 123;
-
-z := { 0u, .abc = x, [123] = x };
-
-my_func :: () {
-  return { // initlist
-    .x = 1,
-    123,
-    [0] = z.abc + 12
-  };
-}
-
-func my_explicit_func :: (x: s32, y: s32, z: s32) -> f32 $ x * y * z;
-
-my_generic_func :: <T, U, V>(x: T, y: U, z: V) -> Vec!<T,U,V> { return {}; }
-
-x: (a: s32, b: f32, c: ()) -> s32 = 0;
-
-export my_exported_function :: (x: s32, y: s32, z: s32) {
-  while (alignof(1)) { defer {} }
-  while [[attrib]] (false) {}
-
-  do return 0; while (false);
-  do { return 0; } while [[attrib]] (false);
-
-  defer return -1;
-
-  continue; break; fallthrough;
-
-  { return 0; }
-}
-
-test :: () -> s32 $ alignof(123) * sizeof(s32) + cast(s32[123])123u;
-
-thing: typeof(123);
-
-struct TestStruct [[attrib]] {
-  x: s32;
-
-  func my_func :: () {
-    struct StructInFunction { }
-
-    loop { }
-
-    for (;;) {}
-    for (defer {} x != 0; x += 123) return {};
-
-    foreach (c : "my string") { }
-
-    func nested_func :: () {}
-
-    @label:
-
-    x : s32;
-    y : s32 = 123;
-    z := 32;
-
-    goto @label;
-
-    if (false);
-    if [[unlikely]] (false) { } else if (true) { } else { }
-
-    switch (y) {
-    case 123: { return 0; }
-    case -123: { return 0; }
-    default: { return 0; }
-    }
-  }
-}
-
-struct GenericStruct <T, U, V = s32> { }
-
-union MyUnion {}
-
-enum MyEnum {
-  ELEMENT1 = 1,
-  ELEMENT2,
-  ELEMENT3,
-}
-
-extern extern_func_1 :: (x: s32) -> s32;
+// Ast.ExternFunc
+extern extern_func_1 :: ();
 extern extern_func_2 :: (x: s32);
+extern extern_func_2 :: (x: s32, y: s32 = 4);
+extern extern_func_2 :: (x: s32, y: s32 = 4) -> f32;
+extern extern_func_2 :: (x: s32, y: s32 = 4, ...) -> f32;
 
-extern extern_var: s32;
+// Ast.ExternVarDecl
+extern extern_var_1: s32;
+extern extern_var_2: *s32;
+extern extern_var_3: **s32;
+extern extern_var_4: &s32;
+extern extern_var_5: &&s32;
+extern extern_var_6: &&**s32;
+extern extern_var_7: &*&**s32;
+extern extern_var_8: **s32[16];
+extern extern_var_9: *&s32[16][32];
+extern extern_var_10: &*s32[16][32][];
+
+// Ast.Qualifier
+local local_var: s32;
+const const_var := 4;
+inline inlined_function :: () {}
+_ :: () {
+  persist persistent_variable: s32 = 0;
+  const local persist local_persistent_constant := 123;
+  inline local local_inlined_function :: () {}
+}
+
+// Ast.Enum
+enum TestEnum1 {
+  // Ast.EnumElement
+  Element1,
+  Element2,
+  Element3 = Element1 + Element2,
+  Element4 = Element3 << 1,
+  Element5 = 0,
+  Element6,
+}
+enum TestEnum2 [[alignas(128)]] {
+  Element1,
+  Element2,
+  Element3
+}
+
+// Ast.Struct
+struct TestStruct1 {}
+struct TestStruct2 {
+  field1_s32: s32;
+  field2_s32 := 123s;
+  field3_f32: f32 = 123.0f;
+
+// Ast.VisibilityMarker
+public:
+  method1 :: () -> s32 $ 0;
+  method2 :: () -> bool $ field1_s32 > 5;
+
+private:
+  func function1 :: (x: s32) $ x * 14;
+  func function2 :: (x: s32, ...) $ x * 14;
+}
+struct TestStruct3 [[alignas(16)]] {
+  field1_s32: s32;
+  field2_bool: bool;
+  field3_u16: u16;
+}
+
+// Ast.Union
+union TestUnion1 {}
+union TestUnion2 {
+  // NOTE: You can "initialize" them at parsing stage, but semantic analysis will fail.
+  variant1_s32: s32;
+  variant2_f32: f32;
+  variant3_vec_s32: Vec!<s32>;
+}
+union TestUnion3 [[packed]] {}
+
+// Ast.Func
+func_1 :: () {}
+func_2 :: () $ 0;
+func_3 :: () -> s32 { return 0; }
+func_4 :: () -> s32 $ 0;
+func_5 :: (arg1: s32) { return arg1; }
+func_6 :: (arg1: s32) $ arg1;
+func_7 :: (arg1: s32) -> s32 { return arg1; }
+func_8 :: (arg1: s32) -> s32 $ arg1;
+func_9 :: (arg1: s32, arg2: f32 = 123.0f) { return arg1 + cast(s32)arg2; }
+func_10 :: (arg1: s32, arg2: f32 = 123.0f) $ arg1 + cast(s32)arg2;
+func_11 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 { return arg1 + cast(s32)arg2; }
+func_12 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 $ arg1 + cast(s32)arg2;
+
+// Ast.Func (Ast.FunctionTypeExplicit)
+func explicit_func_1 :: () {}
+func explicit_func_2 :: () $ 0;
+func explicit_func_3 :: () -> s32 { return 0; }
+func explicit_func_4 :: () -> s32 $ 0;
+func explicit_func_5 :: (arg1: s32) { return arg1; }
+func explicit_func_6 :: (arg1: s32) $ arg1;
+func explicit_func_7 :: (arg1: s32) -> s32 { return arg1; }
+func explicit_func_8 :: (arg1: s32) -> s32 $ arg1;
+func explicit_func_9 :: (arg1: s32, arg2: f32 = 123.0f) { return arg1 + cast(s32)arg2; }
+func explicit_func_10 :: (arg1: s32, arg2: f32 = 123.0f) $ arg1 + cast(s32)arg2;
+func explicit_func_11 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 { return arg1 + cast(s32)arg2; }
+func explicit_func_12 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 $ arg1 + cast(s32)arg2;
+
+// Ast.Func (Ast.FunctionTypeExported)
+export exported_func_1 :: () {}
+export exported_func_2 :: (x: s32) -> s32 {}
+export exported_func_3 :: (x: s32) $ x << 1;
+
+// Ast.VarDecl
+var_vardecl_1: s32;
+var_vardecl_2: Vec!<s32>;
+[[alignas(16)]] var_vardecl_3: s32;
+[[alignas(16)]] var_vardecl_4: Vec!<s32>;
+
+// Ast.VarDef
+var_vardef_1: s32 = 123;
+var_vardef_2 := 123;
+var_vardef_3: Vec!<s32> = { 123, 456 };
+[[alignas(16)]] var_vardef_4: s32 = 123;
+[[alignas(16)]] var_vardef_5 := 123;
+[[alignas(16)]] var_vardef_6: Vec!<s32> = { 123, 456 };
+
+_ :: () -> s32 {
+  struct StructInFunc { field: s32; }
+  enum EnumInFunc { Element }
+  union UnionInFunc { field: s32; }
+
+  x: s32;
+  y: s32 = 4;
+  z := 3.14f;
+
+  // Functions inside functions can access scope of its parent.
+  func_in_func :: () { x = 15; }
+  func explicit_func_in_func :: () $ 42;
+  // NOTE: You cannot have exported functions inside other functions,
+  // they can only be at top-level.
+
+  func_in_func :: () {}
+  generic_func_in_func :: <T>() {}
+  func explicit_func_in_func :: () {}
+
+  // Ast.StmtBlock
+  {}
+
+  // Ast.StmtReturn
+  return;
+  return 0;
+  return {};
+
+  // Ast.StmtGoto
+  goto @label;
+
+  // Ast.StmtLabel
+@label:
+
+  // Ast.StmtBreak
+  break;
+
+  // Ast.StmtContinue
+  continue;
+
+  // Ast.StmtFallthrough
+  fallthrough;
+
+  // Ast.StmtWhile
+  while (true) {}
+  while (x > 0) x -= 1;
+  while [[nounroll]] (x > 0) x -= 1;
+
+  // Ast.StmtFor
+  for (;;);
+  for (x := 1;;);
+  for (;x > 0;);
+  for (;; x += 1);
+  for (;;) std::io::printf("%i", x);
+  for [[unroll]] (x := 0; x > 32; x -= 1) std::io::printf("%i", x);
+
+  // Ast.StmtDoWhile
+  do ; while (true);
+  do {
+    goto @test;
+  } while (false);
+  do {
+    defer goto @test;
+  } while [[nounroll]] (false);
+@test:
+
+  // Ast.StmtLoop
+  loop {
+    if (x > 0) break;
+
+    defer x -= 4;
+    std::io::printf("Loop\n");
+  }
+
+  // Ast.StmtForeach
+  foreach (i : some_int_vec) {
+    std::io::printf("i: %i\n", i);
+  }
+
+  // Ast.StmtExpr
+  x += 123 * 14;
+
+  // Ast.StmtSwitch
+  switch (x) {
+  // Ast.CaseChain
+  case 0: { return 10; } // Ast.Case
+  case 15: { return 4; } // Ast.Case
+  default: { fallthrough; } // Ast.Default
+  // Ast.CaseChain
+  case 1: // Ast.Case
+  case 2: // Ast.Case
+  case 3: { return 0; }
+  // Ast.CaseChain
+  case 4: // Ast.Case
+  }
+
+  // Ast.StmtDefer
+  defer std::io::printf("defer 1\n");
+  defer { std::io::printf("defer 2\n"); }
+
+  // Ast.StmtIf
+  if (true) {}
+  // Ast.StmtElse
+  else if [[unlikely]] (false) {}
+  else defer return 0;
+
+  x := 123 + 3.14f + 123u + 3.1415lf * (false / true) + "string" + "string with a typespec"l
+     + access.member + namespace::subobject + namespace::call() + generic_namespace!<s32>::x
+     + call() + generic_call!<s32, f32>(123, 3.14f) + 'a' + some_array[14] + cast(s32)3.14f + 'x'l
+     + sizeof(s32) + sizeof(typeof(123.4f)) + alignof(x);
+
+  struct MegaStruct {
+    x: s32;
+    y: f32;
+    z: bool;
+  }
+
+  megastruct: MegaStruct = {
+    123,
+    .y = 3.14f,
+    false
+  };
+
+  array: s32[12] = { [0] = 123 };
+}

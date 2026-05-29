@@ -38,7 +38,6 @@ type kind =
             ; attribute_list: t option }
   | ArgumentList of { arguments: t list }
   | Namespace of { name: string; subobject: t }
-  | VisibilityMarker of { name: string }
   | CaseChain of { cases: t list; body: t option }
   | Case of { expression: t }
   | Default

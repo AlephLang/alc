@@ -22,8 +22,3 @@ let is_qualifier value =
   match value with
   | "const" | "local" | "persist" | "inline" -> true
   | _ -> false
-
-let is_visibility_marker value =
-  match value with
-  | "public" | "private" -> true
-  | _ -> false

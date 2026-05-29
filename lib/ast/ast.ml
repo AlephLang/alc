@@ -142,7 +142,6 @@ let rec to_string ast =
       buildtree
       (sprintf "Namespace { name: \"%s\" }" name)
       [to_string subobject]
-  | VisibilityMarker { name } -> [sprintf "VisibilityMarker { name: \"%s\" }" name]
   | CaseChain { cases; body } ->
       buildtree "CaseChain" @@ get_xs_of cases @ option_to_string body
   | Case { expression } ->

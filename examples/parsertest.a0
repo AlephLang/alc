@@ -63,12 +63,9 @@ struct TestStruct2 {
   field2_s32 := 123s;
   field3_f32: f32 = 123.0f;
 
-// Ast.VisibilityMarker
-public:
   method1 :: () -> s32 $ 0;
   method2 :: () -> bool $ field1_s32 > 5;
 
-private:
   func function1 :: (x: s32) $ x * 14;
   func function2 :: (x: s32, ...) $ x * 14;
 }

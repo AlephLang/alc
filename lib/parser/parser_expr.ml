@@ -160,6 +160,13 @@ and parse_operands p =
         pos = pos;
       } in
       p, Some symbol_ast
+  | Token.LParen ->
+      let p, expr = parse_expr (advance p 1) false in
+      (match expr, (peek p 0).kind with
+      | Some _, Token.RParen -> advance p 1, expr
+      | Some _, Token.Eof -> add_error_eof p, None
+      | Some _, _ -> advance (add_error_unexpected p Token.RParen) 1, None
+      | None, _ -> p, None)
   | _ -> advance (add_error_unexpected p @@ Token.Error "") 1, None
 
 and parse_namespaces_and_identifier_operands p =

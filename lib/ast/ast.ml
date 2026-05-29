@@ -229,8 +229,14 @@ let rec to_string ast =
       buildtree
       (sprintf "ExprOperandCall { callee_name: \"%s\" }" callee_name)
       @@ [to_string generic_type_list] @ get_xs_of arguments
-  | ExprOperandString { contents } -> [sprintf "ExprOperandString { contents: \"%s\" }" contents]
-  | ExprOperandSymbol { contents } -> [sprintf "ExprOperandSymbol { contents: '%s' }" contents]
+  | ExprOperandString { contents; typespec } ->
+      [sprintf "ExprOperandString { contents: \"%s\", typespec = \"%s\" }"
+               contents
+            @@ Option.value typespec ~default:""]
+  | ExprOperandSymbol { contents; typespec } ->
+      [sprintf "ExprOperandSymbol { contents: '%s', typespec = \"%s\" }"
+               contents
+            @@ Option.value typespec ~default:""]
   | ExprOperandAccessMember { from; what } ->
       buildtree "ExprOperandAccessMember" [to_string from; to_string what]
   | ExprOperandSizeOf { type_ } -> buildtree "ExprOperandSizeOf" [to_string type_]

@@ -143,6 +143,11 @@ let rec to_string ast =
       (sprintf "Namespace { name: \"%s\" }" name)
       [to_string subobject]
   | VisibilityMarker { name } -> [sprintf "VisibilityMarker { name: \"%s\" }" name]
+  | CaseChain { cases; body } ->
+      buildtree "CaseChain" @@ get_xs_of cases @ option_to_string body
+  | Case { expression } ->
+      buildtree "Case" [to_string expression]
+  | Default -> ["Default"]
   | Attribute { name; arguments } ->
       buildtree
       (sprintf "Attribute { name: \"%s\" }" name)
@@ -179,11 +184,6 @@ let rec to_string ast =
   | StmtExpr { expression } -> buildtree "StmtExpr" [to_string expression]
   | StmtSwitch { expression; case_chains } ->
       buildtree "StmtSwitch" @@ [to_string expression] @ get_xs_of case_chains
-  | StmtCaseChain { cases; body } ->
-      buildtree "StmtCaseChain" @@ get_xs_of cases @ option_to_string body
-  | StmtCase { expression } ->
-      buildtree "StmtCase" [to_string expression]
-  | StmtDefault -> ["StmtDefault"]
   | StmtDefer { body } -> buildtree "StmtDefer" [to_string body]
   | StmtIf { condition; body; else_statement; attribute_list } ->
       buildtree "StmtIf"

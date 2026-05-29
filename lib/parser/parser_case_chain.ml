@@ -33,7 +33,7 @@ let parse_case_chain p =
         match tok1.kind with
         | Token.Colon when not tok0.has_whitespace_after ->
             let case_ast : Ast.t = {
-              kind = Ast.StmtCase { expression = expr };
+              kind = Ast.Case { expression = expr };
               pos = pos;
             } in
             advance p 1, Some case_ast
@@ -48,7 +48,7 @@ let parse_case_chain p =
       match tok1.kind, tok2.kind with
       | Token.Identifier "default", Token.Colon when not tok1.has_whitespace_after ->
           let default_ast : Ast.t = {
-            kind = Ast.StmtDefault;
+            kind = Ast.Default;
             pos = pos;
           } in
           advance p 2, Some default_ast
@@ -94,7 +94,7 @@ let parse_case_chain p =
       if not success then p, None
       else
         let case_chain_ast : Ast.t = {
-          kind = Ast.StmtCaseChain { cases = x; body = body };
+          kind = Ast.CaseChain { cases = x; body = body };
           pos = pos;
         } in
         p, Some case_chain_ast

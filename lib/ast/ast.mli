@@ -39,6 +39,9 @@ type kind =
   | ArgumentList of { arguments: t list }
   | Namespace of { name: string; subobject: t }
   | VisibilityMarker of { name: string }
+  | CaseChain of { cases: t list; body: t option }
+  | Case of { expression: t }
+  | Default
   | Attribute of { name: string; arguments: t list }
   | AttributeList of { attributes: t list }
   | StmtBlock of { statements: t list }
@@ -59,9 +62,6 @@ type kind =
   | StmtForeach of { item_name: string; iteratable: t; body: t; attribute_list: t option }
   | StmtExpr of { expression: t }
   | StmtSwitch of { expression: t; case_chains: t list }
-  | StmtCaseChain of { cases: t list; body: t option }
-  | StmtCase of { expression: t }
-  | StmtDefault
   | StmtDefer of { body: t }
   | StmtIf of { condition: t; body: t; else_statement: t option; attribute_list: t option }
   | StmtElse of { body: t }

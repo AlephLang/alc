@@ -36,7 +36,7 @@ let rec strings_to_string strs =
   | x :: xs -> x ^ "\n" ^ strings_to_string xs
 
 let todo file line msg =
-  failwith @@ Printf.sprintf "(%s:%d): Not implemented: %s\n" file line msg
+  failwith @@ Printf.sprintf "(%s:%d): Not implemented: %s" file line msg
 
 let not_reached file line =
-  failwith @@ Printf.sprintf "(%s:%d): Reached a point that should not be reached.\n" file line
+  failwith @@ Printf.sprintf "(%s:%d): Reached a point that should not be reached." file line

@@ -23,4 +23,4 @@
  (description "Aleph language compiler.")
  (depends ocaml)
  (tags
-  ("compiler" "llvm" "aleph")))
+  ("compiler" "aleph")))

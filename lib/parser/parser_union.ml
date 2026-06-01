@@ -3,6 +3,7 @@ open Parser_decldef
 open Parser_attributes
 open Parser_struct
 open Parser_enum
+open Parser_typedef
 
 let rec parse_union p =
   let pos = p.pos + 1 in
@@ -61,6 +62,7 @@ let rec parse_union p =
         | Token.Identifier "struct" -> parse_struct p
         | Token.Identifier "enum" -> parse_enum p
         | Token.Identifier "union" -> parse_union p
+        | Token.Identifier "using" -> parse_typedef p
         | Token.LBrack ->
             let p, attribs = parse_attribute_list p in
             (match attribs with

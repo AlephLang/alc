@@ -78,7 +78,7 @@ let rec to_string ast =
       @@ [to_string lhs; to_string rhs]
   | PrefixExpr { operator; operand } ->
       buildtree
-      (sprintf "PrefixExpr { ops: %s }"
+      (sprintf "PrefixExpr { op: %s }"
        @@ expr_operator_to_string operator)
       [to_string operand]
   | Module { name; subm } ->

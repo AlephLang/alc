@@ -84,21 +84,21 @@ let parse_operator p =
 
 let get_precedence operator =
   match Ast.ExprOperator.get_group operator with
-  | Ast.ExprOperator.Assign -> 10, 15
-  | Ast.ExprOperator.Boolean -> 60, 65
-  | Ast.ExprOperator.Compare -> 70, 75
+  | Ast.ExprOperator.Assign -> 1
+  | Ast.ExprOperator.Boolean -> 6
+  | Ast.ExprOperator.Compare -> 7
   | _ ->
       match operator with
       | Ast.ExprOperator.BinaryAdd
-      | Ast.ExprOperator.BinarySub -> 20, 25
+      | Ast.ExprOperator.BinarySub -> 2
       | Ast.ExprOperator.BinaryMul
       | Ast.ExprOperator.BinaryDiv
-      | Ast.ExprOperator.BinaryMod -> 30, 35
+      | Ast.ExprOperator.BinaryMod -> 3
       | Ast.ExprOperator.BinaryShl
-      | Ast.ExprOperator.BinaryShr -> 40, 45
+      | Ast.ExprOperator.BinaryShr -> 4
       | Ast.ExprOperator.BinaryAnd
       | Ast.ExprOperator.BinaryOr
-      | Ast.ExprOperator.BinaryXor -> 50, 55
+      | Ast.ExprOperator.BinaryXor -> 5
       | _ -> Util.not_reached __FILE__ __LINE__
 
 let is_namespace p =
@@ -558,10 +558,10 @@ and parse_expr p is_toplevel =
                 } in
                 add_error p two_assign_operators_error, None
               else
-                let l_prec, r_prec = get_precedence operator in
-                if l_prec < min_prec then saved_p, Some lhs
+                let prec = get_precedence operator in
+                if prec <= min_prec then saved_p, Some lhs
                 else
-                  let p, rhs = _pratt_parse p r_prec (has_assign || has_assign_2) in
+                  let p, rhs = _pratt_parse p prec (has_assign || has_assign_2) in
                   match rhs with
                   | None -> p, None
                   | Some z ->

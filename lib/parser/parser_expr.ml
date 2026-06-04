@@ -67,20 +67,20 @@ let parse_operator p =
 let get_precedence operator =
   match Ast.ExprOperator.get_group operator with
   | Ast.ExprOperator.Assign -> 1
-  | Ast.ExprOperator.Boolean -> 6
-  | Ast.ExprOperator.Compare -> 7
+  | Ast.ExprOperator.Boolean -> 2
+  | Ast.ExprOperator.Compare -> 3
   | _ ->
       match operator with
       | Ast.ExprOperator.BinaryAdd
-      | Ast.ExprOperator.BinarySub -> 2
+      | Ast.ExprOperator.BinarySub -> 4
       | Ast.ExprOperator.BinaryMul
       | Ast.ExprOperator.BinaryDiv
-      | Ast.ExprOperator.BinaryMod -> 3
+      | Ast.ExprOperator.BinaryMod -> 5
       | Ast.ExprOperator.BinaryShl
-      | Ast.ExprOperator.BinaryShr -> 4
+      | Ast.ExprOperator.BinaryShr -> 6
       | Ast.ExprOperator.BinaryAnd
       | Ast.ExprOperator.BinaryOr
-      | Ast.ExprOperator.BinaryXor -> 5
+      | Ast.ExprOperator.BinaryXor -> 7
       | _ -> Util.not_reached __FILE__ __LINE__
 
 let is_namespace p =

@@ -15,71 +15,53 @@ let parse_operator p =
   match tok1.kind, tok2.kind, tok3.kind with
   | Token.LArrow, Token.LArrow, Token.Eq
     when not tok1.has_whitespace_after
-      && not tok2.has_whitespace_after ->
-        advance p 3, Some Ast.ExprOperator.AssignShlEq
+      && not tok2.has_whitespace_after -> advance p 3, Some (Ast.ExprOperator.AssignShlEq, 3)
   | Token.RArrow, Token.RArrow, Token.Eq
     when not tok1.has_whitespace_after
-      && not tok2.has_whitespace_after ->
-        advance p 3, Some Ast.ExprOperator.AssignShrEq
+      && not tok2.has_whitespace_after -> advance p 3, Some (Ast.ExprOperator.AssignShrEq, 3)
   | Token.LArrow, Token.LArrow, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.BinaryShl
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.BinaryShl, 2)
   | Token.RArrow, Token.RArrow, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.BinaryShr
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.BinaryShr, 2)
   | Token.Plus, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.AssignAddEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.AssignAddEq, 2)
   | Token.Minus, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.AssignSubEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.AssignSubEq, 2)
   | Token.Asterisk, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.AssignMulEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.AssignMulEq, 2)
   | Token.Slash, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.AssignDivEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.AssignDivEq, 2)
   | Token.Percent, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.AssignModEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.AssignModEq, 2)
   | Token.Ampersand, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.AssignAndEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.AssignAndEq, 2)
   | Token.Pipe, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.AssignOrEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.AssignOrEq, 2)
   | Token.Circumflex, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.AssignXorEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.AssignXorEq, 2)
   | Token.Eq, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.CompareEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.CompareEq, 2)
   | Token.ExclMark, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.CompareNotEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.CompareNotEq, 2)
   | Token.LArrow, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.CompareLThanEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.CompareLThanEq, 2)
   | Token.RArrow, Token.Eq, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.CompareGThanEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.CompareGThanEq, 2)
   | Token.Ampersand, Token.Ampersand, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.BooleanAnd
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.BooleanAnd, 2)
   | Token.Pipe, Token.Pipe, _
-    when not tok1.has_whitespace_after ->
-        advance p 2, Some Ast.ExprOperator.BooleanOr
-  | Token.Plus, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryAdd
-  | Token.Minus, _, _ -> advance p 1, Some Ast.ExprOperator.BinarySub
-  | Token.Asterisk, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryMul
-  | Token.Slash, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryDiv
-  | Token.Percent, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryMod
-  | Token.Ampersand, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryAnd
-  | Token.Pipe, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryOr
-  | Token.Circumflex, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryXor
-  | Token.LArrow, _, _ -> advance p 1, Some Ast.ExprOperator.CompareLThan
-  | Token.RArrow, _, _ -> advance p 1, Some Ast.ExprOperator.CompareGThan
-  | Token.Eq, _, _ -> advance p 1, Some Ast.ExprOperator.AssignEq
+    when not tok1.has_whitespace_after -> advance p 2, Some (Ast.ExprOperator.BooleanOr, 2)
+  | Token.Plus, _, _ -> advance p 1, Some (Ast.ExprOperator.BinaryAdd, 1)
+  | Token.Minus, _, _ -> advance p 1, Some (Ast.ExprOperator.BinarySub, 1)
+  | Token.Asterisk, _, _ -> advance p 1, Some (Ast.ExprOperator.BinaryMul, 1)
+  | Token.Slash, _, _ -> advance p 1, Some (Ast.ExprOperator.BinaryDiv, 1)
+  | Token.Percent, _, _ -> advance p 1, Some (Ast.ExprOperator.BinaryMod, 1)
+  | Token.Ampersand, _, _ -> advance p 1, Some (Ast.ExprOperator.BinaryAnd, 1)
+  | Token.Pipe, _, _ -> advance p 1, Some (Ast.ExprOperator.BinaryOr, 1)
+  | Token.Circumflex, _, _ -> advance p 1, Some (Ast.ExprOperator.BinaryXor, 1)
+  | Token.LArrow, _, _ -> advance p 1, Some (Ast.ExprOperator.CompareLThan, 1)
+  | Token.RArrow, _, _ -> advance p 1, Some (Ast.ExprOperator.CompareGThan, 1)
+  | Token.Eq, _, _ -> advance p 1, Some (Ast.ExprOperator.AssignEq, 1)
   | _ -> p, None
 
 let get_precedence operator =
@@ -538,7 +520,7 @@ and parse_expr p is_toplevel =
           let p, operator = parse_operator p in
           match operator with
           | None -> p, Some lhs
-          | Some operator ->
+          | Some (operator, length) ->
               let operator_group = Ast.ExprOperator.get_group operator in
               let has_assign_2 = match operator_group with
                                  | Ast.ExprOperator.Assign -> true
@@ -547,14 +529,14 @@ and parse_expr p is_toplevel =
                 let assign_operator_in_non_toplevel_error : Parser_core.error = {
                   kind = AssignOperatorInNonToplevelExpression;
                   pos = saved_p.pos;
-                  len = 1; (* FIXME: Use real operator length *)
+                  len = length;
                 } in
                 add_error p assign_operator_in_non_toplevel_error, None
               else if has_assign && has_assign_2 then
                 let two_assign_operators_error : Parser_core.error = {
                   kind = TwoAssignOperators;
                   pos = saved_p.pos;
-                  len = 1; (* FIXME: Use real operator length *)
+                  len = length;
                 } in
                 add_error p two_assign_operators_error, None
               else

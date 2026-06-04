@@ -139,20 +139,9 @@ let get_parser_error_reason (h: t) (error: Alc.Parser.error) =
       ^ token_kind_to_string (List.nth h.tokens error.pos).kind
       ^ Ansi.to_ansi []
       ^ "'"
-  | InvalidExpression -> "invalid expression"
   | UnexpectedWhitespace _ -> "unexpected whitespace"
-  | NoCharAfterBackslash -> "no symbol after backslash"
-  | UnknownSpecialCharacter -> "unknown special character"
-  | ExpressionIsEmpty -> "expression is empty"
-  | NoOperandAfterPrefixOperatorInExpression -> "no operand after prefix operator in expression"
-  | NonPrefixOperatorAtTheBeginningOfAnExpression ->
-      "non-prefix operator at the beginning of expression"
-  | PrefixOperatorAfterAnOperand -> "prefix operator after an operand"
   | AssignOperatorInNonToplevelExpression -> "assign operator in non-toplevel expression"
-  | TwoNonPrefixOperators -> "two non-prefix operators in a row"
-  | TwoOperands -> "two operands in a row"
   | TwoAssignOperators -> "two assign operators in one expression"
-  | LastNodeIsNotAnOperandInExpression -> "last node in expression is not an operand"
 
 let rec handle_parser_errors h filename (errors: Alc.Parser.error list) =
   match errors with

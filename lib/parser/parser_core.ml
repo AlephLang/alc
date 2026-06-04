@@ -8,19 +8,9 @@ and errorkind =
   | Unexpected of { expected_list: Token.kind list }
   | UnexpectedEof
   | UnexpectedValue of { expected_list: string list }
-  | InvalidExpression
   | UnexpectedWhitespace of { expected: Token.kind }
-  | NoCharAfterBackslash
-  | UnknownSpecialCharacter
-  | ExpressionIsEmpty
-  | NoOperandAfterPrefixOperatorInExpression
-  | NonPrefixOperatorAtTheBeginningOfAnExpression
-  | PrefixOperatorAfterAnOperand
   | AssignOperatorInNonToplevelExpression
-  | TwoNonPrefixOperators
-  | TwoOperands
   | TwoAssignOperators
-  | LastNodeIsNotAnOperandInExpression
 and t = {
   tokens: Token.t list;
   errors: error list;

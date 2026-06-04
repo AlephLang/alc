@@ -188,7 +188,6 @@ let rec to_string ast =
   | StmtElse { body } -> buildtree "StmtElse" [to_string body]
   | TypePlain { name } -> [sprintf "TypePlain { name: \"%s\" }" name]
   | TypePointer { type_ } -> buildtree "TypePointer" [to_string type_]
-  | TypeReference { type_ } -> buildtree "TypeReference" [to_string type_]
   | TypeArray { type_; size_expression } ->
       buildtree "TypeArray" @@ [to_string type_] @ option_to_string size_expression
   | TypeFunctionPointer { argument_list; return_type } ->

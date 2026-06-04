@@ -3,32 +3,21 @@ open Parser_function_arguments
 open Parser_generic_type_list
 open Parser_expr
 
-type ptrOrRef = Ptr | Ref
+let rec gather_pointers p =
+  match (peek p 0).kind with
+  | Token.Asterisk ->
+      let p, n = advance p 1 |> gather_pointers in
+      p, n + 1
+  | _ -> p, 0
 
-let rec gather_pointers_and_references p =
-  let ptr_or_ref_opt =
-    match (peek p 0).kind with
-    | Token.Asterisk -> Some Ptr
-    | Token.Ampersand -> Some Ref
-    | _ -> None in
-  match ptr_or_ref_opt with
-  | None -> p, []
-  | Some x ->
-      let p, rest = advance p 1 |> gather_pointers_and_references in
-      p, rest @ [x]
-
-let rec apply_pointers_and_references raw_pos ptr_ref_list ast =
-  match ptr_ref_list with
-  | [] -> ast
-  | x :: xs ->
-      let kind = match x with
-                 | Ptr -> Ast.TypePointer { type_ = ast }
-                 | Ref -> Ast.TypeReference { type_ = ast } in
-      let ast : Ast.t = {
-        kind = kind;
-        pos = raw_pos + List.length ptr_ref_list - 1;
-      } in
-      apply_pointers_and_references raw_pos xs ast
+let rec apply_pointers start_pos ptr_num ast =
+  if ptr_num = 0 then ast
+  else
+    let ast : Ast.t = {
+      kind = Ast.TypePointer { type_ = ast };
+      pos = start_pos + ptr_num - 1;
+    } in
+    apply_pointers start_pos (ptr_num - 1) ast
 
 let rec parse_type_raw p =
   match (peek p 0).kind with
@@ -253,12 +242,12 @@ and parse_typeof p =
 
 and parse_type p =
   let pos = p.pos in
-  let p, pointers_and_references = gather_pointers_and_references p in
+  let p, ptr_num = gather_pointers p in
   let p, type_raw = parse_type_raw p in
   match type_raw with
   | None -> p, None
   | Some x ->
-      let type_ptr = apply_pointers_and_references pos pointers_and_references x in
+      let type_ptr = apply_pointers pos ptr_num x in
       let p, array_type, success = parse_type_array p type_ptr in
       if not success then p, None
       else

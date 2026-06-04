@@ -22,13 +22,9 @@ extern extern_func_2 :: (x: s32, y: s32 = 4, ...) -> f32;
 extern extern_var_1: s32;
 extern extern_var_2: *s32;
 extern extern_var_3: **s32;
-extern extern_var_4: &s32;
-extern extern_var_5: &&s32;
-extern extern_var_6: &&**s32;
-extern extern_var_7: &*&**s32;
-extern extern_var_8: **s32[16];
-extern extern_var_9: *&s32[16][32];
-extern extern_var_10: &*s32[16][32][];
+extern extern_var_4: **s32[16];
+extern extern_var_5: ***s32[16][32];
+extern extern_var_6: ***s32[16][32][];
 
 // Ast.Qualifier
 local local_var: s32;

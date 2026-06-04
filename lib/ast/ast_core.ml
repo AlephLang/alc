@@ -55,7 +55,6 @@ type kind =
   | StmtElse of { body: t }
   | TypePlain of { name: string }
   | TypePointer of { type_: t }
-  | TypeReference of { type_: t }
   | TypeArray of { type_: t; size_expression: t option }
   | TypeFunctionPointer of { argument_list: t; return_type: t option }
   | TypeTypeOf of { expression: t }

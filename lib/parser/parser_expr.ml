@@ -77,6 +77,9 @@ let parse_operator p =
   | Token.Ampersand, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryAnd
   | Token.Pipe, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryOr
   | Token.Circumflex, _, _ -> advance p 1, Some Ast.ExprOperator.BinaryXor
+  | Token.LArrow, _, _ -> advance p 1, Some Ast.ExprOperator.CompareLThan
+  | Token.RArrow, _, _ -> advance p 1, Some Ast.ExprOperator.CompareGThan
+  | Token.Eq, _, _ -> advance p 1, Some Ast.ExprOperator.AssignEq
   | _ -> p, None
 
 let get_precedence operator =

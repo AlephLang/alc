@@ -14,7 +14,7 @@ end
 type kind =
   | Root of { toplevel_statements: t list }
   | Expr of { lhs: t; operator: ExprOperator.t; rhs: t }
-  | PrefixExpr of { operators: ExprOperator.t list; operand: t }
+  | PrefixExpr of { operator: ExprOperator.t; operand: t }
   | Module of { name: string; subm: t option }
   | Import of { m: t }
   | TypeDef of { name: string

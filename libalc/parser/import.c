@@ -22,7 +22,7 @@ alc_ast_t *parse_import(alc_parser_t *p)
   }
 
   if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_SEMICOLON) {
-    add_error_unexpected_token(p, p->pos, 1, ALC_TOKEN_TYPE_SEMICOLON);
+    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_SEMICOLON);
     return nullptr;
   }
 

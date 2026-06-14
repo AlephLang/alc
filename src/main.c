@@ -57,7 +57,7 @@ s32 main(s32 argc, char **argv)
     for (usize i = 0; i < n_tokens; i++) {
       char buf[1024] = { 0 };
       alc_token_to_string(&tokens[i], buf, 1024);
-      printf("%s\n", buf);
+      printf("(%zu) %s\n", i, buf);
     }
 
     alc_parser_t *parser = alc_parser_create(tokens, n_tokens);

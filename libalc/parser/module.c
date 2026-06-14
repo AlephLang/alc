@@ -7,6 +7,8 @@
 
 alc_ast_t *parse_module(alc_parser_t *p)
 {
+  ALC_ASSUME(p != nullptr);
+
   if ALC_UNLIKELY (p->pos >= p->tokens_num) {
     add_error_unexpected_eof(p, p->pos);
     return nullptr;
@@ -18,7 +20,7 @@ alc_ast_t *parse_module(alc_parser_t *p)
   }
 
   const char *name = p->tokens[p->pos].value;
-  usize name_len = strlen(name);
+  usize name_len = strlen(name) + 1;
 
   usize pos = p->pos++;
 
@@ -54,12 +56,12 @@ alc_ast_t *parse_module(alc_parser_t *p)
       return nullptr;
   }
 
-  alc_ast_t *module_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len + 1);
+  alc_ast_t *module_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
   module_ast->data.MODULE.name = (char *)module_ast + sizeof(alc_ast_t);
   module_ast->data.MODULE.submodule = submodule;
   module_ast->pos = pos;
   module_ast->kind = ALC_AST_KIND_MODULE;
-  memcpy(module_ast->data.MODULE.name, name, name_len + 1);
+  memcpy(module_ast->data.MODULE.name, name, name_len);
 
   return module_ast;
 }

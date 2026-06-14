@@ -121,11 +121,11 @@ static string_t *to_string(const alc_ast_t *ast)
 
   case ALC_AST_KIND_TYPEDEF: {
     string_t **children_vs_v = vector_reserve(string_t *, 3);
-    add_to_strings_opt(children_vs_v, ast->data.TYPE_DEF.generic_placeholder_type_list);
-    vector_push(children_vs_v, to_string(ast->data.TYPE_DEF.aliased_type));
-    add_to_strings_opt(children_vs_v, ast->data.TYPE_DEF.attribute_list);
+    add_to_strings_opt(children_vs_v, ast->data.TYPEDEF.generic_placeholder_type_list);
+    vector_push(children_vs_v, to_string(ast->data.TYPEDEF.aliased_type));
+    add_to_strings_opt(children_vs_v, ast->data.TYPEDEF.attribute_list);
     string_t header = string_create_from("TYPEDEF { name: \"");
-    string_append_cstr(&header, ast->data.TYPE_DEF.name);
+    string_append_cstr(&header, ast->data.TYPEDEF.name);
     string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);
   }

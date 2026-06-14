@@ -151,7 +151,7 @@ typedef struct __alc_ast_t {
       struct __alc_ast_t *generic_placeholder_type_list;
       struct __alc_ast_t *aliased_type;
       struct __alc_ast_t *attribute_list;
-    } TYPE_DEF;
+    } TYPEDEF;
     struct {
       char *name;
       struct __alc_ast_t *argument_list;

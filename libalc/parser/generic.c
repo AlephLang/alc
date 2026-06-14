@@ -96,8 +96,12 @@ alc_ast_t *parse_generic_type_list(alc_parser_t *p)
   p->pos++;
 
   alc_ast_t *generic_type_list = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
-  generic_type_list->data.GENERIC_TYPE_LIST.generic_types = vector_to_array(
-    types_in_type_list, &generic_type_list->data.GENERIC_TYPE_LIST.generic_types_num);
+  generic_type_list->data.GENERIC_TYPE_LIST.generic_types_num = 0;
+  generic_type_list->data.GENERIC_TYPE_LIST.generic_types =
+    vector_get_length(types_in_type_list) > 0 ?
+      vector_to_array(types_in_type_list,
+                      &generic_type_list->data.GENERIC_TYPE_LIST.generic_types_num) :
+      nullptr;
   generic_type_list->pos = pos;
   generic_type_list->kind = ALC_AST_KIND_GENERIC_TYPE_LIST;
   vector_destroy(types_in_type_list);

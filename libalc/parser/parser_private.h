@@ -24,6 +24,8 @@ alc_ast_t *parse_type(alc_parser_t *p);
 alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p);
 alc_ast_t *parse_generic_type_list(alc_parser_t *p);
 alc_ast_t *parse_function_arguments(alc_parser_t *p);
+alc_ast_t *parse_decldef(alc_parser_t *p);
+alc_ast_t *parse_decldef_var(alc_parser_t *p, alc_ast_t *attribute_list);
 
 static inline void add_error(alc_parser_t *p, alc_parser_error_t error)
 {

@@ -15,7 +15,7 @@ alc_ast_t *parse_module(alc_parser_t *p)
   }
 
   if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos, 1, ALC_TOKEN_TYPE_ID);
+    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
     return nullptr;
   }
 
@@ -29,27 +29,29 @@ alc_ast_t *parse_module(alc_parser_t *p)
   alc_token_t *peeked = peek(p, 0);
   if (peeked != nullptr && peeked->type == ALC_TOKEN_TYPE_COLON) {
     if ALC_UNLIKELY (peeked->has_whitespace_after) {
-      add_error_unexpected_whitespace(p, p->pos, ALC_TOKEN_TYPE_COLON);
+      add_error_unexpected_whitespace(p, p->pos++, ALC_TOKEN_TYPE_COLON);
       return nullptr;
     }
 
-    peeked = peek(p, 1);
+    p->pos++;
+
+    peeked = peek(p, 0);
     if ALC_UNLIKELY (peeked == nullptr) {
       add_error_unexpected_eof(p, p->pos + 1);
       return nullptr;
     }
 
     if ALC_UNLIKELY (peeked->type != ALC_TOKEN_TYPE_COLON) {
-      add_error_unexpected_token(p, p->pos + 1, 1, ALC_TOKEN_TYPE_COLON);
+      add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_COLON);
       return nullptr;
     }
 
     if ALC_UNLIKELY (peeked->has_whitespace_after) {
-      add_error_unexpected_whitespace(p, p->pos + 1, ALC_TOKEN_TYPE_ID);
+      add_error_unexpected_whitespace(p, p->pos++, ALC_TOKEN_TYPE_ID);
       return nullptr;
     }
 
-    p->pos += 2;
+    p->pos++;
     submodule = parse_module(p);
 
     if ALC_UNLIKELY (submodule == nullptr)

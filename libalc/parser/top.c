@@ -8,6 +8,8 @@
 
 alc_ast_t *parse_top(alc_parser_t *p)
 {
+  ALC_ASSUME(p != nullptr);
+
   if ALC_UNLIKELY (p->pos >= p->tokens_num) {
     add_error_unexpected_eof(p, p->pos);
     return nullptr;
@@ -24,6 +26,8 @@ alc_ast_t *parse_top(alc_parser_t *p)
   case ALC_TOKEN_TYPE_ID: {
     if (strcmp(p->tokens[p->pos].value, "import") == 0)
       return parse_import(p);
+    else if (strcmp(p->tokens[p->pos].value, "using") == 0)
+      return parse_typedef(p);
 
     ALC_TODO("Parse decldef");
   }
@@ -33,7 +37,7 @@ alc_ast_t *parse_top(alc_parser_t *p)
   }
 
   default:
-    add_error_unexpected_token(p, p->pos, 0);
+    add_error_unexpected_token(p, p->pos++, 0);
     return nullptr;
   }
 }

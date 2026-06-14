@@ -18,6 +18,12 @@ alc_token_t *peek(alc_parser_t *p, s32 adv);
 alc_ast_t *parse_top(alc_parser_t *p);
 alc_ast_t *parse_import(alc_parser_t *p);
 alc_ast_t *parse_module(alc_parser_t *p);
+alc_ast_t *parse_typedef(alc_parser_t *p);
+alc_ast_t *parse_type_raw(alc_parser_t *p);
+alc_ast_t *parse_type(alc_parser_t *p);
+alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p);
+alc_ast_t *parse_generic_type_list(alc_parser_t *p);
+alc_ast_t *parse_function_arguments(alc_parser_t *p);
 
 static inline void add_error(alc_parser_t *p, alc_parser_error_t error)
 {

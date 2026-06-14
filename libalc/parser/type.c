@@ -275,8 +275,6 @@ static alc_ast_t *parse_generic_type_or_namespace(alc_parser_t *p)
     if ALC_UNLIKELY (subobject == nullptr)
       return nullptr;
 
-    printf("PARSED AS GENERIC NAMESPACE\n");
-
     alc_ast_t *generic_namespace_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
     generic_namespace_ast->data.GENERIC_NAMESPACE.name =
@@ -290,7 +288,6 @@ static alc_ast_t *parse_generic_type_or_namespace(alc_parser_t *p)
   }
 
 __generic_type_ast:
-  printf("PARSED AS GENERIC TYPE\n");
   generic_type_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
   generic_type_ast->data.GENERIC_TYPE.name = (char *)generic_type_ast + sizeof(alc_ast_t);
   generic_type_ast->data.GENERIC_TYPE.generic_type_list = generic_type_list;

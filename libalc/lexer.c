@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define CHAR_CASES             \
-  CHAR_CASE_X('.', SLASH)      \
+  CHAR_CASE_X('.', PERIOD)     \
   CHAR_CASE_X(',', COMMA)      \
   CHAR_CASE_X('!', EXCLMARK)   \
   CHAR_CASE_X('*', ASTERISK)   \

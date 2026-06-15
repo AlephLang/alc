@@ -40,6 +40,9 @@ alc_ast_t *parse_typedef(alc_parser_t *p)
   alc_ast_t *generic_placeholder_type_list = nullptr;
   if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LARROW) {
     generic_placeholder_type_list = parse_generic_placeholder_type_list(p);
+    if ALC_UNLIKELY (generic_placeholder_type_list == nullptr)
+      return nullptr;
+
     if ALC_UNLIKELY (p->pos >= p->tokens_num) {
       add_error_unexpected_eof(p, p->pos);
       return nullptr;

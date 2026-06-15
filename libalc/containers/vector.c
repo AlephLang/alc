@@ -91,6 +91,12 @@ void *__vector_to_array_impl(const void *vec, usize *out_n)
   ALC_ASSUME(out_n != nullptr);
 
   __header_t *h = get_header((void *)vec);
+
+  if ALC_UNLIKELY (h->length == 0) {
+    *out_n = 0;
+    return nullptr;
+  }
+
   void *out_arr = alloc_arena_allocate(&ctx()->arena, h->stride * h->length);
   memcpy(out_arr, vec, h->stride * h->length);
   *out_n = h->length;

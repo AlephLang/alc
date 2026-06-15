@@ -1,5 +1,7 @@
 libalc_src += [
+  'libalc/parser/attributes.c',
   'libalc/parser/decldef.c',
+  'libalc/parser/expr.c',
   'libalc/parser/function.c',
   'libalc/parser/generic.c',
   'libalc/parser/import.c',

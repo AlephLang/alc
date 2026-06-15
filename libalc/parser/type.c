@@ -106,7 +106,14 @@ alc_ast_t *parse_type(alc_parser_t *p)
 
     alc_ast_t *size_expression = nullptr;
     if (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
-      ALC_TODO("Parse array with size expression");
+      size_expression = parse_expr(p, false);
+      if ALC_UNLIKELY (size_expression == nullptr)
+        return nullptr;
+
+      if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+        add_error_unexpected_eof(p, p->pos);
+        return nullptr;
+      }
     }
 
     if (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {

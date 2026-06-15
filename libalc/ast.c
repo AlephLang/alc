@@ -264,7 +264,9 @@ static string_t *to_string(const alc_ast_t *ast)
                      ast->data.ATTRIBUTE.arguments_num);
     string_t header = string_create_from("ATTRIBUTE { name: \"");
     string_append_cstr(&header, ast->data.ATTRIBUTE.name);
-    string_append_cstr(&header, "\" }");
+    string_append_cstr(&header, "\", has_arguments: ");
+    string_append_cstr(&header, ast->data.ATTRIBUTE.has_arguments ? "true" : "false");
+    string_append_cstr(&header, " }");
     return build_tree(header, children_vs_v);
   }
 

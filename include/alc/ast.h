@@ -215,6 +215,9 @@ typedef struct __alc_ast_t {
       char *name;
       struct __alc_ast_t **arguments;
       usize arguments_num;
+      // NOTE: This is used to indicate that attribute has parenthesis, in which
+      // arguments should be placed (not that it really has arguments).
+      b8 has_arguments;
     } ATTRIBUTE;
     struct {
       struct __alc_ast_t **attributes;

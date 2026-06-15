@@ -77,14 +77,10 @@ alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p)
 
   alc_ast_t *generic_placeholder_type_list_ast =
     alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
-  generic_placeholder_type_list_ast->data.GENERIC_PLACEHOLDER_TYPE_LIST
-    .generic_placeholder_types_num = 0;
   generic_placeholder_type_list_ast->data.GENERIC_PLACEHOLDER_TYPE_LIST.generic_placeholder_types =
-    vector_get_length(placeholder_types) > 0 ?
-      vector_to_array(placeholder_types,
-                      &generic_placeholder_type_list_ast->data.GENERIC_PLACEHOLDER_TYPE_LIST
-                         .generic_placeholder_types_num) :
-      nullptr;
+    vector_to_array(placeholder_types,
+                    &generic_placeholder_type_list_ast->data.GENERIC_PLACEHOLDER_TYPE_LIST
+                       .generic_placeholder_types_num);
   generic_placeholder_type_list_ast->pos = pos;
   generic_placeholder_type_list_ast->kind = ALC_AST_KIND_GENERIC_PLACEHOLDER_TYPE_LIST;
   vector_destroy(placeholder_types);
@@ -174,12 +170,8 @@ alc_ast_t *parse_generic_type_list(alc_parser_t *p)
   p->pos++;
 
   alc_ast_t *generic_type_list = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
-  generic_type_list->data.GENERIC_TYPE_LIST.generic_types_num = 0;
-  generic_type_list->data.GENERIC_TYPE_LIST.generic_types =
-    vector_get_length(types_in_type_list) > 0 ?
-      vector_to_array(types_in_type_list,
-                      &generic_type_list->data.GENERIC_TYPE_LIST.generic_types_num) :
-      nullptr;
+  generic_type_list->data.GENERIC_TYPE_LIST.generic_types = vector_to_array(
+    types_in_type_list, &generic_type_list->data.GENERIC_TYPE_LIST.generic_types_num);
   generic_type_list->pos = pos;
   generic_type_list->kind = ALC_AST_KIND_GENERIC_TYPE_LIST;
   vector_destroy(types_in_type_list);

@@ -20,7 +20,14 @@ alc_ast_t *parse_typedef(alc_parser_t *p)
 
   alc_ast_t *attribute_list = nullptr;
   if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
-    ALC_TODO("Parse attribute list in typedef");
+    attribute_list = parse_attribute_list(p);
+    if ALC_UNLIKELY (attribute_list == nullptr)
+      return nullptr;
+
+    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+      add_error_unexpected_eof(p, p->pos);
+      return nullptr;
+    }
   }
 
   if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {

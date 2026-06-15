@@ -61,11 +61,8 @@ alc_ast_t *parse_function_arguments(alc_parser_t *p)
   p->pos++;
 
   alc_ast_t *argument_list = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
-  argument_list->data.ARGUMENT_LIST.arguments_num = 0;
   argument_list->data.ARGUMENT_LIST.arguments =
-    vector_get_length(args) > 0 ?
-      vector_to_array(args, &argument_list->data.ARGUMENT_LIST.arguments_num) :
-      nullptr;
+    vector_to_array(args, &argument_list->data.ARGUMENT_LIST.arguments_num);
   argument_list->pos = pos;
   argument_list->kind = ALC_AST_KIND_ARGUMENT_LIST;
   vector_destroy(args);

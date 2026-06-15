@@ -7,6 +7,8 @@
 #include "global.h"
 #include "parser/parser_private.h"
 
+static alc_ast_t *parse_variadic_args(alc_parser_t *p);
+
 alc_ast_t *parse_function_arguments(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
@@ -35,7 +37,9 @@ alc_ast_t *parse_function_arguments(alc_parser_t *p)
       }
     }
 
-    alc_ast_t *arg = parse_decldef_var(p, nullptr);
+    alc_ast_t *arg = p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD ?
+                       parse_variadic_args(p) :
+                       parse_decldef_var(p, nullptr);
     if ALC_UNLIKELY (arg == nullptr) {
       vector_destroy(args);
       return nullptr;
@@ -67,4 +71,52 @@ alc_ast_t *parse_function_arguments(alc_parser_t *p)
   argument_list->kind = ALC_AST_KIND_ARGUMENT_LIST;
   vector_destroy(args);
   return argument_list;
+}
+
+static alc_ast_t *parse_variadic_args(alc_parser_t *p)
+{
+  ALC_ASSUME(p != nullptr);
+
+  usize pos = p->pos;
+
+  if ALC_UNLIKELY (p->tokens[p->pos].has_whitespace_after) {
+    add_error_unexpected_whitespace(p, p->pos++, ALC_TOKEN_TYPE_PERIOD);
+    return nullptr;
+  }
+
+  p->pos++;
+
+  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+    add_error_unexpected_eof(p, p->pos);
+    return nullptr;
+  }
+
+  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_PERIOD) {
+    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_PERIOD);
+    return nullptr;
+  }
+
+  if ALC_UNLIKELY (p->tokens[p->pos].has_whitespace_after) {
+    add_error_unexpected_whitespace(p, p->pos++, ALC_TOKEN_TYPE_PERIOD);
+    return nullptr;
+  }
+
+  p->pos++;
+
+  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+    add_error_unexpected_eof(p, p->pos);
+    return nullptr;
+  }
+
+  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_PERIOD) {
+    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_PERIOD);
+    return nullptr;
+  }
+
+  p->pos++;
+
+  alc_ast_t *variadic_arg_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  variadic_arg_ast->pos = pos;
+  variadic_arg_ast->kind = ALC_AST_KIND_VARIADIC;
+  return variadic_arg_ast;
 }

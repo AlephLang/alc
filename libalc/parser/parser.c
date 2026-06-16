@@ -64,7 +64,7 @@ alc_parser_error_t *alc_parser_get_errors(const alc_parser_t *parser, usize *out
   return parser->errors;
 }
 
-alc_token_t *peek(alc_parser_t *p, s32 adv)
+alc_token_t *peek(const alc_parser_t *p, s32 adv)
 {
   ALC_ASSUME(p != nullptr);
   return p->pos + adv < p->tokens_num ? &p->tokens[p->pos + adv] : nullptr;

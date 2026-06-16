@@ -13,7 +13,7 @@ typedef struct __alc_parser_t {
   usize pos;
 } alc_parser_t;
 
-alc_token_t *peek(alc_parser_t *p, s32 adv);
+alc_token_t *peek(const alc_parser_t *p, s32 adv);
 
 alc_ast_t *parse_top(alc_parser_t *p);
 alc_ast_t *parse_import(alc_parser_t *p);

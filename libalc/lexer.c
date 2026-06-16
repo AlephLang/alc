@@ -425,9 +425,9 @@ static inline char peek(const alc_lexer_t *l, usize adv)
 
 static char *memcpy_cond(char *dst, const char *src, usize n, b8 (*cond)(char c))
 {
-  for (; n; n--) {
-    if (!cond(*src))
-      *dst++ = *src++;
+  for (; n; n--, src++) {
+    if (cond(*src))
+      *dst++ = *src;
   }
   return dst;
 }

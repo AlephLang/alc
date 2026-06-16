@@ -71,44 +71,41 @@ typedef uintptr_t uptr;
 #define __alc_assume(_expr)
 #endif
 
-#define ALC_TODO(_msg)                                                    \
-  {                                                                       \
-    fprintf(stderr, "(%s:%i): Not implemented yet: " _msg "\n", __FILE__, \
-            __LINE__);                                                    \
-    __alc_trap();                                                         \
+#define ALC_TODO(_msg)                                                               \
+  {                                                                                  \
+    fprintf(stderr, "(%s:%i): Not implemented yet: " _msg "\n", __FILE__, __LINE__); \
+    __alc_trap();                                                                    \
   }
 
 #ifdef _DEBUG
-#define ALC_NOREACH()                                                         \
-  {                                                                           \
-    fprintf(stderr, "(%s:%i): Reached point that should never be reached.\n", \
-            __FILE__, __LINE__);                                              \
-    __alc_trap();                                                             \
+#define ALC_NOREACH()                                                                              \
+  {                                                                                                \
+    fprintf(stderr, "(%s:%i): Reached point that should never be reached.\n", __FILE__, __LINE__); \
+    __alc_trap();                                                                                  \
   }
 #else
 #define ALC_NOREACH() __alc_noreach()
 #endif
 
 #ifdef _DEBUG
-#define ALC_ASSUME(_expr)                                                 \
-  {                                                                       \
-    if ALC_UNLIKELY (!(_expr)) {                                          \
-      fprintf(stderr, "(%s:%i): Assumption \"" #_expr "\" is not met.\n", \
-              __FILE__, __LINE__);                                        \
-      __alc_trap();                                                       \
-    }                                                                     \
+#define ALC_ASSUME(_expr)                                                                      \
+  {                                                                                            \
+    if ALC_UNLIKELY (!(_expr)) {                                                               \
+      fprintf(stderr, "(%s:%i): Assumption \"" #_expr "\" is not met.\n", __FILE__, __LINE__); \
+      __alc_trap();                                                                            \
+    }                                                                                          \
+    __alc_assume((_expr));                                                                     \
   }
 #else
 #define ALC_ASSUME(_expr) __alc_assume((_expr))
 #endif
 
-#define ALC_ASSERT(_expr)                                                      \
-  {                                                                            \
-    if ALC_UNLIKELY (!(_expr)) {                                               \
-      fprintf(stderr, "(%s:%i): Assertion \"" #_expr "\" failed.\n", __FILE__, \
-              __LINE__);                                                       \
-      __alc_trap();                                                            \
-    }                                                                          \
+#define ALC_ASSERT(_expr)                                                                 \
+  {                                                                                       \
+    if ALC_UNLIKELY (!(_expr)) {                                                          \
+      fprintf(stderr, "(%s:%i): Assertion \"" #_expr "\" failed.\n", __FILE__, __LINE__); \
+      __alc_trap();                                                                       \
+    }                                                                                     \
   }
 
 #ifdef _DEBUG

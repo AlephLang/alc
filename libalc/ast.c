@@ -474,10 +474,10 @@ static string_t *to_string(const alc_ast_t *ast)
     string_t *out_v = vector_reserve(string_t, 1);
     char buf[1024] = { 0 };
     if (ast->data.EXPR_OPERAND_NUMBER.typespec == nullptr)
-      snprintf(buf, 1024, "EXPR_OPERAND_NUMBER { value: %" PRId64 ", typespec: - }",
+      snprintf(buf, 1024, "EXPR_OPERAND_NUMBER { value: %" PRIu64 ", typespec: - }",
                ast->data.EXPR_OPERAND_NUMBER.value);
     else
-      snprintf(buf, 1024, "EXPR_OPERAND_NUMBER { value: %" PRId64 ", typespec: \"%s\" }",
+      snprintf(buf, 1024, "EXPR_OPERAND_NUMBER { value: %" PRIu64 ", typespec: \"%s\" }",
                ast->data.EXPR_OPERAND_NUMBER.value, ast->data.EXPR_OPERAND_NUMBER.typespec);
     vector_push(out_v, string_create_from(buf));
     return out_v;

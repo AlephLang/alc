@@ -314,7 +314,7 @@ typedef struct __alc_ast_t {
       char *name;
     } EXPR_OPERAND_IDENTIFIER;
     struct {
-      s64 value;
+      u64 value;
       char *typespec;
     } EXPR_OPERAND_NUMBER;
     struct {

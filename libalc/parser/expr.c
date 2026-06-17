@@ -21,6 +21,7 @@ static inline b8 is_generic_call(const alc_parser_t *p)
 }
 static b8 is_call(const alc_parser_t *p);
 static b8 parse_call_arguments(alc_parser_t *p, alc_ast_t ***out_arguments, usize *out_n);
+static alc_ast_t *parse_explicit_call_argument(alc_parser_t *p);
 static alc_ast_t *parse_operands(alc_parser_t *p);
 static alc_ast_t *parse_namespaces_and_identifier_operands(alc_parser_t *p);
 static alc_ast_t *parse_only_operands(alc_parser_t *p);
@@ -390,8 +391,26 @@ static b8 parse_call_arguments(alc_parser_t *p, alc_ast_t ***out_arguments, usiz
       }
     }
 
-    alc_ast_t *argument = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
-                                                                             parse_expr(p, false);
+    alc_ast_t *argument;
+    switch (p->tokens[p->pos].type) {
+    case ALC_TOKEN_TYPE_LCBRACK: {
+      argument = parse_initlist(p);
+    } break;
+
+    case ALC_TOKEN_TYPE_ID: {
+      if (p->pos + 1 < p->tokens_num && p->tokens[p->pos + 1].type == ALC_TOKEN_TYPE_EQ) {
+        argument = parse_explicit_call_argument(p);
+        break;
+      }
+
+      argument = parse_expr(p, false);
+    } break;
+
+    default: {
+      argument = parse_expr(p, false);
+    } break;
+    }
+
     if ALC_UNLIKELY (argument == nullptr) {
       vector_destroy(arguments);
       return false;
@@ -419,6 +438,39 @@ static b8 parse_call_arguments(alc_parser_t *p, alc_ast_t ***out_arguments, usiz
   *out_arguments = vector_to_array(arguments, out_n);
   vector_destroy(arguments);
   return true;
+}
+
+static alc_ast_t *parse_explicit_call_argument(alc_parser_t *p)
+{
+  ALC_ASSUME(p != nullptr);
+
+  usize pos = p->pos;
+
+  const char *name = p->tokens[p->pos].value;
+  usize name_len = strlen(name) + 1;
+
+  p->pos += 2;
+
+  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+    add_error_unexpected_eof(p, p->pos);
+    return nullptr;
+  }
+
+  alc_ast_t *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
+                                                                       parse_expr(p, false);
+  if ALC_UNLIKELY (expr == nullptr)
+    return nullptr;
+
+  alc_ast_t *explicit_call_argument_ast =
+    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
+  explicit_call_argument_ast->data.EXPLICIT_CALL_ARGUMENT.name =
+    (char *)explicit_call_argument_ast + sizeof(alc_ast_t);
+  explicit_call_argument_ast->data.EXPLICIT_CALL_ARGUMENT.expression = expr;
+  explicit_call_argument_ast->pos = pos;
+  explicit_call_argument_ast->kind = ALC_AST_KIND_EXPLICIT_CALL_ARGUMENT;
+  memcpy(explicit_call_argument_ast->data.EXPLICIT_CALL_ARGUMENT.name, name,
+         sizeof(char) * name_len);
+  return explicit_call_argument_ast;
 }
 
 static alc_ast_t *parse_operands(alc_parser_t *p)

@@ -390,10 +390,8 @@ static b8 parse_call_arguments(alc_parser_t *p, alc_ast_t ***out_arguments, usiz
       }
     }
 
-    // TODO: Parse initlist
-    // alc_ast_t *argument = p->tokens[p->pos].type==ALC_TOKEN_TYPE_LCBRACK?
-    //   parse_initlist(p):parse_expr(p, false);
-    alc_ast_t *argument = parse_expr(p, false);
+    alc_ast_t *argument = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
+                                                                             parse_expr(p, false);
     if ALC_UNLIKELY (argument == nullptr) {
       vector_destroy(arguments);
       return false;
@@ -1016,6 +1014,8 @@ static alc_ast_t *parse_prefix_expr(alc_parser_t *p)
   alc_ast_t *prefix_expr_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
   prefix_expr_ast->data.PREFIX_EXPR.operand = operand;
   prefix_expr_ast->data.PREFIX_EXPR.operator = operator_ast;
+  prefix_expr_ast->pos = operand->pos;
+  prefix_expr_ast->kind = ALC_AST_KIND_PREFIX_EXPR;
 
   return prefix_expr_ast;
 }

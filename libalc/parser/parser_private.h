@@ -29,6 +29,7 @@ alc_ast_t *parse_decldef_var(alc_parser_t *p, alc_ast_t *attribute_list);
 alc_ast_t *parse_attribute_list(alc_parser_t *p);
 alc_ast_t *parse_expr(alc_parser_t *p, b8 is_toplevel);
 alc_ast_t *parse_stmt_expr(alc_parser_t *p);
+alc_ast_t *parse_initlist(alc_parser_t *p);
 
 static inline void add_error(alc_parser_t *p, alc_parser_error_t error)
 {

@@ -804,9 +804,11 @@ static string_t *to_string(const alc_ast_t *ast)
   }
 
   case ALC_AST_KIND_INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT: {
-    string_t **children_vs_v = vector_reserve(string_t *, 2);
-    vector_push(children_vs_v,
-                to_string(ast->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expression));
+    string_t **children_vs_v = vector_reserve(
+      string_t *, ast->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions_num + 1);
+    array_to_strings(children_vs_v,
+                     ast->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions,
+                     ast->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions_num);
     vector_push(children_vs_v,
                 to_string(ast->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.expression));
     return build_tree(string_create_from("INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT"), children_vs_v);

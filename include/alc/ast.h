@@ -370,7 +370,8 @@ typedef struct __alc_ast_t {
       struct __alc_ast_t *expression;
     } INITLIST_ENTRY_EXPLICIT;
     struct {
-      struct __alc_ast_t *index_expression;
+      struct __alc_ast_t **index_expressions;
+      usize index_expressions_num;
       struct __alc_ast_t *expression;
     } INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT;
     struct {

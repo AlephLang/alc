@@ -23,6 +23,7 @@
   ALC_AST_KIND_X(FUNC)                                  \
   ALC_AST_KIND_X(ARGUMENT_LIST)                         \
   ALC_AST_KIND_X(NAMESPACE)                             \
+  ALC_AST_KIND_X(SCOPE)                                 \
   ALC_AST_KIND_X(CASE_CHAIN)                            \
   ALC_AST_KIND_X(CASE)                                  \
   ALC_AST_KIND_X(DEFAULT)                               \
@@ -124,6 +125,11 @@ typedef enum {
   ALC_AST_FUNCTION_KIND_EXPORTED,
 } alc_ast_function_kind_t;
 
+typedef enum {
+  ALC_AST_STRUCT_KIND_DEFAULT,
+  ALC_AST_STRUCT_KIND_PARTIAL,
+} alc_ast_struct_kind_t;
+
 typedef struct __alc_ast_t {
   union {
     struct {
@@ -170,6 +176,7 @@ typedef struct __alc_ast_t {
       struct __alc_ast_t **children;
       usize children_num;
       struct __alc_ast_t *attribute_list;
+      alc_ast_struct_kind_t kind;
     } STRUCT;
     struct {
       char *name;
@@ -203,6 +210,9 @@ typedef struct __alc_ast_t {
       char *name;
       struct __alc_ast_t *subobject;
     } NAMESPACE;
+    struct {
+      char *type;
+    } SCOPE;
     struct {
       struct __alc_ast_t **cases;
       usize cases_num;
@@ -380,6 +390,7 @@ typedef struct __alc_ast_t {
       struct __alc_ast_t **children;
       usize children_num;
       struct __alc_ast_t *attribute_list;
+      alc_ast_struct_kind_t kind;
     } GENERIC_STRUCT;
     struct {
       char *name;

@@ -24,6 +24,18 @@ static const char *func_kind_to_string(alc_ast_function_kind_t kind)
   ALC_NOREACH();
 }
 
+static const char *struct_kind_to_string(alc_ast_struct_kind_t kind)
+{
+  switch (kind) {
+  case ALC_AST_STRUCT_KIND_DEFAULT:
+    return "DEFAULT";
+  case ALC_AST_STRUCT_KIND_PARTIAL:
+    return "PARTIAL";
+  }
+
+  ALC_NOREACH();
+}
+
 static string_t *build_tree(string_t header, string_t **children_vs_v)
 {
   usize children_vs_v_n = vector_get_length(children_vs_v);
@@ -176,7 +188,9 @@ static string_t *to_string(const alc_ast_t *ast)
     array_to_strings(children_vs_v, ast->data.STRUCT.children, ast->data.STRUCT.children_num);
     string_t header = string_create_from("STRUCT { name: \"");
     string_append_cstr(&header, ast->data.STRUCT.name);
-    string_append_cstr(&header, "\" }");
+    string_append_cstr(&header, "\", kind: ");
+    string_append_cstr(&header, struct_kind_to_string(ast->data.STRUCT.kind));
+    string_append_cstr(&header, " }");
     return build_tree(header, children_vs_v);
   }
 
@@ -237,6 +251,15 @@ static string_t *to_string(const alc_ast_t *ast)
     string_append_cstr(&header, ast->data.NAMESPACE.name);
     string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);
+  }
+
+  case ALC_AST_KIND_SCOPE: {
+    string_t *out_v = vector_reserve(string_t, 1);
+    string_t header = string_create_from("SCOPE { type: \"");
+    string_append_cstr(&header, ast->data.SCOPE.type);
+    string_append_cstr(&header, "\" }");
+    vector_push(out_v, header);
+    return out_v;
   }
 
   case ALC_AST_KIND_CASE_CHAIN: {
@@ -823,7 +846,9 @@ static string_t *to_string(const alc_ast_t *ast)
                      ast->data.GENERIC_STRUCT.children_num);
     string_t header = string_create_from("GENERIC_STRUCT { name: \"");
     string_append_cstr(&header, ast->data.GENERIC_STRUCT.name);
-    string_append_cstr(&header, "\" }");
+    string_append_cstr(&header, "\", kind: ");
+    string_append_cstr(&header, struct_kind_to_string(ast->data.GENERIC_STRUCT.kind));
+    string_append_cstr(&header, " }");
     return build_tree(string_create_from("INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT"), children_vs_v);
   }
 

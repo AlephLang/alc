@@ -29,11 +29,20 @@ alc_ast_t *parse_top(alc_parser_t *p)
     else if (strcmp(p->tokens[p->pos].value, "using") == 0)
       return parse_typedef(p);
 
-    ALC_TODO("Parse decldef");
+    return parse_decldef(p, nullptr);
   }
 
   case ALC_TOKEN_TYPE_LBRACK: {
-    ALC_TODO("Parse decldef with attributes");
+    alc_ast_t *attribute_list = parse_attribute_list(p);
+    if ALC_UNLIKELY (attribute_list == nullptr)
+      return nullptr;
+
+    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+      add_error_unexpected_eof(p, p->pos);
+      return nullptr;
+    }
+
+    return parse_decldef(p, attribute_list);
   }
 
   default:

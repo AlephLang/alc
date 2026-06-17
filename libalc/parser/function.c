@@ -9,6 +9,23 @@
 
 static alc_ast_t *parse_variadic_args(alc_parser_t *p);
 
+alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_function_kind_t kind)
+{
+  ALC_UNUSED_DEBUG(p);
+  ALC_UNUSED_DEBUG(attribute_list);
+  ALC_UNUSED_DEBUG(kind);
+  ALC_TODO("Parse function");
+}
+
+alc_ast_t *parse_generic_function(alc_parser_t *p, alc_ast_t *attribute_list,
+                                  alc_ast_function_kind_t kind)
+{
+  ALC_UNUSED_DEBUG(p);
+  ALC_UNUSED_DEBUG(attribute_list);
+  ALC_UNUSED_DEBUG(kind);
+  ALC_TODO("Parse generic function");
+}
+
 alc_ast_t *parse_function_arguments(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);

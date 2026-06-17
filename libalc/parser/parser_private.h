@@ -1,6 +1,7 @@
 #ifndef __ALC_PARSER_PRIVATE_H__
 #define __ALC_PARSER_PRIVATE_H__
 
+#include "alc/ast.h"
 #include "alc/parser.h"
 #include "containers/vector.h"
 
@@ -21,10 +22,13 @@ alc_ast_t *parse_module(alc_parser_t *p);
 alc_ast_t *parse_typedef(alc_parser_t *p);
 alc_ast_t *parse_type_raw(alc_parser_t *p);
 alc_ast_t *parse_type(alc_parser_t *p);
+alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_function_kind_t kind);
+alc_ast_t *parse_function_arguments(alc_parser_t *p);
 alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p);
 alc_ast_t *parse_generic_type_list(alc_parser_t *p);
-alc_ast_t *parse_function_arguments(alc_parser_t *p);
-alc_ast_t *parse_decldef(alc_parser_t *p);
+alc_ast_t *parse_generic_function(alc_parser_t *p, alc_ast_t *attribute_list,
+                                  alc_ast_function_kind_t kind);
+alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list);
 alc_ast_t *parse_decldef_var(alc_parser_t *p, alc_ast_t *attribute_list);
 alc_ast_t *parse_attribute_list(alc_parser_t *p);
 alc_ast_t *parse_expr(alc_parser_t *p, b8 is_toplevel);

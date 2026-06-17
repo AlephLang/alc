@@ -300,6 +300,15 @@ static string_t *to_string(const alc_ast_t *ast)
     return build_tree(string_create_from("ATTRIBUTE_LIST"), children_vs_v);
   }
 
+  case ALC_AST_KIND_EXPLICIT_CALL_ARGUMENT: {
+    string_t **children_vs_v = vector_reserve(string_t *, 1);
+    vector_push(children_vs_v, to_string(ast->data.EXPLICIT_CALL_ARGUMENT.expression));
+    string_t header = string_create_from("EXPLICIT_CALL_ARGUMENT { name: \"");
+    string_append_cstr(&header, ast->data.EXPLICIT_CALL_ARGUMENT.name);
+    string_append_cstr(&header, "\" }");
+    return build_tree(header, children_vs_v);
+  }
+
   case ALC_AST_KIND_STMT_BLOCK: {
     string_t **children_vs_v = safe_reserve(string_t *, ast->data.STMT_BLOCK.statements_num);
     array_to_strings(children_vs_v, ast->data.STMT_BLOCK.statements,

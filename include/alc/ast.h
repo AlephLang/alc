@@ -29,6 +29,7 @@
   ALC_AST_KIND_X(DEFAULT)                               \
   ALC_AST_KIND_X(ATTRIBUTE)                             \
   ALC_AST_KIND_X(ATTRIBUTE_LIST)                        \
+  ALC_AST_KIND_X(EXPLICIT_CALL_ARGUMENT)                \
   ALC_AST_KIND_X(STMT_BLOCK)                            \
   ALC_AST_KIND_X(STMT_RETURN)                           \
   ALC_AST_KIND_X(STMT_GOTO)                             \
@@ -233,6 +234,10 @@ typedef struct __alc_ast_t {
       struct __alc_ast_t **attributes;
       usize attributes_num;
     } ATTRIBUTE_LIST;
+    struct {
+      char *name;
+      struct __alc_ast_t *expression;
+    } EXPLICIT_CALL_ARGUMENT;
     struct {
       struct __alc_ast_t **statements;
       usize statements_num;

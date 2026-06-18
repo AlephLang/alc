@@ -858,7 +858,7 @@ static string_t *to_string(const alc_ast_t *ast)
     string_append_cstr(&header, "\", kind: ");
     string_append_cstr(&header, struct_kind_to_string(ast->data.GENERIC_STRUCT.kind));
     string_append_cstr(&header, " }");
-    return build_tree(string_create_from("INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT"), children_vs_v);
+    return build_tree(header, children_vs_v);
   }
 
   case ALC_AST_KIND_GENERIC_FUNC: {

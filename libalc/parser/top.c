@@ -28,6 +28,16 @@ alc_ast_t *parse_top(alc_parser_t *p)
       return parse_import(p);
     else if (strcmp(p->tokens[p->pos].value, "using") == 0)
       return parse_typedef(p);
+    else if (strcmp(p->tokens[p->pos].value, "struct") == 0)
+      return parse_struct(p, ALC_AST_STRUCT_KIND_DEFAULT);
+    else if (strcmp(p->tokens[p->pos].value, "partial") == 0)
+      return parse_partial_struct(p);
+    else if (strcmp(p->tokens[p->pos].value, "enum") == 0)
+      return parse_enum(p);
+    else if (strcmp(p->tokens[p->pos].value, "union") == 0)
+      return parse_union(p);
+    else if (strcmp(p->tokens[p->pos].value, "scope") == 0)
+      return parse_scope(p);
 
     return parse_decldef(p, nullptr);
   }

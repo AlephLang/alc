@@ -35,27 +35,55 @@ void *alloc_arena_allocate_aligned(alloc_arena_t *alloc, usize size, usize align
   ALC_ASSUME(alloc != nullptr);
   ALC_ASSUME(size > 0);
   ALC_ASSUME(alignment > 0);
+  ALC_ASSUME(size + alignment < (4llu << 30llu));
 
-  usize required_size = size + alignment;
-  alloc_arena_block_t *suitable_block = nullptr;
+// NOTE: To debug arena allocations, uncomment this define:
+// #define _DEBUG_ARENA_ALLOC
+#ifdef _DEBUG_ARENA_ALLOC
+  uptr base = (uptr)-1;
+#endif
+  uptr block = (uptr)-1;
 
   for (s64 i = alloc->blocks_num - 1; i >= 0; i--) {
     alloc_arena_block_t *cur_block = &alloc->blocks[i];
 
-    usize available_memory = ((usize)cur_block->memory + cur_block->size) - cur_block->cursor;
-    if (available_memory >= required_size) {
-      suitable_block = cur_block;
+    uptr raw_block = cur_block->cursor;
+    uptr aligned_block = get_aligned(raw_block, alignment);
+    uptr aligned_block_end = aligned_block + size;
+    if (aligned_block_end < (uptr)cur_block->memory + cur_block->size) {
+#ifdef _DEBUG_ARENA_ALLOC
+      base = raw_block;
+#endif
+      block = aligned_block;
+      cur_block->cursor = aligned_block_end;
       break;
     }
   }
 
-  if (suitable_block == nullptr)
-    suitable_block = add_block(alloc, get_aligned(required_size, MIN_BLOCK_SIZE));
+  if (block == (uptr)-1) {
+    alloc_arena_block_t *alloc_block =
+      add_block(alloc, get_aligned(size + alignment, MIN_BLOCK_SIZE));
+    uptr raw_block = alloc_block->cursor;
+    uptr aligned_block = get_aligned(raw_block, alignment);
+    uptr aligned_block_end = aligned_block + size;
+#ifdef _DEBUG_ARENA_ALLOC
+    base = raw_block;
+#endif
+    block = aligned_block;
+    alloc_block->cursor = aligned_block_end;
+  }
 
-  void *out_block = (void *)suitable_block->cursor;
-  suitable_block->cursor += required_size;
+#ifdef _DEBUG_ARENA_ALLOC
+  static usize alloc_i = 0;
+  printf("arena: Allocation #%zu:\n", ++alloc_i);
+  printf("- base: %p\n", (void *)base);
+  printf("- block: %p\n", (void *)block);
+  printf("- size: %zu\n", size);
+  printf("- alignment: %zu\n", alignment);
+  printf("- align offset: %zu\n", block - base);
+#endif
 
-  return out_block;
+  return (void *)block;
 }
 
 void alloc_arena_drop(alloc_arena_t *alloc)

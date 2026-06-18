@@ -108,7 +108,7 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
       }
       child = parse_decldef(p, attribs);
       if ALC_UNLIKELY (child == nullptr) {
-        vector_destroy(child);
+        vector_destroy(children);
         return nullptr;
       }
     }

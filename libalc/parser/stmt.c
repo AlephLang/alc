@@ -17,6 +17,8 @@ alc_ast_t *parse_stmt_block(alc_parser_t *p)
       vector_destroy(statements);
       return nullptr;
     }
+
+    vector_push(statements, statement);
   }
 
   if ALC_UNLIKELY (p->pos >= p->tokens_num) {

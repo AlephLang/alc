@@ -105,11 +105,12 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
         child = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
         child->pos = pos;
         child->kind = ALC_AST_KIND_NONE;
-      }
-      child = parse_decldef(p, attribs);
-      if ALC_UNLIKELY (child == nullptr) {
-        vector_destroy(children);
-        return nullptr;
+      } else {
+        child = parse_decldef(p, attribs);
+        if ALC_UNLIKELY (child == nullptr) {
+          vector_destroy(children);
+          return nullptr;
+        }
       }
     }
 

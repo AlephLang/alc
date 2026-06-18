@@ -217,7 +217,7 @@ static string_t *to_string(const alc_ast_t *ast)
   case ALC_AST_KIND_ENUM_ELEMENT: {
     string_t **children_vs_v = vector_reserve(string_t *, 1);
     add_to_strings_opt(children_vs_v, ast->data.ENUM_ELEMENT.expression);
-    string_t header = string_create_from("ENUM { name: \"");
+    string_t header = string_create_from("ENUM_ELEMENT { name: \"");
     string_append_cstr(&header, ast->data.ENUM_ELEMENT.name);
     string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);

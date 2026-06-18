@@ -8,8 +8,6 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *parse_default_or_generic_function(alc_parser_t *p, alc_ast_t *attribute_list,
-                                                    alc_ast_function_kind_t kind);
 static b8 is_qualifier(const char *str);
 
 alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list)
@@ -73,7 +71,7 @@ alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list)
       return nullptr;
     }
 
-    return parse_default_or_generic_function(p, attribute_list, ALC_AST_FUNCTION_KIND_EXPLICIT);
+    return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_EXPLICIT);
   }
 
   alc_token_t *tok2 = peek(p, 1);
@@ -91,7 +89,7 @@ alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list)
 
   alc_token_t *tok3 = peek(p, 2);
   if (tok3 != nullptr && !tok2->has_whitespace_after && tok3->type == ALC_TOKEN_TYPE_COLON)
-    return parse_default_or_generic_function(p, attribute_list, ALC_AST_FUNCTION_KIND_DEFAULT);
+    return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_DEFAULT);
 
   alc_ast_t *decldef = parse_decldef_var(p, attribute_list);
   if ALC_UNLIKELY (decldef == nullptr)
@@ -197,14 +195,6 @@ __vardef:
   vardecl_ast->kind = ALC_AST_KIND_VAR_DECL;
   memcpy(vardecl_ast->data.VAR_DECL.name, name, name_len);
   return vardecl_ast;
-}
-
-static alc_ast_t *parse_default_or_generic_function(alc_parser_t *p, alc_ast_t *attribute_list,
-                                                    alc_ast_function_kind_t kind)
-{
-  if (p->pos + 3 < p->tokens_num && p->tokens[p->pos + 3].type == ALC_TOKEN_TYPE_LARROW)
-    return parse_generic_function(p, attribute_list, kind);
-  return parse_function(p, attribute_list, kind);
 }
 
 static b8 is_qualifier(const char *str)

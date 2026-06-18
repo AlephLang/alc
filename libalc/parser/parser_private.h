@@ -26,8 +26,6 @@ alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_fu
 alc_ast_t *parse_function_arguments(alc_parser_t *p);
 alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p);
 alc_ast_t *parse_generic_type_list(alc_parser_t *p);
-alc_ast_t *parse_generic_function(alc_parser_t *p, alc_ast_t *attribute_list,
-                                  alc_ast_function_kind_t kind);
 alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list);
 alc_ast_t *parse_decldef_var(alc_parser_t *p, alc_ast_t *attribute_list);
 alc_ast_t *parse_attribute_list(alc_parser_t *p);
@@ -39,6 +37,8 @@ alc_ast_t *parse_partial_struct(alc_parser_t *p);
 alc_ast_t *parse_union(alc_parser_t *p);
 alc_ast_t *parse_enum(alc_parser_t *p);
 alc_ast_t *parse_scope(alc_parser_t *p);
+alc_ast_t *parse_stmt(alc_parser_t *p);
+alc_ast_t *parse_stmt_block(alc_parser_t *p);
 
 static inline void add_error(alc_parser_t *p, alc_parser_error_t error)
 {

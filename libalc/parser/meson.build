@@ -10,6 +10,7 @@ libalc_src += [
   'libalc/parser/module.c',
   'libalc/parser/parser.c',
   'libalc/parser/scope.c',
+  'libalc/parser/stmt.c',
   'libalc/parser/struct.c',
   'libalc/parser/top.c',
   'libalc/parser/type.c',

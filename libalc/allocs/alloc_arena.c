@@ -79,11 +79,14 @@ void *alloc_arena_allocate_aligned(alloc_arena_t *alloc, usize size, usize align
 #ifdef _DEBUG_ARENA_ALLOC
   static usize alloc_i = 0;
   printf("arena: Allocation #%zu:\n", ++alloc_i);
-  printf("- base: %p\n", (void *)base);
-  printf("- block: %p\n", (void *)block);
-  printf("- size: %zu\n", size);
-  printf("- alignment: %zu\n", alignment);
-  printf("- align offset: %zu\n", block - base);
+  printf("       - base:         %p\n", (void *)base);
+  printf("       - start:        %p\n", (void *)block);
+  printf("       - end:          %p\n", (void *)(block + size));
+  printf("       - size:         %zu\n", size);
+  printf("       - range:        (%p)%p...%p\n", (void *)base, (void *)block,
+         (void *)(block + size));
+  printf("       - alignment:    %zu\n", alignment);
+  printf("       - align offset: %zu\n", block - base);
 #endif
 
   return (void *)block;

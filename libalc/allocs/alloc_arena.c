@@ -40,9 +40,11 @@ void *alloc_arena_allocate_aligned(alloc_arena_t *alloc, usize size, usize align
 // NOTE: To debug arena allocations, uncomment this define:
 // #define _DEBUG_ARENA_ALLOC
 #ifdef _DEBUG_ARENA_ALLOC
-  uptr base = (uptr)-1;
+  uptr base;
 #endif
-  uptr block = (uptr)-1;
+  uptr block;
+
+  b8 allocated = false;
 
   for (s64 i = alloc->blocks_num - 1; i >= 0; i--) {
     alloc_arena_block_t *cur_block = &alloc->blocks[i];
@@ -56,11 +58,12 @@ void *alloc_arena_allocate_aligned(alloc_arena_t *alloc, usize size, usize align
 #endif
       block = aligned_block;
       cur_block->cursor = aligned_block_end;
+      allocated = true;
       break;
     }
   }
 
-  if (block == (uptr)-1) {
+  if (!allocated) {
     alloc_arena_block_t *alloc_block =
       add_block(alloc, get_aligned(size + alignment, MIN_BLOCK_SIZE));
     uptr raw_block = alloc_block->cursor;

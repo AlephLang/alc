@@ -38,6 +38,21 @@ alc_ast_t *parse_top(alc_parser_t *p)
       return parse_union(p);
     else if (strcmp(p->tokens[p->pos].value, "scope") == 0)
       return parse_scope(p);
+    else if (strcmp(p->tokens[p->pos].value, "export") == 0) {
+      p->pos++;
+
+      if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+        add_error_unexpected_eof(p, p->pos);
+        return nullptr;
+      }
+
+      if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
+        add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
+        return nullptr;
+      }
+
+      return parse_function(p, nullptr, ALC_AST_FUNCTION_KIND_EXPORTED);
+    }
 
     return parse_decldef(p, nullptr);
   }

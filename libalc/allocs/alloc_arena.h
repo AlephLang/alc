@@ -4,6 +4,9 @@
 #include "alc/defs.h"
 #include "containers/vector.h"
 
+// NOTE: To debug arena, uncomment this define:
+#define _DEBUG_ARENA_ALLOC
+
 typedef struct {
   void *memory;
   uptr cursor;
@@ -13,6 +16,9 @@ typedef struct {
 typedef struct {
   Vector(alloc_arena_block_t) blocks;
   usize blocks_num;
+#ifdef _DEBUG_ARENA_ALLOC
+  usize allocations;
+#endif
 } alloc_arena_t;
 
 alloc_arena_t alloc_arena_create(void);

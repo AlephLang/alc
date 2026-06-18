@@ -7,12 +7,21 @@
 
 static inline alloc_arena_block_t *add_block(alloc_arena_t *alloc, usize size);
 static inline u64 get_aligned(u64 x, u64 alignment);
+#ifndef _DEBUG_ARENA_ALLOC
+static void *try_allocate_from_block(alloc_arena_block_t *alloc_block, usize size, usize alignment);
+#else
+static void *try_allocate_from_block(alloc_arena_block_t *alloc_block, usize size, usize alignment,
+                                     usize *alloc_i);
+#endif
 
 alloc_arena_t alloc_arena_create(void)
 {
   return (alloc_arena_t){
     .blocks = vector_create(alloc_arena_block_t),
     .blocks_num = 0,
+#ifdef _DEBUG_ARENA_ALLOC
+    .allocations = 0,
+#endif
   };
 }
 
@@ -37,59 +46,25 @@ void *alloc_arena_allocate_aligned(alloc_arena_t *alloc, usize size, usize align
   ALC_ASSUME(alignment > 0);
   ALC_ASSUME(size + alignment < (4llu << 30llu));
 
-// NOTE: To debug arena allocations, uncomment this define:
-// #define _DEBUG_ARENA_ALLOC
-#ifdef _DEBUG_ARENA_ALLOC
-  uptr base;
-#endif
-  uptr block;
-
-  b8 allocated = false;
-
   for (s64 i = alloc->blocks_num - 1; i >= 0; i--) {
     alloc_arena_block_t *cur_block = &alloc->blocks[i];
-
-    uptr raw_block = cur_block->cursor;
-    uptr aligned_block = get_aligned(raw_block, alignment);
-    uptr aligned_block_end = aligned_block + size;
-    if (aligned_block_end < (uptr)cur_block->memory + cur_block->size) {
-#ifdef _DEBUG_ARENA_ALLOC
-      base = raw_block;
+    void *out_block;
+#ifndef _DEBUG_ARENA_ALLOC
+    out_block = try_allocate_from_block(cur_block, size, alignment);
+#else
+    out_block = try_allocate_from_block(cur_block, size, alignment, &alloc->allocations);
 #endif
-      block = aligned_block;
-      cur_block->cursor = aligned_block_end;
-      allocated = true;
-      break;
-    }
+
+    if (out_block != nullptr)
+      return out_block;
   }
 
-  if (!allocated) {
-    alloc_arena_block_t *alloc_block =
-      add_block(alloc, get_aligned(size + alignment, MIN_BLOCK_SIZE));
-    uptr raw_block = alloc_block->cursor;
-    uptr aligned_block = get_aligned(raw_block, alignment);
-    uptr aligned_block_end = aligned_block + size;
-#ifdef _DEBUG_ARENA_ALLOC
-    base = raw_block;
+  void *block = add_block(alloc, get_aligned(size + alignment, MIN_BLOCK_SIZE));
+#ifndef _DEBUG_ARENA_ALLOC
+  return try_allocate_from_block(block, size, alignment);
+#else
+  return try_allocate_from_block(block, size, alignment, &alloc->allocations);
 #endif
-    block = aligned_block;
-    alloc_block->cursor = aligned_block_end;
-  }
-
-#ifdef _DEBUG_ARENA_ALLOC
-  static usize alloc_i = 0;
-  printf("arena: Allocation #%zu:\n", ++alloc_i);
-  printf("       - base:         %p\n", (void *)base);
-  printf("       - start:        %p\n", (void *)block);
-  printf("       - end:          %p\n", (void *)(block + size));
-  printf("       - size:         %zu\n", size);
-  printf("       - range:        (%p)%p...%p\n", (void *)base, (void *)block,
-         (void *)(block + size));
-  printf("       - alignment:    %zu\n", alignment);
-  printf("       - align offset: %zu\n", block - base);
-#endif
-
-  return (void *)block;
 }
 
 void alloc_arena_drop(alloc_arena_t *alloc)
@@ -113,6 +88,45 @@ static inline alloc_arena_block_t *add_block(alloc_arena_t *alloc, usize size)
 
   vector_push(alloc->blocks, block);
   return &alloc->blocks[alloc->blocks_num++];
+}
+
+#ifndef _DEBUG_ARENA_ALLOC
+static void *try_allocate_from_block(alloc_arena_block_t *alloc_block, usize size, usize alignment)
+#else
+static void *try_allocate_from_block(alloc_arena_block_t *alloc_block, usize size, usize alignment,
+                                     usize *alloc_i)
+#endif
+{
+#ifdef _DEBUG_ARENA_ALLOC
+  uptr base;
+#endif
+  uptr block;
+
+  uptr raw_block = alloc_block->cursor;
+  uptr aligned_block = get_aligned(raw_block, alignment);
+  uptr aligned_block_end = aligned_block + size;
+  if (aligned_block > (uptr)alloc_block->memory + alloc_block->size)
+    return nullptr;
+
+#ifdef _DEBUG_ARENA_ALLOC
+  base = raw_block;
+#endif
+  block = aligned_block;
+  alloc_block->cursor = aligned_block_end;
+
+#ifdef _DEBUG_ARENA_ALLOC
+  printf("arena: Allocation #%zu:\n", ++(*alloc_i));
+  printf("       - base:         %p\n", (void *)base);
+  printf("       - start:        %p\n", (void *)block);
+  printf("       - end:          %p\n", (void *)(block + size));
+  printf("       - size:         %zu\n", size);
+  printf("       - range:        (%p)%p...%p\n", (void *)base, (void *)block,
+         (void *)(block + size));
+  printf("       - alignment:    %zu\n", alignment);
+  printf("       - align offset: %zu\n", block - base);
+#endif
+
+  return (void *)block;
 }
 
 static inline u64 get_aligned(u64 x, u64 alignment)

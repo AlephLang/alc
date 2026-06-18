@@ -97,20 +97,14 @@ static void *try_allocate_from_block(alloc_arena_block_t *alloc_block, usize siz
                                      usize *alloc_i)
 #endif
 {
-#ifdef _DEBUG_ARENA_ALLOC
-  uptr base;
-#endif
   uptr block;
 
-  uptr raw_block = alloc_block->cursor;
-  uptr aligned_block = get_aligned(raw_block, alignment);
+  uptr base = alloc_block->cursor;
+  uptr aligned_block = get_aligned(base, alignment);
   uptr aligned_block_end = aligned_block + size;
   if (aligned_block > (uptr)alloc_block->memory + alloc_block->size)
     return nullptr;
 
-#ifdef _DEBUG_ARENA_ALLOC
-  base = raw_block;
-#endif
   block = aligned_block;
   alloc_block->cursor = aligned_block_end;
 

@@ -5,7 +5,7 @@
 #include "containers/vector.h"
 
 // NOTE: To debug arena, uncomment this define:
-#define _DEBUG_ARENA_ALLOC
+// #define _DEBUG_ARENA_ALLOC
 
 typedef struct {
   void *memory;

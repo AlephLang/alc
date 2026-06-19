@@ -96,6 +96,24 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
         PARSE_AND_VERIFY(child, parse_typedef, p);
       } else if (strcmp(p->tokens[p->pos].value, "scope") == 0) {
         PARSE_AND_VERIFY(child, parse_scope, p);
+      } else if (strcmp(p->tokens[p->pos].value, "extern") == 0) {
+        PARSE_AND_VERIFY(child, parse_extern, p);
+      } else if (strcmp(p->tokens[p->pos].value, "export") == 0) {
+        p->pos++;
+
+        if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+          add_error_unexpected_eof(p, p->pos);
+          vector_destroy(children);
+          return nullptr;
+        }
+
+        if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
+          add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
+          vector_destroy(children);
+          return nullptr;
+        }
+
+        PARSE_AND_VERIFY(child, parse_function, p, nullptr, ALC_AST_FUNCTION_KIND_EXPORTED);
       }
     }
 

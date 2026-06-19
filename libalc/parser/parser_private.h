@@ -23,6 +23,7 @@ alc_ast_t *parse_typedef(alc_parser_t *p);
 alc_ast_t *parse_type_raw(alc_parser_t *p);
 alc_ast_t *parse_type(alc_parser_t *p);
 alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_function_kind_t kind);
+alc_ast_t *parse_extern(alc_parser_t *p);
 alc_ast_t *parse_function_arguments(alc_parser_t *p);
 alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p);
 alc_ast_t *parse_generic_type_list(alc_parser_t *p);

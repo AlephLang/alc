@@ -3,6 +3,7 @@ libalc_src += [
   'libalc/parser/decldef.c',
   'libalc/parser/enum.c',
   'libalc/parser/expr.c',
+  'libalc/parser/extern.c',
   'libalc/parser/function.c',
   'libalc/parser/generic.c',
   'libalc/parser/import.c',

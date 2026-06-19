@@ -38,6 +38,8 @@ alc_ast_t *parse_top(alc_parser_t *p)
       return parse_union(p);
     else if (strcmp(p->tokens[p->pos].value, "scope") == 0)
       return parse_scope(p);
+    else if (strcmp(p->tokens[p->pos].value, "extern") == 0)
+      return parse_extern(p);
     else if (strcmp(p->tokens[p->pos].value, "export") == 0) {
       p->pos++;
 

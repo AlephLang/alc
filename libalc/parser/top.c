@@ -24,39 +24,8 @@ alc_ast_t *parse_top(alc_parser_t *p)
   }
 
   case ALC_TOKEN_TYPE_ID: {
-    if (strcmp(p->tokens[p->pos].value, "import") == 0)
-      return parse_import(p);
-    else if (strcmp(p->tokens[p->pos].value, "using") == 0)
-      return parse_typedef(p);
-    else if (strcmp(p->tokens[p->pos].value, "struct") == 0)
-      return parse_struct(p, ALC_AST_STRUCT_KIND_DEFAULT);
-    else if (strcmp(p->tokens[p->pos].value, "partial") == 0)
-      return parse_partial_struct(p);
-    else if (strcmp(p->tokens[p->pos].value, "enum") == 0)
-      return parse_enum(p);
-    else if (strcmp(p->tokens[p->pos].value, "union") == 0)
-      return parse_union(p);
-    else if (strcmp(p->tokens[p->pos].value, "scope") == 0)
-      return parse_scope(p);
-    else if (strcmp(p->tokens[p->pos].value, "extern") == 0)
-      return parse_extern(p);
-    else if (strcmp(p->tokens[p->pos].value, "export") == 0) {
-      p->pos++;
-
-      if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-        add_error_unexpected_eof(p, p->pos);
-        return nullptr;
-      }
-
-      if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-        add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-        return nullptr;
-      }
-
-      return parse_function(p, nullptr, ALC_AST_FUNCTION_KIND_EXPORTED);
-    }
-
-    return parse_decldef(p, nullptr);
+    alc_ast_t *ids = parse_ids(p);
+    return ids == (void *)-1 ? parse_decldef(p, nullptr) : ids;
   }
 
   case ALC_TOKEN_TYPE_LBRACK: {

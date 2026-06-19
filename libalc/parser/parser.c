@@ -7,6 +7,7 @@
 #include "global.h"
 #include "parser/parser_private.h"
 #include <stdarg.h>
+#include <string.h>
 
 alc_parser_t *alc_parser_create(alc_token_t *tokens, usize tokens_num)
 {
@@ -52,6 +53,73 @@ alc_ast_t *alc_parser_parse(alc_parser_t *parser)
   vector_destroy(toplevels);
 
   return root;
+}
+
+alc_ast_t *parse_ids(alc_parser_t *p)
+{
+  ALC_ASSUME(p != nullptr);
+
+  if (strcmp(p->tokens[p->pos].value, "struct") == 0)
+    return parse_struct(p, ALC_AST_STRUCT_KIND_DEFAULT);
+  else if (strcmp(p->tokens[p->pos].value, "partial") == 0)
+    return parse_partial_struct(p);
+  else if (strcmp(p->tokens[p->pos].value, "enum") == 0)
+    return parse_enum(p);
+  else if (strcmp(p->tokens[p->pos].value, "union") == 0)
+    return parse_union(p);
+  else if (strcmp(p->tokens[p->pos].value, "using") == 0)
+    return parse_typedef(p);
+  else if (strcmp(p->tokens[p->pos].value, "scope") == 0)
+    return parse_scope(p);
+  else if (strcmp(p->tokens[p->pos].value, "extern") == 0)
+    return parse_extern(p);
+  else if (strcmp(p->tokens[p->pos].value, "import") == 0)
+    return parse_import(p);
+  if (strcmp(p->tokens[p->pos].value, "return") == 0)
+    return parse_stmt_return(p);
+  else if (strcmp(p->tokens[p->pos].value, "goto") == 0)
+    return parse_stmt_goto(p);
+  else if (strcmp(p->tokens[p->pos].value, "break") == 0)
+    return parse_stmt_break(p);
+  else if (strcmp(p->tokens[p->pos].value, "continue") == 0)
+    return parse_stmt_continue(p);
+  else if (strcmp(p->tokens[p->pos].value, "fallthrough") == 0)
+    return parse_stmt_fallthrough(p);
+  else if (strcmp(p->tokens[p->pos].value, "if") == 0)
+    return parse_stmt_if(p);
+  else if (strcmp(p->tokens[p->pos].value, "else") == 0)
+    return parse_stmt_else(p);
+  else if (strcmp(p->tokens[p->pos].value, "loop") == 0)
+    return parse_stmt_loop(p);
+  else if (strcmp(p->tokens[p->pos].value, "while") == 0)
+    return parse_stmt_while(p);
+  else if (strcmp(p->tokens[p->pos].value, "do") == 0)
+    return parse_stmt_do_while(p);
+  else if (strcmp(p->tokens[p->pos].value, "for") == 0)
+    return parse_stmt_for(p);
+  else if (strcmp(p->tokens[p->pos].value, "foreach") == 0)
+    return parse_stmt_foreach(p);
+  else if (strcmp(p->tokens[p->pos].value, "switch") == 0)
+    return parse_stmt_switch(p);
+  else if (strcmp(p->tokens[p->pos].value, "defer") == 0)
+    return parse_stmt_defer(p);
+  else if (strcmp(p->tokens[p->pos].value, "export") == 0) {
+    p->pos++;
+
+    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
+      add_error_unexpected_eof(p, p->pos);
+      return nullptr;
+    }
+
+    if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
+      add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
+      return nullptr;
+    }
+
+    return parse_function(p, nullptr, ALC_AST_FUNCTION_KIND_EXPORTED);
+  }
+
+  return (void *)-1;
 }
 
 alc_parser_error_t *alc_parser_get_errors(const alc_parser_t *parser, usize *out_n)

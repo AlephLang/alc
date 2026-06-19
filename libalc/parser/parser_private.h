@@ -17,6 +17,7 @@ typedef struct __alc_parser_t {
 alc_token_t *peek(const alc_parser_t *p, s32 adv);
 
 alc_ast_t *parse_top(alc_parser_t *p);
+alc_ast_t *parse_ids(alc_parser_t *p); // Returns (void*)-1 if nothing was parsed
 alc_ast_t *parse_import(alc_parser_t *p);
 alc_ast_t *parse_module(alc_parser_t *p);
 alc_ast_t *parse_typedef(alc_parser_t *p);
@@ -40,6 +41,21 @@ alc_ast_t *parse_enum(alc_parser_t *p);
 alc_ast_t *parse_scope(alc_parser_t *p);
 alc_ast_t *parse_stmt(alc_parser_t *p);
 alc_ast_t *parse_stmt_block(alc_parser_t *p);
+alc_ast_t *parse_stmt_return(alc_parser_t *p);
+alc_ast_t *parse_stmt_goto(alc_parser_t *p);
+alc_ast_t *parse_stmt_label(alc_parser_t *p);
+alc_ast_t *parse_stmt_break(alc_parser_t *p);
+alc_ast_t *parse_stmt_continue(alc_parser_t *p);
+alc_ast_t *parse_stmt_fallthrough(alc_parser_t *p);
+alc_ast_t *parse_stmt_if(alc_parser_t *p);
+alc_ast_t *parse_stmt_else(alc_parser_t *p);
+alc_ast_t *parse_stmt_loop(alc_parser_t *p);
+alc_ast_t *parse_stmt_while(alc_parser_t *p);
+alc_ast_t *parse_stmt_do_while(alc_parser_t *p);
+alc_ast_t *parse_stmt_for(alc_parser_t *p);
+alc_ast_t *parse_stmt_foreach(alc_parser_t *p);
+alc_ast_t *parse_stmt_switch(alc_parser_t *p);
+alc_ast_t *parse_stmt_defer(alc_parser_t *p);
 
 static inline void add_error(alc_parser_t *p, alc_parser_error_t error)
 {

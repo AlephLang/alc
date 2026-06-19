@@ -4,7 +4,6 @@
 #include "allocs/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
-#include <string.h>
 
 alc_ast_t *parse_top(alc_parser_t *p)
 {

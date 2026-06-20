@@ -8,10 +8,6 @@
 
 alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
 {
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
-  _VERIFY_VALUE(p, p->pos, "struct");
-
   p->pos++;
 
   _VERIFY_POS(p, p->pos);
@@ -115,11 +111,11 @@ alc_ast_t *parse_partial_struct(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
+  p->pos++;
+
   _VERIFY_POS(p, p->pos);
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
-  _VERIFY_VALUE(p, p->pos, "partial");
-
-  p->pos++;
+  _VERIFY_VALUE(p, p->pos, "struct");
 
   return parse_struct(p, ALC_AST_STRUCT_KIND_PARTIAL);
 }

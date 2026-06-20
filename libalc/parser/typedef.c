@@ -11,10 +11,6 @@ alc_ast_t *parse_typedef(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
-  _VERIFY_VALUE(p, p->pos, "using");
-
   usize pos = p->pos++;
 
   alc_ast_t *attribute_list = nullptr;

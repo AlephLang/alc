@@ -11,10 +11,6 @@ alc_ast_t *parse_scope(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
-  _VERIFY_VALUE(p, p->pos, "scope");
-
   p->pos++;
 
   _VERIFY_POS(p, p->pos);

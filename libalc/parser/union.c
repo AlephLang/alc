@@ -8,10 +8,6 @@
 
 alc_ast_t *parse_union(alc_parser_t *p)
 {
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
-  _VERIFY_VALUE(p, p->pos, "union");
-
   p->pos++;
 
   _VERIFY_POS(p, p->pos);

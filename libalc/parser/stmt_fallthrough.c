@@ -16,8 +16,8 @@ alc_ast_t *parse_stmt_fallthrough(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *fallthrough_stmt_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
-  fallthrough_stmt_ast->pos = pos;
-  fallthrough_stmt_ast->kind = ALC_AST_KIND_STMT_FALLTHROUGH;
-  return fallthrough_stmt_ast;
+  alc_ast_t *stmt_fallthrough_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  stmt_fallthrough_ast->pos = pos;
+  stmt_fallthrough_ast->kind = ALC_AST_KIND_STMT_FALLTHROUGH;
+  return stmt_fallthrough_ast;
 }

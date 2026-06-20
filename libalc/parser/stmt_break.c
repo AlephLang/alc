@@ -16,8 +16,8 @@ alc_ast_t *parse_stmt_break(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *break_stmt_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
-  break_stmt_ast->pos = pos;
-  break_stmt_ast->kind = ALC_AST_KIND_STMT_BREAK;
-  return break_stmt_ast;
+  alc_ast_t *stmt_break_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  stmt_break_ast->pos = pos;
+  stmt_break_ast->kind = ALC_AST_KIND_STMT_BREAK;
+  return stmt_break_ast;
 }

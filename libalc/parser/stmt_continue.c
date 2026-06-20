@@ -16,8 +16,8 @@ alc_ast_t *parse_stmt_continue(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *continue_stmt_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
-  continue_stmt_ast->pos = pos;
-  continue_stmt_ast->kind = ALC_AST_KIND_STMT_CONTINUE;
-  return continue_stmt_ast;
+  alc_ast_t *stmt_continue_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  stmt_continue_ast->pos = pos;
+  stmt_continue_ast->kind = ALC_AST_KIND_STMT_CONTINUE;
+  return stmt_continue_ast;
 }

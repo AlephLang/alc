@@ -44,6 +44,7 @@ alc_ast_t *parse_partial_struct(alc_parser_t *p);
 alc_ast_t *parse_union(alc_parser_t *p);
 alc_ast_t *parse_enum(alc_parser_t *p);
 alc_ast_t *parse_scope(alc_parser_t *p);
+alc_ast_t *parse_label(alc_parser_t *p);
 alc_ast_t *parse_stmt(alc_parser_t *p);
 alc_ast_t *parse_stmt_block(alc_parser_t *p);
 alc_ast_t *parse_stmt_return(alc_parser_t *p);

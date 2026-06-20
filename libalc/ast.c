@@ -309,6 +309,15 @@ static string_t *to_string(const alc_ast_t *ast)
     return build_tree(header, children_vs_v);
   }
 
+  case ALC_AST_KIND_LABEL: {
+    string_t *out_v = vector_reserve(string_t, 1);
+    string_t header = string_create_from("LABEL { name: \"");
+    string_append_cstr(&header, ast->data.LABEL.name);
+    string_append_cstr(&header, "\" }");
+    vector_push(out_v, header);
+    return out_v;
+  }
+
   case ALC_AST_KIND_STMT_BLOCK: {
     string_t **children_vs_v = safe_reserve(string_t *, ast->data.STMT_BLOCK.statements_num);
     array_to_strings(children_vs_v, ast->data.STMT_BLOCK.statements,
@@ -323,21 +332,15 @@ static string_t *to_string(const alc_ast_t *ast)
   }
 
   case ALC_AST_KIND_STMT_GOTO: {
-    string_t *out_v = vector_reserve(string_t, 1);
-    string_t header = string_create_from("STMT_GOTO { label_name: \"");
-    string_append_cstr(&header, ast->data.STMT_GOTO.label_name);
-    string_append_cstr(&header, "\" }");
-    vector_push(out_v, header);
-    return out_v;
+    string_t **children_vs_v = vector_reserve(string_t *, 1);
+    vector_push(children_vs_v, to_string(ast->data.STMT_GOTO.label));
+    return build_tree(string_create_from("STMT_GOTO"), children_vs_v);
   }
 
   case ALC_AST_KIND_STMT_LABEL: {
-    string_t *out_v = vector_reserve(string_t, 1);
-    string_t header = string_create_from("STMT_LABEL { name: \"");
-    string_append_cstr(&header, ast->data.STMT_LABEL.name);
-    string_append_cstr(&header, "\" }");
-    vector_push(out_v, header);
-    return out_v;
+    string_t **children_vs_v = vector_reserve(string_t *, 1);
+    vector_push(children_vs_v, to_string(ast->data.STMT_LABEL.label));
+    return build_tree(string_create_from("STMT_LABEL"), children_vs_v);
   }
 
   case ALC_AST_KIND_STMT_BREAK: {

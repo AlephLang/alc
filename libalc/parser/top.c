@@ -19,6 +19,10 @@ alc_ast_t *parse_top(alc_parser_t *p)
     return none_ast;
   }
 
+  case ALC_TOKEN_TYPE_AT: {
+    return parse_stmt_label(p);
+  }
+
   case ALC_TOKEN_TYPE_ID: {
     alc_ast_t *ids = parse_ids(p);
     return ids == (void *)-1 ? parse_decldef(p, nullptr) : ids;

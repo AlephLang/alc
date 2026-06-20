@@ -14,15 +14,8 @@ alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list)
 {
   ALC_ASSUME(p != nullptr);
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   if (is_qualifier(p->tokens[p->pos].value)) {
     // 2 qualifier names are the maximum you can really have.
@@ -35,19 +28,10 @@ alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list)
       p->pos++;
     }
 
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      vector_destroy(names);
-      return nullptr;
-    }
-
     usize last_pos = p->pos;
 
     alc_ast_t *qualified = parse_decldef(p, attribute_list);
-    if ALC_UNLIKELY (qualified == nullptr) {
-      vector_destroy(names);
-      return nullptr;
-    }
+    _VERIFY_AST(qualified, { vector_destroy(names); });
 
     alc_ast_t *qualifier_ast;
     for (sptr i = vector_get_length(names) - 1; i >= 0; i--) {
@@ -61,16 +45,11 @@ alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list)
       memcpy(qualifier_ast->data.QUALIFIER.name, names[i], sizeof(char) * name_len);
       qualified = qualifier_ast;
     }
+    vector_destroy(names);
 
     return qualifier_ast;
   } else if (strcmp(p->tokens[p->pos].value, "func") == 0) {
     p->pos++;
-
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      return nullptr;
-    }
-
     return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_EXPLICIT);
   }
 
@@ -83,7 +62,7 @@ alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list)
 
   if ALC_UNLIKELY (tok2->type != ALC_TOKEN_TYPE_COLON) {
     p->pos++;
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_COLON);
+    add_error_unexpected_token(p, p->pos++, ALC_TOKEN_TYPE_COLON);
     return nullptr;
   }
 
@@ -92,18 +71,10 @@ alc_ast_t *parse_decldef(alc_parser_t *p, alc_ast_t *attribute_list)
     return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_DEFAULT);
 
   alc_ast_t *decldef = parse_decldef_var(p, attribute_list);
-  if ALC_UNLIKELY (decldef == nullptr)
-    return nullptr;
+  _VERIFY_AST(decldef);
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_SEMICOLON) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_SEMICOLON);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_SEMICOLON);
 
   p->pos++;
 
@@ -114,15 +85,8 @@ alc_ast_t *parse_decldef_var(alc_parser_t *p, alc_ast_t *attribute_list)
 {
   ALC_ASSUME(p != nullptr);
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   usize pos = p->pos;
 
@@ -131,15 +95,8 @@ alc_ast_t *parse_decldef_var(alc_parser_t *p, alc_ast_t *attribute_list)
 
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_COLON) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_COLON);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COLON);
 
   alc_ast_t *type = nullptr;
   if (!p->tokens[p->pos].has_whitespace_after && p->pos + 1 < p->tokens_num &&
@@ -151,28 +108,17 @@ alc_ast_t *parse_decldef_var(alc_parser_t *p, alc_ast_t *attribute_list)
 
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
   type = parse_type(p);
-  if ALC_UNLIKELY (type == nullptr)
-    return nullptr;
+  _VERIFY_AST(type);
 
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_EQ) {
     p->pos++;
 
 __vardef:
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      return nullptr;
-    }
-
+    _VERIFY_POS(p, p->pos);
     alc_ast_t *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
                                                                          parse_expr(p, false);
-    if ALC_UNLIKELY (expr == nullptr)
-      return nullptr;
+    _VERIFY_AST(expr);
 
     alc_ast_t *vardef_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);

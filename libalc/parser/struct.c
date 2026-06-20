@@ -8,17 +8,14 @@
 
 alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
 {
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
+  _VERIFY_VALUE(p, p->pos, "struct");
+
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
@@ -28,48 +25,28 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
   alc_ast_t *generic_placeholder_type_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LARROW) {
     generic_placeholder_type_list = parse_generic_placeholder_type_list(p);
-    if ALC_UNLIKELY (generic_placeholder_type_list == nullptr)
-      return nullptr;
+    _VERIFY_AST(generic_placeholder_type_list);
   }
 
   alc_ast_t *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
-    if ALC_UNLIKELY (attribute_list == nullptr)
-      return nullptr;
+    _VERIFY_AST(attribute_list);
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_LCBRACK) {
-    add_error_unexpected_token(p, p->pos++, 2, ALC_TOKEN_TYPE_LCBRACK, ALC_TOKEN_TYPE_LARROW);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LCBRACK);
 
   p->pos++;
 
   alc_ast_t **children = vector_create(alc_ast_t *);
 
-  while (p->pos < p->tokens_num) {
-    if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_RCBRACK)
-      break;
-
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
     alc_ast_t *attribs = nullptr;
     if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
       attribs = parse_attribute_list(p);
-      if ALC_UNLIKELY (attribs == nullptr) {
-        vector_destroy(children);
-        return nullptr;
-      }
-
-      if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-        add_error_unexpected_eof(p, p->pos);
-        vector_destroy(children);
-        return nullptr;
-      }
+      _VERIFY_AST(attribs, { vector_destroy(children); });
+      _VERIFY_POS(p, p->pos, { vector_destroy(children); });
     }
 
     alc_ast_t *child = nullptr;
@@ -78,9 +55,8 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
       child = parse_ids(p);
       if (child == (void *)-1) {
         child = nullptr;
-      } else if ALC_UNLIKELY (child == nullptr) {
-        vector_destroy(children);
-        return nullptr;
+      } else {
+        _VERIFY_AST(child, { vector_destroy(children); });
       }
     }
 
@@ -92,27 +68,15 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
         child->kind = ALC_AST_KIND_NONE;
       } else {
         child = parse_decldef(p, attribs);
-        if ALC_UNLIKELY (child == nullptr) {
-          vector_destroy(children);
-          return nullptr;
-        }
+        _VERIFY_AST(child, { vector_destroy(children); });
       }
     }
 
     vector_push(children, child);
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    vector_destroy(children);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_RCBRACK);
-    vector_destroy(children);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos, { vector_destroy(children); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RCBRACK, { vector_destroy(children); });
 
   p->pos++;
 
@@ -129,6 +93,7 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
     generic_struct_ast->pos = pos;
     generic_struct_ast->kind = ALC_AST_KIND_GENERIC_STRUCT;
     memcpy(generic_struct_ast->data.GENERIC_STRUCT.name, name, name_len);
+    vector_destroy(children);
     return generic_struct_ast;
   } else {
     alc_ast_t *struct_ast =
@@ -141,6 +106,7 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
     struct_ast->pos = pos;
     struct_ast->kind = ALC_AST_KIND_STRUCT;
     memcpy(struct_ast->data.STRUCT.name, name, name_len);
+    vector_destroy(children);
     return struct_ast;
   }
 }
@@ -149,22 +115,11 @@ alc_ast_t *parse_partial_struct(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
+  _VERIFY_VALUE(p, p->pos, "partial");
+
   p->pos++;
-
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (strcmp(p->tokens[p->pos].value, "struct")) {
-    add_error_unexpected_value(p, p->pos++, 1, "struct");
-    return nullptr;
-  }
 
   return parse_struct(p, ALC_AST_STRUCT_KIND_PARTIAL);
 }

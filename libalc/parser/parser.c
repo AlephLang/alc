@@ -75,7 +75,7 @@ alc_ast_t *parse_ids(alc_parser_t *p)
     return parse_extern(p);
   else if (strcmp(p->tokens[p->pos].value, "import") == 0)
     return parse_import(p);
-  if (strcmp(p->tokens[p->pos].value, "return") == 0)
+  else if (strcmp(p->tokens[p->pos].value, "return") == 0)
     return parse_stmt_return(p);
   else if (strcmp(p->tokens[p->pos].value, "goto") == 0)
     return parse_stmt_goto(p);
@@ -105,17 +105,6 @@ alc_ast_t *parse_ids(alc_parser_t *p)
     return parse_stmt_defer(p);
   else if (strcmp(p->tokens[p->pos].value, "export") == 0) {
     p->pos++;
-
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      return nullptr;
-    }
-
-    if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-      add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-      return nullptr;
-    }
-
     return parse_function(p, nullptr, ALC_AST_FUNCTION_KIND_EXPORTED);
   }
 
@@ -136,61 +125,4 @@ alc_token_t *peek(const alc_parser_t *p, s32 adv)
 {
   ALC_ASSUME(p != nullptr);
   return p->pos + adv < p->tokens_num ? &p->tokens[p->pos + adv] : nullptr;
-}
-
-void add_error_unexpected_token(alc_parser_t *p, usize pos, usize expected_token_types_num, ...)
-{
-  alc_parser_error_t unexpected_token_error = {
-    .data = { { 0 } },
-    .pos = pos,
-    .len = 1,
-    .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_TOKEN,
-  };
-
-  if ALC_LIKELY (expected_token_types_num > 0) {
-    alc_token_type_t *expected_token_types =
-      vector_reserve(alc_token_type_t, expected_token_types_num);
-
-    __builtin_va_list ap;
-    va_start(ap, expected_token_types_num);
-    for (usize i = 0; i < expected_token_types_num; i++) {
-      vector_push(expected_token_types, va_arg(ap, alc_token_type_t));
-    }
-    va_end(ap);
-
-    unexpected_token_error.data.UNEXPECTED_TOKEN.expected_token_types = vector_to_array(
-      expected_token_types, &unexpected_token_error.data.UNEXPECTED_TOKEN.expected_token_types_num);
-
-    vector_destroy(expected_token_types);
-  }
-
-  add_error(p, unexpected_token_error);
-}
-
-void add_error_unexpected_value(alc_parser_t *p, usize pos, usize expected_values_num, ...)
-{
-  alc_parser_error_t unexpected_value_error = {
-    .data = { { 0 } },
-    .pos = pos,
-    .len = 1,
-    .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_VALUE,
-  };
-
-  if ALC_LIKELY (expected_values_num > 0) {
-    const char **expected_values = vector_reserve(const char *, expected_values_num);
-
-    __builtin_va_list ap;
-    va_start(ap, expected_values_num);
-    for (usize i = 0; i < expected_values_num; i++) {
-      vector_push(expected_values, va_arg(ap, const char *));
-    }
-    va_end(ap);
-
-    unexpected_value_error.data.UNEXPECTED_VALUE.expected_values = vector_to_array(
-      expected_values, &unexpected_value_error.data.UNEXPECTED_VALUE.expected_values_num);
-
-    vector_destroy(expected_values);
-  }
-
-  add_error(p, unexpected_value_error);
 }

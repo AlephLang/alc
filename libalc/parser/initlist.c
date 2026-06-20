@@ -16,24 +16,17 @@ alc_ast_t *parse_initlist(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LCBRACK);
+
   usize pos = p->pos++;
 
   alc_ast_t **entries = vector_create(alc_ast_t *);
-  while (p->pos < p->tokens_num) {
-    if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_RCBRACK)
-      break;
-
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
     alc_ast_t *entry = parse_entry(p);
-    if ALC_UNLIKELY (entry == nullptr) {
-      vector_destroy(entries);
-      return nullptr;
-    }
+    _VERIFY_AST(entry, { vector_destroy(entries); });
 
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      vector_destroy(entries);
-      return nullptr;
-    }
+    _VERIFY_POS(p, p->pos, { vector_destroy(entries); });
 
     vector_push(entries, entry);
 
@@ -43,17 +36,8 @@ alc_ast_t *parse_initlist(alc_parser_t *p)
     p->pos++;
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    vector_destroy(entries);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_RCBRACK);
-    vector_destroy(entries);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos, { vector_destroy(entries); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RCBRACK, { vector_destroy(entries); });
 
   p->pos++;
 
@@ -68,6 +52,7 @@ alc_ast_t *parse_initlist(alc_parser_t *p)
 
 static alc_ast_t *parse_entry(alc_parser_t *p)
 {
+  _VERIFY_POS(p, p->pos);
   switch (p->tokens[p->pos].type) {
   case ALC_TOKEN_TYPE_PERIOD:
     return parse_entry_explicit(p);
@@ -80,10 +65,10 @@ static alc_ast_t *parse_entry(alc_parser_t *p)
 
 static alc_ast_t *parse_entry_default(alc_parser_t *p)
 {
+  _VERIFY_POS(p, p->pos);
   alc_ast_t *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
                                                                        parse_expr(p, false);
-  if ALC_UNLIKELY (expr == nullptr)
-    return nullptr;
+  _VERIFY_AST(expr);
 
   alc_ast_t *entry_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
   entry_ast->data.INITLIST_ENTRY.expression = expr;
@@ -94,49 +79,29 @@ static alc_ast_t *parse_entry_default(alc_parser_t *p)
 
 static alc_ast_t *parse_entry_explicit(alc_parser_t *p)
 {
-  if ALC_UNLIKELY (p->tokens[p->pos].has_whitespace_after) {
-    add_error_unexpected_whitespace(p, p->pos++, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
+  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
 
   usize pos = p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_EQ) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_EQ);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_EQ);
 
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
+  _VERIFY_POS(p, p->pos);
   alc_ast_t *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
                                                                        parse_expr(p, false);
-  if ALC_UNLIKELY (expr == nullptr)
-    return nullptr;
+  _VERIFY_AST(expr);
 
   alc_ast_t *entry_explicit =
     alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
@@ -151,67 +116,34 @@ static alc_ast_t *parse_entry_explicit(alc_parser_t *p)
 
 static alc_ast_t *parse_entry_explicit_array_elem(alc_parser_t *p)
 {
+  _VERIFY_POS(p, p->pos);
+
   usize pos = p->pos;
 
   alc_ast_t **index_expressions = vector_create(alc_ast_t *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     p->pos++;
 
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      vector_destroy(index_expressions);
-      return nullptr;
-    }
-
     alc_ast_t *expr = parse_expr(p, false);
-    if ALC_UNLIKELY (expr == nullptr) {
-      vector_destroy(index_expressions);
-      return nullptr;
-    }
+    _VERIFY_AST(expr, { vector_destroy(index_expressions); });
 
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      vector_destroy(index_expressions);
-      return nullptr;
-    }
-
-    if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
-      add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_RBRACK);
-      vector_destroy(index_expressions);
-      return nullptr;
-    }
+    _VERIFY_POS(p, p->pos, { vector_destroy(index_expressions); });
+    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK, { vector_destroy(index_expressions); });
 
     vector_push(index_expressions, expr);
 
     p->pos++;
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    vector_destroy(index_expressions);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_EQ) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_EQ);
-    vector_destroy(index_expressions);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos, { vector_destroy(index_expressions); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_EQ, { vector_destroy(index_expressions); });
 
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    vector_destroy(index_expressions);
-    return nullptr;
-  }
-
+  _VERIFY_POS(p, p->pos, { vector_destroy(index_expressions); });
   alc_ast_t *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
                                                                        parse_expr(p, false);
-  if ALC_UNLIKELY (expr == nullptr) {
-    vector_destroy(index_expressions);
-    return nullptr;
-  }
+  _VERIFY_AST(expr, { vector_destroy(expr); });
 
   alc_ast_t *entry_explicit_array_element = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
   entry_explicit_array_element->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions =

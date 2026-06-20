@@ -13,6 +13,9 @@ alc_ast_t *parse_attribute_list(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LBRACK);
+
   usize pos = p->pos++;
 
   alc_ast_t **attrs = vector_create(alc_ast_t *);
@@ -23,41 +26,20 @@ alc_ast_t *parse_attribute_list(alc_parser_t *p)
       break;
 
     if (!first) {
-      if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_COMMA) {
-        add_error_unexpected_token(p, p->pos, 1, ALC_TOKEN_TYPE_COMMA);
-        vector_destroy(attrs);
-        return nullptr;
-      }
-
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { vector_destroy(attrs); });
       p->pos++;
-
-      if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-        add_error_unexpected_eof(p, p->pos);
-        vector_destroy(attrs);
-        return nullptr;
-      }
     }
 
     alc_ast_t *attr = parse_attribute(p);
-    if ALC_UNLIKELY (attr == nullptr)
-      return nullptr;
+    _VERIFY_AST(attr, { vector_destroy(attrs); });
 
     vector_push(attrs, attr);
 
     first = false;
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    vector_destroy(attrs);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
-    add_error_unexpected_token(p, p->pos, 1, ALC_TOKEN_TYPE_RBRACK);
-    vector_destroy(attrs);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos, { vector_destroy(attrs); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK, { vector_destroy(attrs); });
 
   p->pos++;
 
@@ -74,10 +56,8 @@ static alc_ast_t *parse_attribute(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
@@ -92,48 +72,22 @@ static alc_ast_t *parse_attribute(alc_parser_t *p)
     p->pos++;
 
     b8 first = true;
-    while (p->pos < p->tokens_num) {
-      if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_RPAREN)
-        break;
-
+    while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN) {
       if (!first) {
-        if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_COMMA) {
-          add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_COMMA);
-          vector_destroy(arguments);
-          return nullptr;
-        }
-
+        _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { vector_destroy(arguments); });
         p->pos++;
-
-        if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-          add_error_unexpected_eof(p, p->pos);
-          vector_destroy(arguments);
-          return nullptr;
-        }
       }
 
       alc_ast_t *expr = parse_expr(p, false);
-      if ALC_UNLIKELY (expr == nullptr) {
-        vector_destroy(arguments);
-        return nullptr;
-      }
+      _VERIFY_AST(expr, { vector_destroy(arguments); });
 
       vector_push(arguments, expr);
 
       first = false;
     }
 
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      vector_destroy(arguments);
-      return nullptr;
-    }
-
-    if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN) {
-      add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_RPAREN);
-      vector_destroy(arguments);
-      return nullptr;
-    }
+    _VERIFY_POS(p, p->pos, { vector_destroy(arguments); });
+    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN, { vector_destroy(arguments); });
 
     p->pos++;
   }

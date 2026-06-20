@@ -9,10 +9,7 @@ alc_ast_t *parse_top(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
 
   switch (p->tokens[p->pos].type) {
   case ALC_TOKEN_TYPE_SEMICOLON: {
@@ -29,19 +26,13 @@ alc_ast_t *parse_top(alc_parser_t *p)
 
   case ALC_TOKEN_TYPE_LBRACK: {
     alc_ast_t *attribute_list = parse_attribute_list(p);
-    if ALC_UNLIKELY (attribute_list == nullptr)
-      return nullptr;
-
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      return nullptr;
-    }
+    _VERIFY_AST(attribute_list);
 
     return parse_decldef(p, attribute_list);
   }
 
   default:
-    add_error_unexpected_token(p, p->pos++, 0);
+    add_error_unexpected_token_v(p, p->pos++, nullptr);
     return nullptr;
   }
 }

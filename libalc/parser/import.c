@@ -8,23 +8,17 @@ alc_ast_t *parse_import(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  usize pos = p->pos;
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
+  _VERIFY_VALUE(p, p->pos, "import");
 
-  p->pos++;
+  usize pos = p->pos++;
+
   alc_ast_t *module = parse_module(p);
+  _VERIFY_AST(module);
 
-  if ALC_UNLIKELY (module == nullptr)
-    return nullptr;
-
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_SEMICOLON) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_SEMICOLON);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_SEMICOLON);
 
   p->pos++;
 

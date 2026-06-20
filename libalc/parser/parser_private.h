@@ -2,8 +2,13 @@
 #define __ALC_PARSER_PRIVATE_H__
 
 #include "alc/ast.h"
+#include "alc/defs.h"
 #include "alc/parser.h"
+#include "alc/token.h"
+#include "allocs/alloc_arena.h"
 #include "containers/vector.h"
+#include "global.h"
+#include "string.h"
 
 typedef struct __alc_parser_t {
   alc_token_t *tokens;
@@ -66,33 +71,161 @@ static inline void add_error(alc_parser_t *p, alc_parser_error_t error)
 
 static inline void add_error_unexpected_eof(alc_parser_t *p, usize pos)
 {
+  add_error(p, (alc_parser_error_t){
+                 .data = { { 0 } },
+                 .pos = pos,
+                 .len = 1,
+                 .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_EOF,
+               });
+}
+
+static inline void add_error_unexpected_token(alc_parser_t *p, usize pos, alc_token_type_t expected)
+{
   ALC_ASSUME(p != nullptr);
-  alc_parser_error_t unexpected_eof_error = {
+  alc_parser_error_t error = {
+    .data = {
+      .UNEXPECTED_TOKEN = {
+        .expected_token_types = alloc_arena_allocate(&ctx()->arena, sizeof(alc_token_type_t)),
+        .expected_token_types_num = 1,
+      },
+    },
+    .pos = pos,
+    .len = 1,
+    .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_TOKEN,
+  };
+  error.data.UNEXPECTED_TOKEN.expected_token_types[0] = expected;
+  add_error(p, error);
+  p->pos++;
+}
+
+static inline void add_error_unexpected_token_v(alc_parser_t *p, usize pos,
+                                                alc_token_type_t *expected_v)
+{
+  ALC_ASSUME(p != nullptr);
+  alc_parser_error_t error = {
     .data = { { 0 } },
     .pos = pos,
     .len = 1,
-    .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_EOF,
+    .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_TOKEN,
   };
-  add_error(p, unexpected_eof_error);
+  if ALC_LIKELY (expected_v != nullptr) {
+    error.data.UNEXPECTED_TOKEN.expected_token_types =
+      vector_to_array(expected_v, &error.data.UNEXPECTED_TOKEN.expected_token_types_num);
+    vector_destroy(expected_v);
+  }
+  add_error(p, error);
+  p->pos++;
 }
 
-void add_error_unexpected_token(alc_parser_t *p, usize pos, usize expected_token_types_num,
-                                /* alc_token_type_t */...);
-
-void add_error_unexpected_value(alc_parser_t *p, usize pos, usize expected_values_num,
-                                /* const char * */...);
-
-static inline void add_error_unexpected_whitespace(alc_parser_t *p, usize pos,
-                                                   alc_token_type_t expected_token_type)
+static inline void add_error_unexpected_value(alc_parser_t *p, usize pos, const char *expected)
 {
   ALC_ASSUME(p != nullptr);
-  alc_parser_error_t unexpected_ws_error = {
-    .data = { .UNEXPECTED_WHITESPACE = { .expected_token_type = expected_token_type } },
+  alc_parser_error_t error = {
+    .data = {
+      .UNEXPECTED_VALUE = {
+        .expected_values = alloc_arena_allocate(&ctx()->arena, sizeof(const char *)),
+        .expected_values_num = 1,
+      },
+    },
     .pos = pos,
     .len = 1,
-    .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_WHITESPACE,
+    .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_VALUE,
   };
-  add_error(p, unexpected_ws_error);
+  error.data.UNEXPECTED_VALUE.expected_values[0] = expected;
+  add_error(p, error);
+  p->pos++;
 }
+
+static inline void add_error_unexpected_value_v(alc_parser_t *p, usize pos, const char **expected_v)
+{
+  ALC_ASSUME(p != nullptr);
+  alc_parser_error_t error = {
+    .data = { { 0 } },
+    .pos = pos,
+    .len = 1,
+    .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_VALUE,
+  };
+  if ALC_LIKELY (expected_v != nullptr) {
+    error.data.UNEXPECTED_VALUE.expected_values =
+      vector_to_array(expected_v, &error.data.UNEXPECTED_VALUE.expected_values_num);
+    vector_destroy(expected_v);
+  }
+  add_error(p, error);
+  p->pos++;
+}
+
+static inline void add_error_unexpected_whitespace(alc_parser_t *p, usize pos,
+                                                   alc_token_type_t expected_after)
+{
+  add_error(p, (alc_parser_error_t){
+                 .data = { .UNEXPECTED_WHITESPACE = { .expected_token_type = expected_after } },
+                 .pos = pos,
+                 .len = 1,
+                 .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_WHITESPACE,
+               });
+  p->pos++;
+}
+
+#define _VERIFY_POS(_p, _pos, ...)                 \
+  {                                                \
+    if ALC_UNLIKELY ((_pos) >= (_p)->tokens_num) { \
+      add_error_unexpected_eof((_p), (_pos));      \
+      __VA_ARGS__                                  \
+      return nullptr;                              \
+    }                                              \
+  }
+
+#define _VERIFY_TOKEN(_p, _pos, _expected, ...)                  \
+  {                                                              \
+    if ALC_UNLIKELY ((_p)->tokens[(_pos)].type != (_expected)) { \
+      add_error_unexpected_token((_p), (_pos), (_expected));     \
+      __VA_ARGS__                                                \
+      return nullptr;                                            \
+    }                                                            \
+  }
+
+#define _VERIFY_TOKEN_V(_p, _pos, _expected_v, ...)                   \
+  {                                                                   \
+    if ALC_UNLIKELY ((_p)->tokens[(_pos)].type != (_expected_v)[0]) { \
+      add_error_unexpected_token_v((_p), (_pos), (_expected_v));      \
+      __VA_ARGS__                                                     \
+      return nullptr;                                                 \
+    }                                                                 \
+  }
+
+#define _VERIFY_VALUE(_p, _pos, _expected, ...)                              \
+  {                                                                          \
+    if ALC_UNLIKELY (strcmp((_p)->tokens[(_pos)].value, (_expected)) != 0) { \
+      add_error_unexpected_value((_p), (_pos), (_expected));                 \
+      __VA_ARGS__                                                            \
+      return nullptr;                                                        \
+    }                                                                        \
+  }
+
+#define _VERIFY_VALUE_V(_p, _pos, _expected_v, ...)                             \
+  {                                                                             \
+    if ALC_UNLIKELY (strcmp((_p)->tokens[(_pos)].value, (_expected)[0]) != 0) { \
+      add_error_unexpected_value_v((_p), (_pos), (_expected_v));                \
+      __VA_ARGS__                                                               \
+      return nullptr;                                                           \
+    }                                                                           \
+  }
+
+#define _VERIFY_NO_WS(_p, _pos, _expected_token_type, ...)                   \
+  {                                                                          \
+    if ALC_UNLIKELY ((_p)->tokens[(_pos)].has_whitespace_after) {            \
+      add_error_unexpected_whitespace((_p), (_pos), (_expected_token_type)); \
+      __VA_ARGS__                                                            \
+      return nullptr;                                                        \
+    }                                                                        \
+  }
+
+#define _VERIFY_AST(_ast, ...)            \
+  {                                       \
+    if ALC_UNLIKELY ((_ast) == nullptr) { \
+      __VA_ARGS__                         \
+      return nullptr;                     \
+    }                                     \
+  }
 
 #endif // __ALC_PARSER_PRIVATE_H__

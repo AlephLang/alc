@@ -14,32 +14,22 @@ alc_ast_t *parse_extern(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
+  _VERIFY_VALUE(p, p->pos, "extern");
+
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
 
   usize pos = p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_COLON) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_COLON);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COLON);
 
   return !p->tokens[p->pos].has_whitespace_after && p->pos + 1 < p->tokens_num &&
              p->tokens[p->pos].type == ALC_TOKEN_TYPE_COLON ?
@@ -51,24 +41,11 @@ static alc_ast_t *__var(alc_parser_t *p, usize pos, const char *name, usize name
 {
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
   alc_ast_t *var_type = parse_type(p);
-  if ALC_UNLIKELY (var_type == nullptr)
-    return nullptr;
+  _VERIFY_AST(var_type);
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_SEMICOLON) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_SEMICOLON);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_SEMICOLON);
 
   p->pos++;
 
@@ -86,60 +63,26 @@ static alc_ast_t *__function(alc_parser_t *p, usize pos, const char *name, usize
 {
   p->pos += 2;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_LPAREN) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_LPAREN);
-    return nullptr;
-  }
-
   alc_ast_t *argument_list = parse_function_arguments(p);
-  if ALC_UNLIKELY (argument_list == nullptr)
-    return nullptr;
+  _VERIFY_AST(argument_list);
 
   alc_ast_t *return_type = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_MINUS) {
-    if ALC_UNLIKELY (p->tokens[p->pos].has_whitespace_after) {
-      add_error_unexpected_whitespace(p, p->pos++, ALC_TOKEN_TYPE_RARROW);
-      return nullptr;
-    }
+    _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_RARROW);
 
     p->pos++;
 
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      return nullptr;
-    }
-
-    if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
-      add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_RARROW);
-      return nullptr;
-    }
+    _VERIFY_POS(p, p->pos);
+    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RARROW);
 
     p->pos++;
-
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      return nullptr;
-    }
 
     return_type = parse_type(p);
-    if ALC_UNLIKELY (return_type == nullptr)
-      return nullptr;
+    _VERIFY_AST(return_type);
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_SEMICOLON) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_SEMICOLON);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_SEMICOLON);
 
   p->pos++;
 

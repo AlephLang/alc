@@ -14,17 +14,14 @@ alc_ast_t *parse_enum(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
+  _VERIFY_VALUE(p, p->pos, "enum");
+
   p->pos++;
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
@@ -34,19 +31,11 @@ alc_ast_t *parse_enum(alc_parser_t *p)
   alc_ast_t *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
-    if ALC_UNLIKELY (attribute_list == nullptr)
-      return nullptr;
+    _VERIFY_AST(attribute_list);
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_LCBRACK) {
-    add_error_unexpected_token(p, p->pos, 2, ALC_TOKEN_TYPE_LCBRACK, ALC_TOKEN_TYPE_LBRACK);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LCBRACK);
 
   p->pos++;
 
@@ -79,7 +68,10 @@ alc_ast_t *parse_enum(alc_parser_t *p)
   }
 
   if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    add_error_unexpected_token(p, p->pos++, 2, ALC_TOKEN_TYPE_RCBRACK, ALC_TOKEN_TYPE_COMMA);
+    alc_token_type_t *expected_v = vector_reserve(alc_token_type_t, 2);
+    vector_push(expected_v, ALC_TOKEN_TYPE_RCBRACK);
+    vector_push(expected_v, ALC_TOKEN_TYPE_COMMA);
+    add_error_unexpected_token_v(p, p->pos++, expected_v);
     vector_destroy(elements);
     return nullptr;
   }
@@ -99,10 +91,8 @@ alc_ast_t *parse_enum(alc_parser_t *p)
 
 static alc_ast_t *parse_enum_element(alc_parser_t *p)
 {
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
@@ -113,14 +103,8 @@ static alc_ast_t *parse_enum_element(alc_parser_t *p)
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_EQ) {
     p->pos++;
 
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      return nullptr;
-    }
-
     expr = parse_expr(p, false);
-    if ALC_UNLIKELY (expr == nullptr)
-      return nullptr;
+    _VERIFY_AST(expr);
   }
 
   alc_ast_t *enum_element =

@@ -14,64 +14,29 @@ alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LARROW);
 
-  usize pos = p->pos;
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_LARROW) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_LARROW);
-    return nullptr;
-  }
-
-  p->pos++;
+  usize pos = p->pos++;
 
   b8 first = true;
   alc_ast_t **placeholder_types = vector_create(alc_ast_t *);
-  while (p->pos < p->tokens_num) {
-    if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_RARROW)
-      break;
-
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
     if (!first) {
-      if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_COMMA) {
-        add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_COMMA);
-        vector_destroy(placeholder_types);
-        return nullptr;
-      }
-
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { vector_destroy(placeholder_types); });
       p->pos++;
-
-      if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-        add_error_unexpected_eof(p, p->pos);
-        vector_destroy(placeholder_types);
-        return nullptr;
-      }
     }
 
     alc_ast_t *placeholder_type = parse_generic_placeholder_type(p);
-    if ALC_UNLIKELY (placeholder_types == nullptr) {
-      vector_destroy(placeholder_types);
-      return nullptr;
-    }
+    _VERIFY_AST(placeholder_type, { vector_destroy(placeholder_types); });
 
     vector_push(placeholder_types, placeholder_type);
 
     first = false;
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    vector_destroy(placeholder_types);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_RARROW);
-    vector_destroy(placeholder_types);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RARROW);
 
   p->pos++;
 
@@ -91,81 +56,35 @@ alc_ast_t *parse_generic_type_list(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_EXCLMARK);
+  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_LARROW);
 
-  usize pos = p->pos;
+  usize pos = p->pos++;
 
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_EXCLMARK) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_EXCLMARK);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].has_whitespace_after) {
-    add_error_unexpected_whitespace(p, p->pos++, ALC_TOKEN_TYPE_LARROW);
-    return nullptr;
-  }
-
-  p->pos++;
-
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_LARROW) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_LARROW);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LARROW);
 
   p->pos++;
 
   alc_ast_t **types_in_type_list = vector_create(alc_ast_t *);
   b8 first = true;
-  while (p->pos < p->tokens_num) {
-    if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_RARROW)
-      break;
-
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
     if (!first) {
-      if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_COMMA) {
-        add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_COMMA);
-        vector_destroy(types_in_type_list);
-        return nullptr;
-      }
-
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { vector_destroy(types_in_type_list); });
       p->pos++;
-
-      if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-        add_error_unexpected_eof(p, p->pos);
-        vector_destroy(types_in_type_list);
-        return nullptr;
-      }
     }
 
     alc_ast_t *type_in_type_list = parse_type(p);
-    if ALC_UNLIKELY (type_in_type_list == nullptr) {
-      vector_destroy(types_in_type_list);
-      return nullptr;
-    }
+    _VERIFY_AST(type_in_type_list, { vector_destroy(types_in_type_list); });
 
     vector_push(types_in_type_list, type_in_type_list);
 
     first = false;
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    vector_destroy(types_in_type_list);
-    return nullptr;
-  }
-
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_RARROW);
-    vector_destroy(types_in_type_list);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos, { vector_destroy(types_in_type_list); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RARROW, { vector_destroy(types_in_type_list); });
 
   p->pos++;
 
@@ -182,10 +101,8 @@ static alc_ast_t *parse_generic_placeholder_type(alc_parser_t *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_ID) {
-    add_error_unexpected_token(p, p->pos++, 1, ALC_TOKEN_TYPE_ID);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
@@ -197,8 +114,7 @@ static alc_ast_t *parse_generic_placeholder_type(alc_parser_t *p)
     p->pos++;
 
     default_type = parse_type(p);
-    if ALC_UNLIKELY (default_type == nullptr)
-      return nullptr;
+    _VERIFY_AST(default_type);
   }
 
   alc_ast_t *generic_placeholder_type =

@@ -145,7 +145,7 @@ static string_t *to_string(const alc_ast_t *ast)
   case ALC_AST_KIND_EXTERN_FUNC: {
     string_t **children_vs_v = vector_reserve(string_t *, 2);
     vector_push(children_vs_v, to_string(ast->data.EXTERN_FUNC.argument_list));
-    add_to_strings_opt(children_vs_v, ast->data.EXTERN_FUNC.argument_list);
+    add_to_strings_opt(children_vs_v, ast->data.EXTERN_FUNC.return_type);
     string_t header = string_create_from("EXTERN_FUNC { name: \"");
     string_append_cstr(&header, ast->data.EXTERN_FUNC.name);
     string_append_cstr(&header, "\" }");

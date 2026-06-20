@@ -280,6 +280,7 @@ typedef struct __alc_ast_t {
       struct __alc_ast_t *iterator;
       struct __alc_ast_t *body;
       struct __alc_ast_t *attribute_list;
+      char *i_name;
     } STMT_FOREACH;
     struct {
       struct __alc_ast_t *expression;

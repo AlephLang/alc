@@ -400,7 +400,15 @@ static string_t *to_string(const alc_ast_t *ast)
     vector_push(children_vs_v, to_string(ast->data.STMT_FOREACH.body));
     string_t header = string_create_from("STMT_FOREACH { item_name: \"");
     string_append_cstr(&header, ast->data.STMT_FOREACH.item_name);
-    string_append_cstr(&header, "\" }");
+
+    if (ast->data.STMT_FOREACH.i_name == nullptr)
+      string_append_cstr(&header, "\", i_name: - }");
+    else {
+      string_append_cstr(&header, "\", i_name: \"");
+      string_append_cstr(&header, ast->data.STMT_FOREACH.i_name);
+      string_append_cstr(&header, "\" }");
+    }
+
     return build_tree(header, children_vs_v);
   }
 

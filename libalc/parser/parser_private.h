@@ -203,13 +203,13 @@ static inline void add_error_unexpected_whitespace(alc_parser_t *p, usize pos,
     }                                                                        \
   }
 
-#define _VERIFY_VALUE_V(_p, _pos, _expected_v, ...)                             \
-  {                                                                             \
-    if ALC_UNLIKELY (strcmp((_p)->tokens[(_pos)].value, (_expected)[0]) != 0) { \
-      add_error_unexpected_value_v((_p), (_pos), (_expected_v));                \
-      __VA_ARGS__                                                               \
-      return nullptr;                                                           \
-    }                                                                           \
+#define _VERIFY_VALUE_V(_p, _pos, _expected_v, ...)                               \
+  {                                                                               \
+    if ALC_UNLIKELY (strcmp((_p)->tokens[(_pos)].value, (_expected_v)[0]) != 0) { \
+      add_error_unexpected_value_v((_p), (_pos), (_expected_v));                  \
+      __VA_ARGS__                                                                 \
+      return nullptr;                                                             \
+    }                                                                             \
   }
 
 #define _VERIFY_NO_WS(_p, _pos, _expected_token_type, ...)                   \

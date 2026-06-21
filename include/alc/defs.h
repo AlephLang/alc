@@ -31,6 +31,9 @@ typedef size_t usize;
 typedef intptr_t sptr;
 typedef uintptr_t uptr;
 
+#define ALC_MIN(_a, _b) ((_a) < (_b) ? (_a) : (_b))
+#define ALC_MAX(_a, _b) ((_a) > (_b) ? (_a) : (_b))
+
 #ifdef __cplusplus
 #define __ALC_CPP_GUARD_TOP() extern "C" {
 #define __ALC_CPP_GUARD_BOTTOM() }

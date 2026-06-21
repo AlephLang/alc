@@ -3,7 +3,7 @@
 #include "allocs/alloc_arena.h"
 #include "global.h"
 
-static ctx_t _ctx = { 0 };
+static Ctx _ctx = { 0 };
 static b8 initialized = false;
 
 b8 alc_initialize(void)
@@ -25,7 +25,7 @@ void alc_shutdown(void)
   initialized = false;
 }
 
-ctx_t *ctx(void)
+Ctx *ctx(void)
 {
   ALC_ASSERT(initialized);
 

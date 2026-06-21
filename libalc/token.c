@@ -1,6 +1,6 @@
 #include "alc/token.h"
 
-void alc_token_to_string(alc_token_t *token, char *buf, usize n)
+void alc_token_to_string(Alc_Token *token, char *buf, usize n)
 {
   ALC_ASSERT(token != nullptr);
   ALC_ASSERT(buf != nullptr);

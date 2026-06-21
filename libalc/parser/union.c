@@ -6,7 +6,7 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-alc_ast_t *parse_union(alc_parser_t *p)
+Alc_Ast *parse_union(Alc_Parser *p)
 {
   p->pos++;
 
@@ -18,7 +18,7 @@ alc_ast_t *parse_union(alc_parser_t *p)
 
   usize pos = p->pos++;
 
-  alc_ast_t *attribute_list = nullptr;
+  Alc_Ast *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
@@ -29,20 +29,20 @@ alc_ast_t *parse_union(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t **children = vector_create(alc_ast_t *);
+  Alc_Ast **children = vector_create(Alc_Ast *);
 
   while (p->pos < p->tokens_num) {
     if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_RCBRACK)
       break;
 
-    alc_ast_t *attribs = nullptr;
+    Alc_Ast *attribs = nullptr;
     if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
       attribs = parse_attribute_list(p);
       _VERIFY_AST(attribs, { vector_destroy(children); });
       _VERIFY_POS(p, p->pos, { vector_destroy(children); });
     }
 
-    alc_ast_t *child = nullptr;
+    Alc_Ast *child = nullptr;
 
     if (attribs == nullptr && p->tokens[p->pos].type == ALC_TOKEN_TYPE_ID) {
       child = parse_ids(p);
@@ -56,7 +56,7 @@ alc_ast_t *parse_union(alc_parser_t *p)
     if (child == nullptr) {
       if ALC_UNLIKELY (p->tokens[p->pos].type == ALC_TOKEN_TYPE_SEMICOLON) {
         p->pos++;
-        child = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+        child = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
         child->pos = pos;
         child->kind = ALC_AST_KIND_NONE;
       } else {
@@ -73,9 +73,9 @@ alc_ast_t *parse_union(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *union_ast =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-  union_ast->data.UNION.name = (char *)union_ast + sizeof(alc_ast_t);
+  Alc_Ast *union_ast =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+  union_ast->data.UNION.name = (char *)union_ast + sizeof(Alc_Ast);
   union_ast->data.UNION.attribute_list = attribute_list;
   union_ast->data.UNION.children = vector_to_array(children, &union_ast->data.UNION.children_num);
   union_ast->pos = pos;

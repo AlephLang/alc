@@ -5,13 +5,13 @@
 #include "global.h"
 #include "parser/parser_private.h"
 
-alc_ast_t *parse_stmt_while(alc_parser_t *p)
+Alc_Ast *parse_stmt_while(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
   usize pos = p->pos++;
 
-  alc_ast_t *attribute_list = nullptr;
+  Alc_Ast *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
@@ -22,7 +22,7 @@ alc_ast_t *parse_stmt_while(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *cond_expr = parse_expr(p, false);
+  Alc_Ast *cond_expr = parse_expr(p, false);
   _VERIFY_AST(cond_expr);
 
   _VERIFY_POS(p, p->pos);
@@ -30,10 +30,10 @@ alc_ast_t *parse_stmt_while(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *body = parse_stmt(p);
+  Alc_Ast *body = parse_stmt(p);
   _VERIFY_AST(body);
 
-  alc_ast_t *stmt_while_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *stmt_while_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_while_ast->data.STMT_WHILE.condition = cond_expr;
   stmt_while_ast->data.STMT_WHILE.body = body;
   stmt_while_ast->data.STMT_WHILE.attribute_list = attribute_list;

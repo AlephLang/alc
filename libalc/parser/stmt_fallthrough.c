@@ -5,7 +5,7 @@
 #include "global.h"
 #include "parser/parser_private.h"
 
-alc_ast_t *parse_stmt_fallthrough(alc_parser_t *p)
+Alc_Ast *parse_stmt_fallthrough(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -16,7 +16,7 @@ alc_ast_t *parse_stmt_fallthrough(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *stmt_fallthrough_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *stmt_fallthrough_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_fallthrough_ast->pos = pos;
   stmt_fallthrough_ast->kind = ALC_AST_KIND_STMT_FALLTHROUGH;
   return stmt_fallthrough_ast;

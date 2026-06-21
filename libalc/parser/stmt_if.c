@@ -6,13 +6,13 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-alc_ast_t *parse_stmt_if(alc_parser_t *p)
+Alc_Ast *parse_stmt_if(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
   usize pos = p->pos++;
 
-  alc_ast_t *attribute_list = nullptr;
+  Alc_Ast *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
@@ -23,7 +23,7 @@ alc_ast_t *parse_stmt_if(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *cond_expr = parse_expr(p, false);
+  Alc_Ast *cond_expr = parse_expr(p, false);
   _VERIFY_AST(cond_expr);
 
   _VERIFY_POS(p, p->pos);
@@ -31,17 +31,17 @@ alc_ast_t *parse_stmt_if(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *body = parse_stmt(p);
+  Alc_Ast *body = parse_stmt(p);
   _VERIFY_AST(body);
 
-  alc_ast_t *stmt_else = nullptr;
+  Alc_Ast *stmt_else = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_ID &&
       strcmp(p->tokens[p->pos].value, "else") == 0) {
     stmt_else = parse_stmt_else(p);
     _VERIFY_AST(stmt_else);
   }
 
-  alc_ast_t *stmt_if_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *stmt_if_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_if_ast->data.STMT_IF.condition = cond_expr;
   stmt_if_ast->data.STMT_IF.body = body;
   stmt_if_ast->data.STMT_IF.else_statement = stmt_else;

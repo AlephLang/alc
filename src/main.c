@@ -45,8 +45,8 @@ s32 main(s32 argc, char **argv)
     fread(data, sizeof(char), size, f);
     data[size] = 0;
 
-    alc_lexer_t lexer = alc_lexer_create(data);
-    alc_token_t *tokens = nullptr;
+    Alc_Lexer lexer = alc_lexer_create(data);
+    Alc_Token *tokens = nullptr;
     usize n_tokens;
     if ALC_UNLIKELY (!alc_lexer_tokenize(&lexer, &tokens, &n_tokens)) {
       ALC_TODO("Report tokenization failure.");
@@ -60,8 +60,8 @@ s32 main(s32 argc, char **argv)
       printf("(%zu) %s\n", i, buf);
     }
 
-    alc_parser_t *parser = alc_parser_create(tokens, n_tokens);
-    alc_ast_t *root = alc_parser_parse(parser);
+    Alc_Parser *parser = alc_parser_create(tokens, n_tokens);
+    Alc_Ast *root = alc_parser_parse(parser);
     alc_ast_print(root);
 
     alc_parser_destroy(parser);

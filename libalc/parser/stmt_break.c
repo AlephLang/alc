@@ -5,7 +5,7 @@
 #include "global.h"
 #include "parser/parser_private.h"
 
-alc_ast_t *parse_stmt_break(alc_parser_t *p)
+Alc_Ast *parse_stmt_break(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -16,7 +16,7 @@ alc_ast_t *parse_stmt_break(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *stmt_break_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *stmt_break_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_break_ast->pos = pos;
   stmt_break_ast->kind = ALC_AST_KIND_STMT_BREAK;
   return stmt_break_ast;

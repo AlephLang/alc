@@ -33,24 +33,24 @@
   CHAR_CASE_X('#', HASH)       \
   CHAR_CASE_X('~', TILDE)
 
-static alc_token_t gen_token(const char *value, alc_token_type_t type, usize line, usize llp,
-                             usize raw_pos, usize len, b8 has_whitespace_after);
-static inline alc_token_t process_error(alc_lexer_t *l);
-static inline alc_token_t process_string(alc_lexer_t *l);
-static inline alc_token_t process_symbol(alc_lexer_t *l);
-static inline alc_token_t process_id(alc_lexer_t *l);
-static inline alc_token_t process_num(alc_lexer_t *l);
-static inline alc_token_t process_num_hex(alc_lexer_t *l);
-static inline alc_token_t process_num_bin(alc_lexer_t *l);
-static inline alc_token_t process_num_oct(alc_lexer_t *l);
+static Alc_Token gen_token(const char *value, Alc_Token_Type type, usize line, usize llp,
+                           usize raw_pos, usize len, b8 has_whitespace_after);
+static inline Alc_Token process_error(Alc_Lexer *l);
+static inline Alc_Token process_string(Alc_Lexer *l);
+static inline Alc_Token process_symbol(Alc_Lexer *l);
+static inline Alc_Token process_id(Alc_Lexer *l);
+static inline Alc_Token process_num(Alc_Lexer *l);
+static inline Alc_Token process_num_hex(Alc_Lexer *l);
+static inline Alc_Token process_num_bin(Alc_Lexer *l);
+static inline Alc_Token process_num_oct(Alc_Lexer *l);
 static inline b8 is_start_of_id(char c);
 static inline b8 is_part_of_id(char c);
 static inline b8 is_processable(char c);
-static inline void skip_whitespace(alc_lexer_t *l);
-static inline void skip_c_comments(alc_lexer_t *l);
-static inline void skip_cpp_comments(alc_lexer_t *l);
-static inline b8 is_whitespace_at(const alc_lexer_t *l, usize pos);
-static inline char peek(const alc_lexer_t *l, usize adv);
+static inline void skip_whitespace(Alc_Lexer *l);
+static inline void skip_c_comments(Alc_Lexer *l);
+static inline void skip_cpp_comments(Alc_Lexer *l);
+static inline b8 is_whitespace_at(const Alc_Lexer *l, usize pos);
+static inline char peek(const Alc_Lexer *l, usize adv);
 static char *memcpy_cond(char *dst, const char *src, usize n, b8 (*cond)(char c));
 
 static b8 skip_separators(char c)
@@ -58,23 +58,23 @@ static b8 skip_separators(char c)
   return c != '\'' && c != '_';
 }
 
-alc_lexer_t alc_lexer_create(const char *src)
+Alc_Lexer alc_lexer_create(const char *src)
 {
   ALC_ASSERT(src != nullptr);
 
-  return (alc_lexer_t){
+  return (Alc_Lexer){
     .src = src,
     .src_len = strlen(src),
   };
 }
 
-b8 alc_lexer_tokenize(alc_lexer_t *lexer, alc_token_t **out_tokens, usize *out_n)
+b8 alc_lexer_tokenize(Alc_Lexer *lexer, Alc_Token **out_tokens, usize *out_n)
 {
   ALC_ASSERT(lexer != nullptr);
   ALC_ASSERT(out_tokens != nullptr);
   ALC_ASSERT(out_n != nullptr);
 
-  alc_token_t *tokens = vector_create(alc_token_t);
+  Alc_Token *tokens = vector_create(Alc_Token);
   b8 failed = false;
 
   while (lexer->pos < lexer->src_len) {
@@ -117,25 +117,25 @@ b8 alc_lexer_tokenize(alc_lexer_t *lexer, alc_token_t **out_tokens, usize *out_n
     } break;
 
     case '"': {
-      alc_token_t string_token = process_string(lexer);
+      Alc_Token string_token = process_string(lexer);
       if ALC_LIKELY (!failed)
         vector_push(tokens, string_token);
       break;
     }
     case '\'': {
-      alc_token_t symbol_token = process_symbol(lexer);
+      Alc_Token symbol_token = process_symbol(lexer);
       if ALC_LIKELY (!failed)
         vector_push(tokens, symbol_token);
       break;
     }
     default:
       if (is_start_of_id(c)) {
-        alc_token_t id_token = process_id(lexer);
+        Alc_Token id_token = process_id(lexer);
         if ALC_LIKELY (!failed)
           vector_push(tokens, id_token);
         break;
       } else if (isdigit(c)) {
-        alc_token_t num_token = process_num(lexer);
+        Alc_Token num_token = process_num(lexer);
         if ALC_LIKELY (!failed)
           vector_push(tokens, num_token);
         break;
@@ -162,8 +162,8 @@ b8 alc_lexer_tokenize(alc_lexer_t *lexer, alc_token_t **out_tokens, usize *out_n
   return !failed;
 }
 
-static alc_token_t gen_token(const char *value, alc_token_type_t type, usize line, usize llp,
-                             usize raw_pos, usize len, b8 has_whitespace_after)
+static Alc_Token gen_token(const char *value, Alc_Token_Type type, usize line, usize llp,
+                           usize raw_pos, usize len, b8 has_whitespace_after)
 {
   char *value_in_arena = nullptr;
   if (value != nullptr) {
@@ -172,7 +172,7 @@ static alc_token_t gen_token(const char *value, alc_token_type_t type, usize lin
     memcpy(value_in_arena, value, val_len + 1);
   }
 
-  return (alc_token_t){
+  return (Alc_Token){
     .line = line,
     .pos = raw_pos - llp,
     .len = len,
@@ -182,7 +182,7 @@ static alc_token_t gen_token(const char *value, alc_token_type_t type, usize lin
   };
 }
 
-static inline alc_token_t process_error(alc_lexer_t *l)
+static inline Alc_Token process_error(Alc_Lexer *l)
 {
   usize start = l->pos;
   for (; l->pos < l->src_len && !is_processable(l->src[l->pos]); l->pos++)
@@ -194,12 +194,12 @@ static inline alc_token_t process_error(alc_lexer_t *l)
   memcpy(value, s_ptr, len * sizeof(char));
   value[len] = 0;
 
-  alc_token_t token = gen_token(value, ALC_TOKEN_TYPE_ERROR, l->line, l->llp, start, len,
-                                is_whitespace_at(l, l->pos));
+  Alc_Token token = gen_token(value, ALC_TOKEN_TYPE_ERROR, l->line, l->llp, start, len,
+                              is_whitespace_at(l, l->pos));
   return token;
 }
 
-static char *get_string_value(alc_lexer_t *l, char terminator)
+static char *get_string_value(Alc_Lexer *l, char terminator)
 {
   l->pos++;
 
@@ -229,7 +229,7 @@ static char *get_string_value(alc_lexer_t *l, char terminator)
   return data;
 }
 
-static inline alc_token_t process_string(alc_lexer_t *l)
+static inline Alc_Token process_string(Alc_Lexer *l)
 {
   usize start = l->pos, line = l->line, llp = l->llp;
   char *value = get_string_value(l, '\"');
@@ -237,7 +237,7 @@ static inline alc_token_t process_string(alc_lexer_t *l)
                    is_whitespace_at(l, l->pos));
 }
 
-static inline alc_token_t process_symbol(alc_lexer_t *l)
+static inline Alc_Token process_symbol(Alc_Lexer *l)
 {
   usize start = l->pos, line = l->line, llp = l->llp;
   char *value = get_string_value(l, '\'');
@@ -245,7 +245,7 @@ static inline alc_token_t process_symbol(alc_lexer_t *l)
                    is_whitespace_at(l, l->pos));
 }
 
-static inline alc_token_t process_id(alc_lexer_t *l)
+static inline Alc_Token process_id(Alc_Lexer *l)
 {
   usize start = l->pos;
   for (; l->pos < l->src_len && is_part_of_id(l->src[l->pos]); l->pos++)
@@ -259,7 +259,7 @@ static inline alc_token_t process_id(alc_lexer_t *l)
                    is_whitespace_at(l, l->pos));
 }
 
-static inline alc_token_t process_num(alc_lexer_t *l)
+static inline Alc_Token process_num(Alc_Lexer *l)
 {
   if (l->src[l->pos] == '0') {
     switch (peek(l, 1)) {
@@ -294,7 +294,7 @@ static inline alc_token_t process_num(alc_lexer_t *l)
                    l->llp, start, len, is_whitespace_at(l, l->pos));
 }
 
-static inline alc_token_t process_num_hex(alc_lexer_t *l)
+static inline Alc_Token process_num_hex(Alc_Lexer *l)
 {
   l->pos += 2;
   usize start = l->pos;
@@ -311,7 +311,7 @@ static inline alc_token_t process_num_hex(alc_lexer_t *l)
                    is_whitespace_at(l, l->pos));
 }
 
-static inline alc_token_t process_num_bin(alc_lexer_t *l)
+static inline Alc_Token process_num_bin(Alc_Lexer *l)
 {
   l->pos += 2;
   usize start = l->pos;
@@ -328,7 +328,7 @@ static inline alc_token_t process_num_bin(alc_lexer_t *l)
                    is_whitespace_at(l, l->pos));
 }
 
-static inline alc_token_t process_num_oct(alc_lexer_t *l)
+static inline Alc_Token process_num_oct(Alc_Lexer *l)
 {
   l->pos += 2;
   usize start = l->pos;
@@ -369,7 +369,7 @@ static inline b8 is_processable(char c)
   }
 }
 
-static inline void skip_whitespace(alc_lexer_t *l)
+static inline void skip_whitespace(Alc_Lexer *l)
 {
   for (; l->pos < l->src_len && isspace(l->src[l->pos]); l->pos++) {
     switch (l->src[l->pos]) {
@@ -384,7 +384,7 @@ static inline void skip_whitespace(alc_lexer_t *l)
   }
 }
 
-static inline void skip_c_comments(alc_lexer_t *l)
+static inline void skip_c_comments(Alc_Lexer *l)
 {
   for (; l->pos < l->src_len; l->pos++) {
     char c1 = peek(l, 0), c2 = peek(l, 1);
@@ -400,7 +400,7 @@ static inline void skip_c_comments(alc_lexer_t *l)
   }
 }
 
-static inline void skip_cpp_comments(alc_lexer_t *l)
+static inline void skip_cpp_comments(Alc_Lexer *l)
 {
   for (; l->pos < l->src_len; l->pos++) {
     char c = l->src[l->pos];
@@ -413,12 +413,12 @@ static inline void skip_cpp_comments(alc_lexer_t *l)
   }
 }
 
-static inline b8 is_whitespace_at(const alc_lexer_t *l, usize pos)
+static inline b8 is_whitespace_at(const Alc_Lexer *l, usize pos)
 {
   return pos >= l->src_len || isspace(l->src[pos]);
 }
 
-static inline char peek(const alc_lexer_t *l, usize adv)
+static inline char peek(const Alc_Lexer *l, usize adv)
 {
   return l->pos + adv >= l->src_len ? 0 : l->src[l->pos + adv];
 }

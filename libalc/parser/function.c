@@ -8,9 +8,9 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *parse_variadic_args(alc_parser_t *p);
+static Alc_Ast *parse_variadic_args(Alc_Parser *p);
 
-alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_function_kind_t kind)
+Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function_Kind kind)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -33,17 +33,17 @@ alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_fu
 
   p->pos++;
 
-  alc_ast_t *generic_placeholder_type_list = nullptr;
+  Alc_Ast *generic_placeholder_type_list = nullptr;
   if (kind != ALC_AST_FUNCTION_KIND_EXPORTED && p->pos < p->tokens_num &&
       p->tokens[p->pos].type == ALC_TOKEN_TYPE_LARROW) {
     generic_placeholder_type_list = parse_generic_placeholder_type_list(p);
     _VERIFY_AST(generic_placeholder_type_list);
   }
 
-  alc_ast_t *argument_list = parse_function_arguments(p);
+  Alc_Ast *argument_list = parse_function_arguments(p);
   _VERIFY_AST(argument_list);
 
-  alc_ast_t *return_type = nullptr;
+  Alc_Ast *return_type = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_MINUS) {
     _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_RARROW);
 
@@ -60,7 +60,7 @@ alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_fu
 
   _VERIFY_POS(p, p->pos);
 
-  alc_ast_t *body;
+  Alc_Ast *body;
   if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_ID && strcmp(p->tokens[p->pos].value, "$") == 0) {
     p->pos++;
 
@@ -80,9 +80,9 @@ alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_fu
   }
 
   if (generic_placeholder_type_list == nullptr) {
-    alc_ast_t *function_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-    function_ast->data.FUNC.name = (char *)function_ast + sizeof(alc_ast_t);
+    Alc_Ast *function_ast =
+      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    function_ast->data.FUNC.name = (char *)function_ast + sizeof(Alc_Ast);
     function_ast->data.FUNC.argument_list = argument_list;
     function_ast->data.FUNC.return_type = return_type;
     function_ast->data.FUNC.body = body;
@@ -93,9 +93,9 @@ alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_fu
     memcpy(function_ast->data.FUNC.name, name, name_len);
     return function_ast;
   } else {
-    alc_ast_t *generic_function_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-    generic_function_ast->data.GENERIC_FUNC.name = (char *)generic_function_ast + sizeof(alc_ast_t);
+    Alc_Ast *generic_function_ast =
+      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    generic_function_ast->data.GENERIC_FUNC.name = (char *)generic_function_ast + sizeof(Alc_Ast);
     generic_function_ast->data.GENERIC_FUNC.generic_placeholder_type_list =
       generic_placeholder_type_list;
     generic_function_ast->data.GENERIC_FUNC.argument_list = argument_list;
@@ -110,7 +110,7 @@ alc_ast_t *parse_function(alc_parser_t *p, alc_ast_t *attribute_list, alc_ast_fu
   }
 }
 
-alc_ast_t *parse_function_arguments(alc_parser_t *p)
+Alc_Ast *parse_function_arguments(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -119,7 +119,7 @@ alc_ast_t *parse_function_arguments(alc_parser_t *p)
 
   usize pos = p->pos++;
 
-  alc_ast_t **args = vector_create(alc_ast_t *);
+  Alc_Ast **args = vector_create(Alc_Ast *);
   b8 first = true;
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN) {
     if (!first) {
@@ -127,9 +127,8 @@ alc_ast_t *parse_function_arguments(alc_parser_t *p)
       p->pos++;
     }
 
-    alc_ast_t *arg = p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD ?
-                       parse_variadic_args(p) :
-                       parse_decldef_var(p, nullptr);
+    Alc_Ast *arg = p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD ? parse_variadic_args(p) :
+                                                                     parse_decldef_var(p, nullptr);
     _VERIFY_AST(arg, { vector_destroy(args); });
 
     vector_push(args, arg);
@@ -142,7 +141,7 @@ alc_ast_t *parse_function_arguments(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *argument_list = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *argument_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   argument_list->data.ARGUMENT_LIST.arguments =
     vector_to_array(args, &argument_list->data.ARGUMENT_LIST.arguments_num);
   argument_list->pos = pos;
@@ -151,7 +150,7 @@ alc_ast_t *parse_function_arguments(alc_parser_t *p)
   return argument_list;
 }
 
-static alc_ast_t *parse_variadic_args(alc_parser_t *p)
+static Alc_Ast *parse_variadic_args(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -172,7 +171,7 @@ static alc_ast_t *parse_variadic_args(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *variadic_arg_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *variadic_arg_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   variadic_arg_ast->pos = pos;
   variadic_arg_ast->kind = ALC_AST_KIND_VARIADIC;
   return variadic_arg_ast;

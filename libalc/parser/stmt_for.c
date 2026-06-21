@@ -5,13 +5,13 @@
 #include "global.h"
 #include "parser/parser_private.h"
 
-alc_ast_t *parse_stmt_for(alc_parser_t *p)
+Alc_Ast *parse_stmt_for(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
   usize pos = p->pos++;
 
-  alc_ast_t *attribute_list = nullptr;
+  Alc_Ast *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
@@ -22,10 +22,10 @@ alc_ast_t *parse_stmt_for(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *init_statement = parse_stmt(p);
+  Alc_Ast *init_statement = parse_stmt(p);
   _VERIFY_AST(init_statement);
 
-  alc_ast_t *condition = nullptr;
+  Alc_Ast *condition = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_SEMICOLON) {
     condition = parse_expr(p, false);
     _VERIFY_AST(condition);
@@ -36,7 +36,7 @@ alc_ast_t *parse_stmt_for(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *expression = nullptr;
+  Alc_Ast *expression = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN) {
     expression = parse_expr(p, true);
     _VERIFY_AST(expression);
@@ -47,10 +47,10 @@ alc_ast_t *parse_stmt_for(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *body = parse_stmt(p);
+  Alc_Ast *body = parse_stmt(p);
   _VERIFY_AST(body);
 
-  alc_ast_t *stmt_for_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *stmt_for_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_for_ast->data.STMT_FOR.init_statement = init_statement;
   stmt_for_ast->data.STMT_FOR.condition = condition;
   stmt_for_ast->data.STMT_FOR.expression = expression;

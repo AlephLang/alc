@@ -7,12 +7,12 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *parse_entry(alc_parser_t *p);
-static alc_ast_t *parse_entry_default(alc_parser_t *p);
-static alc_ast_t *parse_entry_explicit(alc_parser_t *p);
-static alc_ast_t *parse_entry_explicit_array_elem(alc_parser_t *p);
+static Alc_Ast *parse_entry(Alc_Parser *p);
+static Alc_Ast *parse_entry_default(Alc_Parser *p);
+static Alc_Ast *parse_entry_explicit(Alc_Parser *p);
+static Alc_Ast *parse_entry_explicit_array_elem(Alc_Parser *p);
 
-alc_ast_t *parse_initlist(alc_parser_t *p)
+Alc_Ast *parse_initlist(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -21,9 +21,9 @@ alc_ast_t *parse_initlist(alc_parser_t *p)
 
   usize pos = p->pos++;
 
-  alc_ast_t **entries = vector_create(alc_ast_t *);
+  Alc_Ast **entries = vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    alc_ast_t *entry = parse_entry(p);
+    Alc_Ast *entry = parse_entry(p);
     _VERIFY_AST(entry, { vector_destroy(entries); });
 
     _VERIFY_POS(p, p->pos, { vector_destroy(entries); });
@@ -41,7 +41,7 @@ alc_ast_t *parse_initlist(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *initlist_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *initlist_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   initlist_ast->data.INITLIST.entries =
     vector_to_array(entries, &initlist_ast->data.INITLIST.entries_num);
   initlist_ast->pos = pos;
@@ -50,7 +50,7 @@ alc_ast_t *parse_initlist(alc_parser_t *p)
   return initlist_ast;
 }
 
-static alc_ast_t *parse_entry(alc_parser_t *p)
+static Alc_Ast *parse_entry(Alc_Parser *p)
 {
   _VERIFY_POS(p, p->pos);
   switch (p->tokens[p->pos].type) {
@@ -63,21 +63,21 @@ static alc_ast_t *parse_entry(alc_parser_t *p)
   }
 }
 
-static alc_ast_t *parse_entry_default(alc_parser_t *p)
+static Alc_Ast *parse_entry_default(Alc_Parser *p)
 {
   _VERIFY_POS(p, p->pos);
-  alc_ast_t *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
-                                                                       parse_expr(p, false);
+  Alc_Ast *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
+                                                                     parse_expr(p, false);
   _VERIFY_AST(expr);
 
-  alc_ast_t *entry_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *entry_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   entry_ast->data.INITLIST_ENTRY.expression = expr;
   entry_ast->pos = expr->pos;
   entry_ast->kind = ALC_AST_KIND_INITLIST_ENTRY;
   return entry_ast;
 }
 
-static alc_ast_t *parse_entry_explicit(alc_parser_t *p)
+static Alc_Ast *parse_entry_explicit(Alc_Parser *p)
 {
   _VERIFY_POS(p, p->pos);
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
@@ -99,14 +99,14 @@ static alc_ast_t *parse_entry_explicit(alc_parser_t *p)
   p->pos++;
 
   _VERIFY_POS(p, p->pos);
-  alc_ast_t *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
-                                                                       parse_expr(p, false);
+  Alc_Ast *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
+                                                                     parse_expr(p, false);
   _VERIFY_AST(expr);
 
-  alc_ast_t *entry_explicit =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
+  Alc_Ast *entry_explicit =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   entry_explicit->data.INITLIST_ENTRY_EXPLICIT.field_name =
-    (char *)entry_explicit + sizeof(alc_ast_t);
+    (char *)entry_explicit + sizeof(Alc_Ast);
   entry_explicit->data.INITLIST_ENTRY_EXPLICIT.expression = expr;
   entry_explicit->pos = pos;
   entry_explicit->kind = ALC_AST_KIND_INITLIST_ENTRY_EXPLICIT;
@@ -114,17 +114,17 @@ static alc_ast_t *parse_entry_explicit(alc_parser_t *p)
   return entry_explicit;
 }
 
-static alc_ast_t *parse_entry_explicit_array_elem(alc_parser_t *p)
+static Alc_Ast *parse_entry_explicit_array_elem(Alc_Parser *p)
 {
   _VERIFY_POS(p, p->pos);
 
   usize pos = p->pos;
 
-  alc_ast_t **index_expressions = vector_create(alc_ast_t *);
+  Alc_Ast **index_expressions = vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     p->pos++;
 
-    alc_ast_t *expr = parse_expr(p, false);
+    Alc_Ast *expr = parse_expr(p, false);
     _VERIFY_AST(expr, { vector_destroy(index_expressions); });
 
     _VERIFY_POS(p, p->pos, { vector_destroy(index_expressions); });
@@ -141,11 +141,11 @@ static alc_ast_t *parse_entry_explicit_array_elem(alc_parser_t *p)
   p->pos++;
 
   _VERIFY_POS(p, p->pos, { vector_destroy(index_expressions); });
-  alc_ast_t *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
-                                                                       parse_expr(p, false);
+  Alc_Ast *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
+                                                                     parse_expr(p, false);
   _VERIFY_AST(expr, { vector_destroy(expr); });
 
-  alc_ast_t *entry_explicit_array_element = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *entry_explicit_array_element = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   entry_explicit_array_element->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions =
     vector_to_array(index_expressions,
                     &entry_explicit_array_element->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT

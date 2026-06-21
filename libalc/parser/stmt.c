@@ -6,16 +6,16 @@
 #include "global.h"
 #include "parser/parser_private.h"
 
-alc_ast_t *parse_stmt_block(alc_parser_t *p)
+Alc_Ast *parse_stmt_block(Alc_Parser *p)
 {
   _VERIFY_POS(p, p->pos);
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LCBRACK);
 
   usize pos = p->pos++;
 
-  alc_ast_t **statements = vector_create(alc_ast_t *);
+  Alc_Ast **statements = vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    alc_ast_t *statement = parse_stmt(p);
+    Alc_Ast *statement = parse_stmt(p);
     _VERIFY_AST(statement, { vector_destroy(statements); });
 
     vector_push(statements, statement);
@@ -26,7 +26,7 @@ alc_ast_t *parse_stmt_block(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *stmt_block = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *stmt_block = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_block->data.STMT_BLOCK.statements =
     vector_to_array(statements, &stmt_block->data.STMT_BLOCK.statements_num);
   stmt_block->pos = pos;
@@ -35,7 +35,7 @@ alc_ast_t *parse_stmt_block(alc_parser_t *p)
   return stmt_block;
 }
 
-alc_ast_t *parse_stmt(alc_parser_t *p)
+Alc_Ast *parse_stmt(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -43,14 +43,14 @@ alc_ast_t *parse_stmt(alc_parser_t *p)
   switch (p->tokens[p->pos].type) {
   case ALC_TOKEN_TYPE_SEMICOLON: {
     usize pos = p->pos++;
-    alc_ast_t *none_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+    Alc_Ast *none_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
     none_ast->pos = pos;
     none_ast->kind = ALC_AST_KIND_NONE;
     return none_ast;
   }
 
   case ALC_TOKEN_TYPE_LBRACK: {
-    alc_ast_t *attribute_list = parse_attribute_list(p);
+    Alc_Ast *attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
 
     return parse_decldef(p, attribute_list);
@@ -65,7 +65,7 @@ alc_ast_t *parse_stmt(alc_parser_t *p)
   }
 
   case ALC_TOKEN_TYPE_ID: {
-    alc_ast_t *stmt = parse_ids(p);
+    Alc_Ast *stmt = parse_ids(p);
     if (stmt != (void *)-1)
       return stmt;
 

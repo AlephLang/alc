@@ -8,9 +8,9 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *parse_generic_placeholder_type(alc_parser_t *p);
+static Alc_Ast *parse_generic_placeholder_type(Alc_Parser *p);
 
-alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p)
+Alc_Ast *parse_generic_placeholder_type_list(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -20,14 +20,14 @@ alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p)
   usize pos = p->pos++;
 
   b8 first = true;
-  alc_ast_t **placeholder_types = vector_create(alc_ast_t *);
+  Alc_Ast **placeholder_types = vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
     if (!first) {
       _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { vector_destroy(placeholder_types); });
       p->pos++;
     }
 
-    alc_ast_t *placeholder_type = parse_generic_placeholder_type(p);
+    Alc_Ast *placeholder_type = parse_generic_placeholder_type(p);
     _VERIFY_AST(placeholder_type, { vector_destroy(placeholder_types); });
 
     vector_push(placeholder_types, placeholder_type);
@@ -40,8 +40,7 @@ alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *generic_placeholder_type_list_ast =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *generic_placeholder_type_list_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   generic_placeholder_type_list_ast->data.GENERIC_PLACEHOLDER_TYPE_LIST.generic_placeholder_types =
     vector_to_array(placeholder_types,
                     &generic_placeholder_type_list_ast->data.GENERIC_PLACEHOLDER_TYPE_LIST
@@ -52,7 +51,7 @@ alc_ast_t *parse_generic_placeholder_type_list(alc_parser_t *p)
   return generic_placeholder_type_list_ast;
 }
 
-alc_ast_t *parse_generic_type_list(alc_parser_t *p)
+Alc_Ast *parse_generic_type_list(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -67,7 +66,7 @@ alc_ast_t *parse_generic_type_list(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t **types_in_type_list = vector_create(alc_ast_t *);
+  Alc_Ast **types_in_type_list = vector_create(Alc_Ast *);
   b8 first = true;
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
     if (!first) {
@@ -75,7 +74,7 @@ alc_ast_t *parse_generic_type_list(alc_parser_t *p)
       p->pos++;
     }
 
-    alc_ast_t *type_in_type_list = parse_type(p);
+    Alc_Ast *type_in_type_list = parse_type(p);
     _VERIFY_AST(type_in_type_list, { vector_destroy(types_in_type_list); });
 
     vector_push(types_in_type_list, type_in_type_list);
@@ -88,7 +87,7 @@ alc_ast_t *parse_generic_type_list(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *generic_type_list = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *generic_type_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   generic_type_list->data.GENERIC_TYPE_LIST.generic_types = vector_to_array(
     types_in_type_list, &generic_type_list->data.GENERIC_TYPE_LIST.generic_types_num);
   generic_type_list->pos = pos;
@@ -97,7 +96,7 @@ alc_ast_t *parse_generic_type_list(alc_parser_t *p)
   return generic_type_list;
 }
 
-static alc_ast_t *parse_generic_placeholder_type(alc_parser_t *p)
+static Alc_Ast *parse_generic_placeholder_type(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -109,7 +108,7 @@ static alc_ast_t *parse_generic_placeholder_type(alc_parser_t *p)
 
   usize pos = p->pos++;
 
-  alc_ast_t *default_type = nullptr;
+  Alc_Ast *default_type = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_EQ) {
     p->pos++;
 
@@ -117,10 +116,10 @@ static alc_ast_t *parse_generic_placeholder_type(alc_parser_t *p)
     _VERIFY_AST(default_type);
   }
 
-  alc_ast_t *generic_placeholder_type =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
+  Alc_Ast *generic_placeholder_type =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
   generic_placeholder_type->data.GENERIC_PLACEHOLDER_TYPE.name =
-    (char *)generic_placeholder_type + sizeof(alc_ast_t);
+    (char *)generic_placeholder_type + sizeof(Alc_Ast);
   generic_placeholder_type->data.GENERIC_PLACEHOLDER_TYPE.default_type = default_type;
   generic_placeholder_type->pos = pos;
   generic_placeholder_type->kind = ALC_AST_KIND_GENERIC_PLACEHOLDER_TYPE;

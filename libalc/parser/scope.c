@@ -7,7 +7,7 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-alc_ast_t *parse_scope(alc_parser_t *p)
+Alc_Ast *parse_scope(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -26,9 +26,9 @@ alc_ast_t *parse_scope(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *scope_ast =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-  scope_ast->data.SCOPE.type = (char *)scope_ast + sizeof(alc_ast_t);
+  Alc_Ast *scope_ast =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+  scope_ast->data.SCOPE.type = (char *)scope_ast + sizeof(Alc_Ast);
   scope_ast->pos = pos;
   scope_ast->kind = ALC_AST_KIND_SCOPE;
   memcpy(scope_ast->data.SCOPE.type, name, sizeof(char) * name_len);

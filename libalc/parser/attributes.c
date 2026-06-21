@@ -7,9 +7,9 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *parse_attribute(alc_parser_t *p);
+static Alc_Ast *parse_attribute(Alc_Parser *p);
 
-alc_ast_t *parse_attribute_list(alc_parser_t *p)
+Alc_Ast *parse_attribute_list(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -18,7 +18,7 @@ alc_ast_t *parse_attribute_list(alc_parser_t *p)
 
   usize pos = p->pos++;
 
-  alc_ast_t **attrs = vector_create(alc_ast_t *);
+  Alc_Ast **attrs = vector_create(Alc_Ast *);
   b8 first = true;
 
   while (p->pos < p->tokens_num) {
@@ -30,7 +30,7 @@ alc_ast_t *parse_attribute_list(alc_parser_t *p)
       p->pos++;
     }
 
-    alc_ast_t *attr = parse_attribute(p);
+    Alc_Ast *attr = parse_attribute(p);
     _VERIFY_AST(attr, { vector_destroy(attrs); });
 
     vector_push(attrs, attr);
@@ -43,7 +43,7 @@ alc_ast_t *parse_attribute_list(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *attribute_list = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *attribute_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   attribute_list->data.ATTRIBUTE_LIST.attributes =
     vector_to_array(attrs, &attribute_list->data.ATTRIBUTE_LIST.attributes_num);
   attribute_list->pos = pos;
@@ -52,7 +52,7 @@ alc_ast_t *parse_attribute_list(alc_parser_t *p)
   return attribute_list;
 }
 
-static alc_ast_t *parse_attribute(alc_parser_t *p)
+static Alc_Ast *parse_attribute(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -65,7 +65,7 @@ static alc_ast_t *parse_attribute(alc_parser_t *p)
   usize pos = p->pos++;
 
   b8 has_arguments = false;
-  alc_ast_t **arguments = vector_create(alc_ast_t *);
+  Alc_Ast **arguments = vector_create(Alc_Ast *);
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LPAREN) {
     has_arguments = true;
 
@@ -78,7 +78,7 @@ static alc_ast_t *parse_attribute(alc_parser_t *p)
         p->pos++;
       }
 
-      alc_ast_t *expr = parse_expr(p, false);
+      Alc_Ast *expr = parse_expr(p, false);
       _VERIFY_AST(expr, { vector_destroy(arguments); });
 
       vector_push(arguments, expr);
@@ -92,8 +92,8 @@ static alc_ast_t *parse_attribute(alc_parser_t *p)
     p->pos++;
   }
 
-  alc_ast_t *attribute_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
-  attribute_ast->data.ATTRIBUTE.name = (char *)attribute_ast + sizeof(alc_ast_t);
+  Alc_Ast *attribute_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  attribute_ast->data.ATTRIBUTE.name = (char *)attribute_ast + sizeof(Alc_Ast);
   attribute_ast->data.ATTRIBUTE.arguments =
     vector_to_array(arguments, &attribute_ast->data.ATTRIBUTE.arguments_num);
   attribute_ast->data.ATTRIBUTE.has_arguments = has_arguments;

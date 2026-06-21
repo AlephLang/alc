@@ -5,7 +5,7 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-alc_ast_t *parse_module(alc_parser_t *p)
+Alc_Ast *parse_module(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -18,7 +18,7 @@ alc_ast_t *parse_module(alc_parser_t *p)
 
   usize pos = p->pos++;
 
-  alc_ast_t *submodule = nullptr;
+  Alc_Ast *submodule = nullptr;
 
   if (!has_ws && p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_COLON) {
     _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_COLON);
@@ -33,8 +33,8 @@ alc_ast_t *parse_module(alc_parser_t *p)
     _VERIFY_AST(submodule);
   }
 
-  alc_ast_t *module_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
-  module_ast->data.MODULE.name = (char *)module_ast + sizeof(alc_ast_t);
+  Alc_Ast *module_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  module_ast->data.MODULE.name = (char *)module_ast + sizeof(Alc_Ast);
   module_ast->data.MODULE.submodule = submodule;
   module_ast->pos = pos;
   module_ast->kind = ALC_AST_KIND_MODULE;

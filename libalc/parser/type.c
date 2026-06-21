@@ -7,13 +7,13 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *parse_function_pointer(alc_parser_t *p);
-static alc_ast_t *parse_typeof(alc_parser_t *p);
-static alc_ast_t *parse_generic_type_or_namespace(alc_parser_t *p);
-static alc_ast_t *parse_namespace(alc_parser_t *p);
-static alc_ast_t *parse_id(alc_parser_t *p);
+static Alc_Ast *parse_function_pointer(Alc_Parser *p);
+static Alc_Ast *parse_typeof(Alc_Parser *p);
+static Alc_Ast *parse_generic_type_or_namespace(Alc_Parser *p);
+static Alc_Ast *parse_namespace(Alc_Parser *p);
+static Alc_Ast *parse_id(Alc_Parser *p);
 
-alc_ast_t *parse_type_raw(alc_parser_t *p)
+Alc_Ast *parse_type_raw(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -22,7 +22,7 @@ alc_ast_t *parse_type_raw(alc_parser_t *p)
   return p->tokens[p->pos].type == ALC_TOKEN_TYPE_LPAREN ? parse_function_pointer(p) : parse_id(p);
 }
 
-static alc_ast_t *parse_id(alc_parser_t *p)
+static Alc_Ast *parse_id(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -43,15 +43,15 @@ static alc_ast_t *parse_id(alc_parser_t *p)
   usize name_len = strlen(name) + 1;
   usize pos = p->pos++;
 
-  alc_ast_t *type_plain_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
-  type_plain_ast->data.TYPE_PLAIN.name = (char *)type_plain_ast + sizeof(alc_ast_t);
+  Alc_Ast *type_plain_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  type_plain_ast->data.TYPE_PLAIN.name = (char *)type_plain_ast + sizeof(Alc_Ast);
   type_plain_ast->pos = pos;
   type_plain_ast->kind = ALC_AST_KIND_TYPE_PLAIN;
   memcpy(type_plain_ast->data.TYPE_PLAIN.name, name, name_len);
   return type_plain_ast;
 }
 
-alc_ast_t *parse_type(alc_parser_t *p)
+Alc_Ast *parse_type(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -64,14 +64,14 @@ alc_ast_t *parse_type(alc_parser_t *p)
        ptr_num++, p->pos++)
     ;
 
-  alc_ast_t *type_raw = parse_type_raw(p);
+  Alc_Ast *type_raw = parse_type_raw(p);
   if ALC_UNLIKELY (type_raw == nullptr)
     return nullptr;
 
-  alc_ast_t *cur_type = type_raw;
+  Alc_Ast *cur_type = type_raw;
 
   for (; ptr_num; ptr_num--) {
-    alc_ast_t *ptr_type = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+    Alc_Ast *ptr_type = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
     ptr_type->data.TYPE_POINTER.type = cur_type;
     ptr_type->pos = start_pos + ptr_num - 1;
     ptr_type->kind = ALC_AST_KIND_TYPE_POINTER;
@@ -83,7 +83,7 @@ alc_ast_t *parse_type(alc_parser_t *p)
 
     _VERIFY_POS(p, p->pos);
 
-    alc_ast_t *size_expression = nullptr;
+    Alc_Ast *size_expression = nullptr;
     if (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
       size_expression = parse_expr(p, false);
       _VERIFY_AST(size_expression);
@@ -94,7 +94,7 @@ alc_ast_t *parse_type(alc_parser_t *p)
 
     p->pos++;
 
-    alc_ast_t *array_type_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+    Alc_Ast *array_type_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
     array_type_ast->data.TYPE_ARRAY.type = cur_type;
     array_type_ast->data.TYPE_ARRAY.size_expression = size_expression;
     array_type_ast->pos = array_pos;
@@ -105,7 +105,7 @@ alc_ast_t *parse_type(alc_parser_t *p)
   return cur_type;
 }
 
-static alc_ast_t *parse_function_pointer(alc_parser_t *p)
+static Alc_Ast *parse_function_pointer(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -113,10 +113,10 @@ static alc_ast_t *parse_function_pointer(alc_parser_t *p)
 
   usize pos = p->pos;
 
-  alc_ast_t *arguments = parse_function_arguments(p);
+  Alc_Ast *arguments = parse_function_arguments(p);
   _VERIFY_AST(arguments);
 
-  alc_ast_t *return_type = nullptr;
+  Alc_Ast *return_type = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_MINUS) {
     _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_RARROW);
 
@@ -131,7 +131,7 @@ static alc_ast_t *parse_function_pointer(alc_parser_t *p)
     _VERIFY_AST(return_type);
   }
 
-  alc_ast_t *function_pointer_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *function_pointer_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   function_pointer_ast->data.TYPE_FUNCTION_POINTER.argument_list = arguments;
   function_pointer_ast->data.TYPE_FUNCTION_POINTER.return_type = return_type;
   function_pointer_ast->pos = pos;
@@ -139,7 +139,7 @@ static alc_ast_t *parse_function_pointer(alc_parser_t *p)
   return function_pointer_ast;
 }
 
-static alc_ast_t *parse_typeof(alc_parser_t *p)
+static Alc_Ast *parse_typeof(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -154,7 +154,7 @@ static alc_ast_t *parse_typeof(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *expr = parse_expr(p, false);
+  Alc_Ast *expr = parse_expr(p, false);
   _VERIFY_AST(expr);
 
   _VERIFY_POS(p, p->pos);
@@ -162,14 +162,14 @@ static alc_ast_t *parse_typeof(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *typeof_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *typeof_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   typeof_ast->data.TYPE_TYPE_OF.expression = expr;
   typeof_ast->pos = pos;
   typeof_ast->kind = ALC_AST_KIND_TYPE_TYPE_OF;
   return typeof_ast;
 }
 
-static alc_ast_t *parse_generic_type_or_namespace(alc_parser_t *p)
+static Alc_Ast *parse_generic_type_or_namespace(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -183,10 +183,10 @@ static alc_ast_t *parse_generic_type_or_namespace(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *generic_type_list = parse_generic_type_list(p);
+  Alc_Ast *generic_type_list = parse_generic_type_list(p);
   _VERIFY_AST(generic_type_list);
 
-  alc_ast_t *generic_type_ast; // Declare it here to make compiler happy and not worry about GOTOs.
+  Alc_Ast *generic_type_ast; // Declare it here to make compiler happy and not worry about GOTOs.
   if (p->pos < p->tokens_num) {
     b8 prev_has_ws = p->tokens[p->pos - 1].has_whitespace_after;
     if (prev_has_ws)
@@ -205,13 +205,13 @@ static alc_ast_t *parse_generic_type_or_namespace(alc_parser_t *p)
 
     p->pos++;
 
-    alc_ast_t *subobject = parse_id(p);
+    Alc_Ast *subobject = parse_id(p);
     _VERIFY_AST(subobject);
 
-    alc_ast_t *generic_namespace_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
+    Alc_Ast *generic_namespace_ast =
+      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
     generic_namespace_ast->data.GENERIC_NAMESPACE.name =
-      (char *)generic_namespace_ast + sizeof(alc_ast_t);
+      (char *)generic_namespace_ast + sizeof(Alc_Ast);
     generic_namespace_ast->data.GENERIC_NAMESPACE.generic_type_list = generic_type_list;
     generic_namespace_ast->data.GENERIC_NAMESPACE.subobject = subobject;
     generic_namespace_ast->pos = pos;
@@ -221,8 +221,8 @@ static alc_ast_t *parse_generic_type_or_namespace(alc_parser_t *p)
   }
 
 __generic_type_ast:
-  generic_type_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
-  generic_type_ast->data.GENERIC_TYPE.name = (char *)generic_type_ast + sizeof(alc_ast_t);
+  generic_type_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  generic_type_ast->data.GENERIC_TYPE.name = (char *)generic_type_ast + sizeof(Alc_Ast);
   generic_type_ast->data.GENERIC_TYPE.generic_type_list = generic_type_list;
   generic_type_ast->pos = pos;
   generic_type_ast->kind = ALC_AST_KIND_GENERIC_TYPE;
@@ -230,7 +230,7 @@ __generic_type_ast:
   return generic_type_ast;
 }
 
-static alc_ast_t *parse_namespace(alc_parser_t *p)
+static Alc_Ast *parse_namespace(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -255,11 +255,11 @@ static alc_ast_t *parse_namespace(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *subobject = parse_id(p);
+  Alc_Ast *subobject = parse_id(p);
   _VERIFY_AST(subobject);
 
-  alc_ast_t *namespace_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
-  namespace_ast->data.NAMESPACE.name = (char *)namespace_ast + sizeof(alc_ast_t);
+  Alc_Ast *namespace_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  namespace_ast->data.NAMESPACE.name = (char *)namespace_ast + sizeof(Alc_Ast);
   namespace_ast->data.NAMESPACE.subobject = subobject;
   namespace_ast->pos = pos;
   namespace_ast->kind = ALC_AST_KIND_NAMESPACE;

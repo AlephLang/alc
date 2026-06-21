@@ -46,15 +46,15 @@ typedef enum {
 #define ALC_TOKEN_TYPE_X(_name, _str_value) ALC_TOKEN_TYPE_FULL_NAME(_name),
   ALC_TOKEN_TYPES
 #undef ALC_TOKEN_TYPE_X
-} alc_token_type_t;
+} Alc_Token_Type;
 
 typedef struct {
   usize line, pos, len;
   char *value;
-  alc_token_type_t type;
+  Alc_Token_Type type;
   b8 has_whitespace_after;
-} alc_token_t;
+} Alc_Token;
 
-ALC_API void alc_token_to_string(alc_token_t *token, char *buf, usize n);
+ALC_API void alc_token_to_string(Alc_Token *token, char *buf, usize n);
 
 #endif // __ALC_TOKEN_H__

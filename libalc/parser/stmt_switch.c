@@ -8,11 +8,11 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *parse_case_chain(alc_parser_t *p);
-static alc_ast_t *parse_case(alc_parser_t *p);
-static alc_ast_t *parse_default(alc_parser_t *p);
+static Alc_Ast *parse_case_chain(Alc_Parser *p);
+static Alc_Ast *parse_case(Alc_Parser *p);
+static Alc_Ast *parse_default(Alc_Parser *p);
 
-alc_ast_t *parse_stmt_switch(alc_parser_t *p)
+Alc_Ast *parse_stmt_switch(Alc_Parser *p)
 {
   usize pos = p->pos++;
 
@@ -21,7 +21,7 @@ alc_ast_t *parse_stmt_switch(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *expression = parse_expr(p, false);
+  Alc_Ast *expression = parse_expr(p, false);
   _VERIFY_AST(expression);
 
   _VERIFY_POS(p, p->pos);
@@ -34,9 +34,9 @@ alc_ast_t *parse_stmt_switch(alc_parser_t *p)
 
   p->pos++;
 
-  Vector(alc_ast_t *) case_chains = vector_create(alc_ast_t *);
+  Vector(Alc_Ast *) case_chains = vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    alc_ast_t *case_chain = parse_case_chain(p);
+    Alc_Ast *case_chain = parse_case_chain(p);
     _VERIFY_AST(case_chain, { vector_destroy(case_chains); });
     vector_push(case_chains, case_chain);
   }
@@ -46,7 +46,7 @@ alc_ast_t *parse_stmt_switch(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *stmt_switch_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *stmt_switch_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_switch_ast->data.STMT_SWITCH.expression = expression;
   stmt_switch_ast->data.STMT_SWITCH.case_chains =
     vector_to_array(case_chains, &stmt_switch_ast->data.STMT_SWITCH.case_chains_num);
@@ -56,7 +56,7 @@ alc_ast_t *parse_stmt_switch(alc_parser_t *p)
   return stmt_switch_ast;
 }
 
-static alc_ast_t *parse_case_chain(alc_parser_t *p)
+static Alc_Ast *parse_case_chain(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -64,11 +64,11 @@ static alc_ast_t *parse_case_chain(alc_parser_t *p)
 
   usize pos = p->pos;
 
-  Vector(alc_ast_t *) cases = vector_create(alc_ast_t *);
+  Vector(Alc_Ast *) cases = vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_LCBRACK) {
     _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID, { vector_destroy(cases); });
 
-    alc_ast_t *case_ast;
+    Alc_Ast *case_ast;
     if (strcmp(p->tokens[p->pos].value, "case") == 0)
       case_ast = parse_case(p);
     else if (strcmp(p->tokens[p->pos].value, "default") == 0)
@@ -84,10 +84,10 @@ static alc_ast_t *parse_case_chain(alc_parser_t *p)
     vector_push(cases, case_ast);
   }
 
-  alc_ast_t *body = parse_stmt_block(p);
+  Alc_Ast *body = parse_stmt_block(p);
   _VERIFY_AST(body, { vector_destroy(cases); });
 
-  alc_ast_t *case_chain_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *case_chain_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   case_chain_ast->data.CASE_CHAIN.cases =
     vector_to_array(cases, &case_chain_ast->data.CASE_CHAIN.cases_num);
   case_chain_ast->data.CASE_CHAIN.body = body;
@@ -97,11 +97,11 @@ static alc_ast_t *parse_case_chain(alc_parser_t *p)
   return case_chain_ast;
 }
 
-static alc_ast_t *parse_case(alc_parser_t *p)
+static Alc_Ast *parse_case(Alc_Parser *p)
 {
   usize pos = p->pos++;
 
-  alc_ast_t *expression = parse_expr(p, false);
+  Alc_Ast *expression = parse_expr(p, false);
   _VERIFY_AST(expression);
 
   _VERIFY_POS(p, p->pos);
@@ -109,14 +109,14 @@ static alc_ast_t *parse_case(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *case_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *case_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   case_ast->data.CASE.expression = expression;
   case_ast->pos = pos;
   case_ast->kind = ALC_AST_KIND_CASE;
   return case_ast;
 }
 
-static alc_ast_t *parse_default(alc_parser_t *p)
+static Alc_Ast *parse_default(Alc_Parser *p)
 {
   usize pos = p->pos++;
 
@@ -125,7 +125,7 @@ static alc_ast_t *parse_default(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *default_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *default_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   default_ast->pos = pos;
   default_ast->kind = ALC_AST_KIND_DEFAULT;
   return default_ast;

@@ -6,7 +6,7 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
+Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
 {
   p->pos++;
 
@@ -18,13 +18,13 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
 
   usize pos = p->pos++;
 
-  alc_ast_t *generic_placeholder_type_list = nullptr;
+  Alc_Ast *generic_placeholder_type_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LARROW) {
     generic_placeholder_type_list = parse_generic_placeholder_type_list(p);
     _VERIFY_AST(generic_placeholder_type_list);
   }
 
-  alc_ast_t *attribute_list = nullptr;
+  Alc_Ast *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
@@ -35,17 +35,17 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
 
   p->pos++;
 
-  alc_ast_t **children = vector_create(alc_ast_t *);
+  Alc_Ast **children = vector_create(Alc_Ast *);
 
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    alc_ast_t *attribs = nullptr;
+    Alc_Ast *attribs = nullptr;
     if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
       attribs = parse_attribute_list(p);
       _VERIFY_AST(attribs, { vector_destroy(children); });
       _VERIFY_POS(p, p->pos, { vector_destroy(children); });
     }
 
-    alc_ast_t *child = nullptr;
+    Alc_Ast *child = nullptr;
 
     if (attribs == nullptr && p->tokens[p->pos].type == ALC_TOKEN_TYPE_ID) {
       child = parse_ids(p);
@@ -59,7 +59,7 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
     if (child == nullptr) {
       if ALC_UNLIKELY (p->tokens[p->pos].type == ALC_TOKEN_TYPE_SEMICOLON) {
         p->pos++;
-        child = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+        child = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
         child->pos = pos;
         child->kind = ALC_AST_KIND_NONE;
       } else {
@@ -77,9 +77,9 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
   p->pos++;
 
   if (generic_placeholder_type_list != nullptr) {
-    alc_ast_t *generic_struct_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-    generic_struct_ast->data.GENERIC_STRUCT.name = (char *)generic_struct_ast + sizeof(alc_ast_t);
+    Alc_Ast *generic_struct_ast =
+      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    generic_struct_ast->data.GENERIC_STRUCT.name = (char *)generic_struct_ast + sizeof(Alc_Ast);
     generic_struct_ast->data.GENERIC_STRUCT.generic_placeholder_type_list =
       generic_placeholder_type_list;
     generic_struct_ast->data.GENERIC_STRUCT.attribute_list = attribute_list;
@@ -92,9 +92,9 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
     vector_destroy(children);
     return generic_struct_ast;
   } else {
-    alc_ast_t *struct_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-    struct_ast->data.STRUCT.name = (char *)struct_ast + sizeof(alc_ast_t);
+    Alc_Ast *struct_ast =
+      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    struct_ast->data.STRUCT.name = (char *)struct_ast + sizeof(Alc_Ast);
     struct_ast->data.STRUCT.attribute_list = attribute_list;
     struct_ast->data.STRUCT.children =
       vector_to_array(children, &struct_ast->data.STRUCT.children_num);
@@ -107,7 +107,7 @@ alc_ast_t *parse_struct(alc_parser_t *p, alc_ast_struct_kind_t kind)
   }
 }
 
-alc_ast_t *parse_partial_struct(alc_parser_t *p)
+Alc_Ast *parse_partial_struct(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 

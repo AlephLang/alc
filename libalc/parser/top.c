@@ -5,7 +5,7 @@
 #include "global.h"
 #include "parser/parser_private.h"
 
-alc_ast_t *parse_top(alc_parser_t *p)
+Alc_Ast *parse_top(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -13,7 +13,7 @@ alc_ast_t *parse_top(alc_parser_t *p)
 
   switch (p->tokens[p->pos].type) {
   case ALC_TOKEN_TYPE_SEMICOLON: {
-    alc_ast_t *none_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+    Alc_Ast *none_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
     none_ast->pos = p->pos++;
     none_ast->kind = ALC_AST_KIND_NONE;
     return none_ast;
@@ -24,12 +24,12 @@ alc_ast_t *parse_top(alc_parser_t *p)
   }
 
   case ALC_TOKEN_TYPE_ID: {
-    alc_ast_t *ids = parse_ids(p);
+    Alc_Ast *ids = parse_ids(p);
     return ids == (void *)-1 ? parse_decldef(p, nullptr) : ids;
   }
 
   case ALC_TOKEN_TYPE_LBRACK: {
-    alc_ast_t *attribute_list = parse_attribute_list(p);
+    Alc_Ast *attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
 
     return parse_decldef(p, attribute_list);

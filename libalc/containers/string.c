@@ -2,32 +2,32 @@
 #include <stdlib.h>
 #include <string.h>
 
-string_t string_create(void)
+String string_create(void)
 {
   char *empty_cstr = malloc(sizeof(char));
   *empty_cstr = 0;
-  return (string_t){ .c_str = empty_cstr, .len = 0 };
+  return (String){ .c_str = empty_cstr, .len = 0 };
 }
 
-string_t string_create_from(const char *src)
+String string_create_from(const char *src)
 {
   ALC_ASSUME(src != nullptr);
 
   usize len = strlen(src);
   char *value = malloc(sizeof(char) * (len + 1));
   memcpy(value, src, len + 1);
-  return (string_t){ .c_str = value, .len = len };
+  return (String){ .c_str = value, .len = len };
 }
 
-string_t string_create_from_char(char c)
+String string_create_from_char(char c)
 {
   char *value = malloc(sizeof(char) * 2);
   value[0] = c;
   value[1] = 0;
-  return (string_t){ .c_str = value, .len = 1 };
+  return (String){ .c_str = value, .len = 1 };
 }
 
-void string_destroy(string_t *str)
+void string_destroy(String *str)
 {
   ALC_ASSUME(str != nullptr);
   ALC_ASSUME(str->c_str != nullptr);
@@ -36,7 +36,7 @@ void string_destroy(string_t *str)
   str->len = 0;
 }
 
-void string_append(string_t *dst, const string_t *src)
+void string_append(String *dst, const String *src)
 {
   ALC_ASSUME(dst != nullptr);
   ALC_ASSUME(dst->c_str != nullptr);
@@ -66,7 +66,7 @@ void string_append(string_t *dst, const string_t *src)
   dst->len = new_len;
 }
 
-void string_append_cstr(string_t *dst, const char *src)
+void string_append_cstr(String *dst, const char *src)
 {
   ALC_ASSUME(dst != nullptr);
   ALC_ASSUME(dst->c_str != nullptr);
@@ -96,7 +96,7 @@ void string_append_cstr(string_t *dst, const char *src)
   dst->len = new_len;
 }
 
-void string_append_char(string_t *dst, char c)
+void string_append_char(String *dst, char c)
 {
   ALC_ASSUME(dst != nullptr);
   ALC_ASSUME(dst->c_str != nullptr);

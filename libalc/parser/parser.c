@@ -9,19 +9,19 @@
 #include <stdarg.h>
 #include <string.h>
 
-alc_parser_t *alc_parser_create(alc_token_t *tokens, usize tokens_num)
+Alc_Parser *alc_parser_create(Alc_Token *tokens, usize tokens_num)
 {
   ALC_ASSERT((tokens_num == 0 && tokens == nullptr) || (tokens_num > 0 && tokens != nullptr));
 
-  alc_parser_t *parser = alloc_arena_allocate(&ctx()->arena, sizeof(alc_parser_t));
+  Alc_Parser *parser = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Parser));
   parser->tokens = tokens;
   parser->tokens_num = tokens_num;
-  parser->errors = vector_create(alc_parser_error_t);
+  parser->errors = vector_create(Alc_Parser_Error);
   parser->pos = 0;
   return parser;
 }
 
-void alc_parser_destroy(alc_parser_t *parser)
+void alc_parser_destroy(Alc_Parser *parser)
 {
   ALC_ASSERT(parser != nullptr);
   ALC_ASSERT(parser->errors != nullptr);
@@ -29,21 +29,21 @@ void alc_parser_destroy(alc_parser_t *parser)
   parser->errors = nullptr;
 }
 
-alc_ast_t *alc_parser_parse(alc_parser_t *parser)
+Alc_Ast *alc_parser_parse(Alc_Parser *parser)
 {
   ALC_ASSERT(parser != nullptr);
 
-  alc_ast_t **toplevels = vector_create(alc_ast_t *);
+  Alc_Ast **toplevels = vector_create(Alc_Ast *);
 
   while (parser->pos < parser->tokens_num) {
-    alc_ast_t *top = parse_top(parser);
+    Alc_Ast *top = parse_top(parser);
     if ALC_UNLIKELY (top == nullptr)
       continue;
 
     vector_push(toplevels, top);
   }
 
-  alc_ast_t *root = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t));
+  Alc_Ast *root = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   root->pos = 0;
   root->kind = ALC_AST_KIND_ROOT;
   root->data.ROOT.toplevel_statements =
@@ -55,7 +55,7 @@ alc_ast_t *alc_parser_parse(alc_parser_t *parser)
   return root;
 }
 
-alc_ast_t *parse_ids(alc_parser_t *p)
+Alc_Ast *parse_ids(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -111,7 +111,7 @@ alc_ast_t *parse_ids(alc_parser_t *p)
   return (void *)-1;
 }
 
-alc_parser_error_t *alc_parser_get_errors(const alc_parser_t *parser, usize *out_n)
+Alc_Parser_Error *alc_parser_get_errors(const Alc_Parser *parser, usize *out_n)
 {
   ALC_ASSERT(parser != nullptr);
   ALC_ASSERT(parser->errors != nullptr);
@@ -121,7 +121,7 @@ alc_parser_error_t *alc_parser_get_errors(const alc_parser_t *parser, usize *out
   return parser->errors;
 }
 
-alc_token_t *peek(const alc_parser_t *p, s32 adv)
+Alc_Token *peek(const Alc_Parser *p, s32 adv)
 {
   ALC_ASSUME(p != nullptr);
   return p->pos + adv < p->tokens_num ? &p->tokens[p->pos + adv] : nullptr;

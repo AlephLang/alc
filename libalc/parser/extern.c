@@ -7,10 +7,10 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *__var(alc_parser_t *p, usize pos, const char *name, usize name_len);
-static alc_ast_t *__function(alc_parser_t *p, usize pos, const char *name, usize name_len);
+static Alc_Ast *__var(Alc_Parser *p, usize pos, const char *name, usize name_len);
+static Alc_Ast *__function(Alc_Parser *p, usize pos, const char *name, usize name_len);
 
-alc_ast_t *parse_extern(alc_parser_t *p)
+Alc_Ast *parse_extern(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -33,11 +33,11 @@ alc_ast_t *parse_extern(alc_parser_t *p)
            __var(p, pos, name, name_len);
 }
 
-static alc_ast_t *__var(alc_parser_t *p, usize pos, const char *name, usize name_len)
+static Alc_Ast *__var(Alc_Parser *p, usize pos, const char *name, usize name_len)
 {
   p->pos++;
 
-  alc_ast_t *var_type = parse_type(p);
+  Alc_Ast *var_type = parse_type(p);
   _VERIFY_AST(var_type);
 
   _VERIFY_POS(p, p->pos);
@@ -45,9 +45,9 @@ static alc_ast_t *__var(alc_parser_t *p, usize pos, const char *name, usize name
 
   p->pos++;
 
-  alc_ast_t *extern_vardecl =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-  extern_vardecl->data.EXTERN_VARDECL.name = (char *)extern_vardecl + sizeof(alc_ast_t);
+  Alc_Ast *extern_vardecl =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+  extern_vardecl->data.EXTERN_VARDECL.name = (char *)extern_vardecl + sizeof(Alc_Ast);
   extern_vardecl->data.EXTERN_VARDECL.type = var_type;
   extern_vardecl->pos = pos;
   extern_vardecl->kind = ALC_AST_KIND_EXTERN_VARDECL;
@@ -55,14 +55,14 @@ static alc_ast_t *__var(alc_parser_t *p, usize pos, const char *name, usize name
   return extern_vardecl;
 }
 
-static alc_ast_t *__function(alc_parser_t *p, usize pos, const char *name, usize name_len)
+static Alc_Ast *__function(Alc_Parser *p, usize pos, const char *name, usize name_len)
 {
   p->pos += 2;
 
-  alc_ast_t *argument_list = parse_function_arguments(p);
+  Alc_Ast *argument_list = parse_function_arguments(p);
   _VERIFY_AST(argument_list);
 
-  alc_ast_t *return_type = nullptr;
+  Alc_Ast *return_type = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_MINUS) {
     _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_RARROW);
 
@@ -82,9 +82,9 @@ static alc_ast_t *__function(alc_parser_t *p, usize pos, const char *name, usize
 
   p->pos++;
 
-  alc_ast_t *extern_func =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-  extern_func->data.EXTERN_FUNC.name = (char *)extern_func + sizeof(alc_ast_t);
+  Alc_Ast *extern_func =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+  extern_func->data.EXTERN_FUNC.name = (char *)extern_func + sizeof(Alc_Ast);
   extern_func->data.EXTERN_FUNC.argument_list = argument_list;
   extern_func->data.EXTERN_FUNC.return_type = return_type;
   extern_func->pos = pos;

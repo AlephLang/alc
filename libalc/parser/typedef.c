@@ -7,13 +7,13 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-alc_ast_t *parse_typedef(alc_parser_t *p)
+Alc_Ast *parse_typedef(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
   usize pos = p->pos++;
 
-  alc_ast_t *attribute_list = nullptr;
+  Alc_Ast *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
@@ -26,7 +26,7 @@ alc_ast_t *parse_typedef(alc_parser_t *p)
   usize name_len = strlen(name) + 1;
   p->pos++;
 
-  alc_ast_t *generic_placeholder_type_list = nullptr;
+  Alc_Ast *generic_placeholder_type_list = nullptr;
   if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LARROW) {
     generic_placeholder_type_list = parse_generic_placeholder_type_list(p);
     _VERIFY_AST(generic_placeholder_type_list);
@@ -37,7 +37,7 @@ alc_ast_t *parse_typedef(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *aliased_type = parse_type(p);
+  Alc_Ast *aliased_type = parse_type(p);
   _VERIFY_AST(aliased_type);
 
   _VERIFY_POS(p, p->pos);
@@ -45,8 +45,8 @@ alc_ast_t *parse_typedef(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *typedef_ast = alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + name_len);
-  typedef_ast->data.TYPEDEF.name = (char *)typedef_ast + sizeof(alc_ast_t);
+  Alc_Ast *typedef_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  typedef_ast->data.TYPEDEF.name = (char *)typedef_ast + sizeof(Alc_Ast);
   typedef_ast->data.TYPEDEF.aliased_type = aliased_type;
   typedef_ast->data.TYPEDEF.generic_placeholder_type_list = generic_placeholder_type_list;
   typedef_ast->data.TYPEDEF.attribute_list = attribute_list;

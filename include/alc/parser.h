@@ -8,7 +8,7 @@
 typedef struct {
   union {
     struct {
-      alc_token_type_t *expected_token_types;
+      Alc_Token_Type *expected_token_types;
       usize expected_token_types_num;
     } UNEXPECTED_TOKEN;
     struct {
@@ -16,7 +16,7 @@ typedef struct {
       usize expected_values_num;
     } UNEXPECTED_VALUE;
     struct {
-      alc_token_type_t expected_token_type;
+      Alc_Token_Type expected_token_type;
     } UNEXPECTED_WHITESPACE;
   } data;
   usize pos;
@@ -30,15 +30,15 @@ typedef struct {
     ALC_PARSER_ERROR_TYPE_ASSIGN_OPERATOR_IN_NON_TOPLEVEL_EXPRESSION,
     ALC_PARSER_ERROR_TYPE_TWO_ASSIGN_OPERATORS_IN_EXPRESSION,
   } type;
-} alc_parser_error_t;
+} Alc_Parser_Error;
 
-typedef struct __alc_parser_t alc_parser_t;
+typedef struct __Alc_Parser Alc_Parser;
 
-ALC_API alc_parser_t *alc_parser_create(alc_token_t *tokens, usize tokens_num);
-ALC_API void alc_parser_destroy(alc_parser_t *parser);
+ALC_API Alc_Parser *alc_parser_create(Alc_Token *tokens, usize tokens_num);
+ALC_API void alc_parser_destroy(Alc_Parser *parser);
 
-ALC_API alc_ast_t *alc_parser_parse(alc_parser_t *parser);
+ALC_API Alc_Ast *alc_parser_parse(Alc_Parser *parser);
 
-ALC_API alc_parser_error_t *alc_parser_get_errors(const alc_parser_t *parser, usize *out_n);
+ALC_API Alc_Parser_Error *alc_parser_get_errors(const Alc_Parser *parser, usize *out_n);
 
 #endif // __ALC_PARSER_H__

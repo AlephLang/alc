@@ -119,216 +119,216 @@ typedef enum {
 #define ALC_AST_KIND_X(_name) ALC_AST_KIND_FULL_NAME(_name),
   ALC_AST_KINDS
 #undef ALC_AST_KIND_X
-} alc_ast_kind_t;
+} Alc_Ast_Kind;
 
 typedef enum {
   ALC_AST_FUNCTION_KIND_DEFAULT,
   ALC_AST_FUNCTION_KIND_EXPLICIT,
   ALC_AST_FUNCTION_KIND_EXPORTED,
-} alc_ast_function_kind_t;
+} Alc_Ast_Function_Kind;
 
 typedef enum {
   ALC_AST_STRUCT_KIND_DEFAULT,
   ALC_AST_STRUCT_KIND_PARTIAL,
-} alc_ast_struct_kind_t;
+} Alc_Ast_Struct_Kind;
 
-typedef struct __alc_ast_t {
+typedef struct __Alc_Ast {
   union {
     struct {
-      struct __alc_ast_t **toplevel_statements;
+      struct __Alc_Ast **toplevel_statements;
       usize toplevel_statements_num;
     } ROOT;
     struct {
-      struct __alc_ast_t *lhs;
-      struct __alc_ast_t *rhs;
-      struct __alc_ast_t *operator;
+      struct __Alc_Ast *lhs;
+      struct __Alc_Ast *rhs;
+      struct __Alc_Ast *operator;
     } EXPR;
     struct {
-      struct __alc_ast_t *operand;
-      struct __alc_ast_t *operator;
+      struct __Alc_Ast *operand;
+      struct __Alc_Ast *operator;
     } PREFIX_EXPR;
     struct {
       char *name;
-      struct __alc_ast_t *submodule;
+      struct __Alc_Ast *submodule;
     } MODULE;
     struct {
-      struct __alc_ast_t *module;
+      struct __Alc_Ast *module;
     } IMPORT;
     struct {
       char *name;
-      struct __alc_ast_t *generic_placeholder_type_list;
-      struct __alc_ast_t *aliased_type;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *generic_placeholder_type_list;
+      struct __Alc_Ast *aliased_type;
+      struct __Alc_Ast *attribute_list;
     } TYPEDEF;
     struct {
       char *name;
-      struct __alc_ast_t *argument_list;
-      struct __alc_ast_t *return_type;
+      struct __Alc_Ast *argument_list;
+      struct __Alc_Ast *return_type;
     } EXTERN_FUNC;
     struct {
       char *name;
-      struct __alc_ast_t *type;
+      struct __Alc_Ast *type;
     } EXTERN_VARDECL;
     struct {
       char *name;
-      struct __alc_ast_t *qualified;
+      struct __Alc_Ast *qualified;
     } QUALIFIER;
     struct {
       char *name;
-      struct __alc_ast_t **children;
+      struct __Alc_Ast **children;
       usize children_num;
-      struct __alc_ast_t *attribute_list;
-      alc_ast_struct_kind_t kind;
+      struct __Alc_Ast *attribute_list;
+      Alc_Ast_Struct_Kind kind;
     } STRUCT;
     struct {
       char *name;
-      struct __alc_ast_t **children;
+      struct __Alc_Ast **children;
       usize children_num;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *attribute_list;
     } UNION;
     struct {
       char *name;
-      struct __alc_ast_t **elements;
+      struct __Alc_Ast **elements;
       usize elements_num;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *attribute_list;
     } ENUM;
     struct {
       char *name;
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } ENUM_ELEMENT;
     struct {
       char *name;
-      struct __alc_ast_t *argument_list;
-      struct __alc_ast_t *return_type;
-      struct __alc_ast_t *body;
-      struct __alc_ast_t *attribute_list;
-      alc_ast_function_kind_t kind;
+      struct __Alc_Ast *argument_list;
+      struct __Alc_Ast *return_type;
+      struct __Alc_Ast *body;
+      struct __Alc_Ast *attribute_list;
+      Alc_Ast_Function_Kind kind;
     } FUNC;
     struct {
-      struct __alc_ast_t **arguments;
+      struct __Alc_Ast **arguments;
       usize arguments_num;
     } ARGUMENT_LIST;
     struct {
       char *name;
-      struct __alc_ast_t *subobject;
+      struct __Alc_Ast *subobject;
     } NAMESPACE;
     struct {
       char *type;
     } SCOPE;
     struct {
-      struct __alc_ast_t **cases;
+      struct __Alc_Ast **cases;
       usize cases_num;
-      struct __alc_ast_t *body;
+      struct __Alc_Ast *body;
     } CASE_CHAIN;
     struct {
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } CASE;
     struct {
       char *name;
-      struct __alc_ast_t **arguments;
+      struct __Alc_Ast **arguments;
       usize arguments_num;
       // NOTE: This is used to indicate that attribute has parenthesis, in which
       // arguments should be placed (not that it really has arguments).
       b8 has_arguments;
     } ATTRIBUTE;
     struct {
-      struct __alc_ast_t **attributes;
+      struct __Alc_Ast **attributes;
       usize attributes_num;
     } ATTRIBUTE_LIST;
     struct {
       char *name;
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } EXPLICIT_CALL_ARGUMENT;
     struct {
       char *name;
     } LABEL;
     struct {
-      struct __alc_ast_t **statements;
+      struct __Alc_Ast **statements;
       usize statements_num;
     } STMT_BLOCK;
     struct {
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } STMT_RETURN;
     struct {
-      struct __alc_ast_t *label;
+      struct __Alc_Ast *label;
     } STMT_GOTO;
     struct {
-      struct __alc_ast_t *label;
+      struct __Alc_Ast *label;
     } STMT_LABEL;
     struct {
-      struct __alc_ast_t *condition;
-      struct __alc_ast_t *body;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *condition;
+      struct __Alc_Ast *body;
+      struct __Alc_Ast *attribute_list;
     } STMT_WHILE;
     struct {
-      struct __alc_ast_t *init_statement;
-      struct __alc_ast_t *condition;
-      struct __alc_ast_t *expression;
-      struct __alc_ast_t *body;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *init_statement;
+      struct __Alc_Ast *condition;
+      struct __Alc_Ast *expression;
+      struct __Alc_Ast *body;
+      struct __Alc_Ast *attribute_list;
     } STMT_FOR;
     struct {
-      struct __alc_ast_t *condition;
-      struct __alc_ast_t *body;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *condition;
+      struct __Alc_Ast *body;
+      struct __Alc_Ast *attribute_list;
     } STMT_DO_WHILE;
     struct {
-      struct __alc_ast_t *body;
+      struct __Alc_Ast *body;
     } STMT_LOOP;
     struct {
       char *item_name;
-      struct __alc_ast_t *iterator;
-      struct __alc_ast_t *body;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *iterator;
+      struct __Alc_Ast *body;
+      struct __Alc_Ast *attribute_list;
       char *i_name;
     } STMT_FOREACH;
     struct {
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } STMT_EXPR;
     struct {
-      struct __alc_ast_t *expression;
-      struct __alc_ast_t **case_chains;
+      struct __Alc_Ast *expression;
+      struct __Alc_Ast **case_chains;
       usize case_chains_num;
     } STMT_SWITCH;
     struct {
-      struct __alc_ast_t *body;
+      struct __Alc_Ast *body;
     } STMT_DEFER;
     struct {
-      struct __alc_ast_t *condition;
-      struct __alc_ast_t *body;
-      struct __alc_ast_t *else_statement;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *condition;
+      struct __Alc_Ast *body;
+      struct __Alc_Ast *else_statement;
+      struct __Alc_Ast *attribute_list;
     } STMT_IF;
     struct {
-      struct __alc_ast_t *body;
+      struct __Alc_Ast *body;
     } STMT_ELSE;
     struct {
       char *name;
     } TYPE_PLAIN;
     struct {
-      struct __alc_ast_t *type;
+      struct __Alc_Ast *type;
     } TYPE_POINTER;
     struct {
-      struct __alc_ast_t *type;
-      struct __alc_ast_t *size_expression;
+      struct __Alc_Ast *type;
+      struct __Alc_Ast *size_expression;
     } TYPE_ARRAY;
     struct {
-      struct __alc_ast_t *argument_list;
-      struct __alc_ast_t *return_type;
+      struct __Alc_Ast *argument_list;
+      struct __Alc_Ast *return_type;
     } TYPE_FUNCTION_POINTER;
     struct {
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } TYPE_TYPE_OF;
     struct {
       char *name;
-      struct __alc_ast_t *type;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *type;
+      struct __Alc_Ast *attribute_list;
     } VAR_DECL;
     struct {
       char *name;
-      struct __alc_ast_t *type;
-      struct __alc_ast_t *expression;
-      struct __alc_ast_t *attribute_list;
+      struct __Alc_Ast *type;
+      struct __Alc_Ast *expression;
+      struct __Alc_Ast *attribute_list;
     } VAR_DEF;
     struct {
       char *name;
@@ -342,22 +342,22 @@ typedef struct __alc_ast_t {
       char *typespec;
     } EXPR_OPERAND_NUMBER_FLOAT;
     struct {
-      struct __alc_ast_t *array;
-      struct __alc_ast_t *index_expression;
+      struct __Alc_Ast *array;
+      struct __Alc_Ast *index_expression;
     } EXPR_OPERAND_ARRAY_ELEMENT;
     struct {
-      struct __alc_ast_t *type;
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *type;
+      struct __Alc_Ast *expression;
     } EXPR_OPERAND_CAST_TO;
     struct {
       char *callee_name;
-      struct __alc_ast_t **arguments;
+      struct __Alc_Ast **arguments;
       usize arguments_num;
     } EXPR_OPERAND_CALL;
     struct {
       char *callee_name;
-      struct __alc_ast_t *generic_type_list;
-      struct __alc_ast_t **arguments;
+      struct __Alc_Ast *generic_type_list;
+      struct __Alc_Ast **arguments;
       usize arguments_num;
     } EXPR_OPERAND_GENERIC_CALL;
     struct {
@@ -369,75 +369,75 @@ typedef struct __alc_ast_t {
       char *typespec;
     } EXPR_OPERAND_SYMBOL;
     struct {
-      struct __alc_ast_t *from;
-      struct __alc_ast_t *what;
+      struct __Alc_Ast *from;
+      struct __Alc_Ast *what;
     } EXPR_OPERAND_ACCESS_MEMBER;
     struct {
-      struct __alc_ast_t *type;
+      struct __Alc_Ast *type;
     } EXPR_OPERAND_SIZE_OF;
     struct {
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } EXPR_OPERAND_ALIGN_OF;
     struct {
-      struct __alc_ast_t **entries;
+      struct __Alc_Ast **entries;
       usize entries_num;
     } INITLIST;
     struct {
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } INITLIST_ENTRY;
     struct {
       char *field_name;
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } INITLIST_ENTRY_EXPLICIT;
     struct {
-      struct __alc_ast_t **index_expressions;
+      struct __Alc_Ast **index_expressions;
       usize index_expressions_num;
-      struct __alc_ast_t *expression;
+      struct __Alc_Ast *expression;
     } INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT;
     struct {
       char *name;
-      struct __alc_ast_t *generic_placeholder_type_list;
-      struct __alc_ast_t **children;
+      struct __Alc_Ast *generic_placeholder_type_list;
+      struct __Alc_Ast **children;
       usize children_num;
-      struct __alc_ast_t *attribute_list;
-      alc_ast_struct_kind_t kind;
+      struct __Alc_Ast *attribute_list;
+      Alc_Ast_Struct_Kind kind;
     } GENERIC_STRUCT;
     struct {
       char *name;
-      alc_ast_function_kind_t kind;
-      struct __alc_ast_t *generic_placeholder_type_list;
-      struct __alc_ast_t *argument_list;
-      struct __alc_ast_t *return_type;
-      struct __alc_ast_t *body;
-      struct __alc_ast_t *attribute_list;
+      Alc_Ast_Function_Kind kind;
+      struct __Alc_Ast *generic_placeholder_type_list;
+      struct __Alc_Ast *argument_list;
+      struct __Alc_Ast *return_type;
+      struct __Alc_Ast *body;
+      struct __Alc_Ast *attribute_list;
     } GENERIC_FUNC;
     struct {
-      struct __alc_ast_t **generic_placeholder_types;
+      struct __Alc_Ast **generic_placeholder_types;
       usize generic_placeholder_types_num;
     } GENERIC_PLACEHOLDER_TYPE_LIST;
     struct {
       char *name;
-      struct __alc_ast_t *default_type;
+      struct __Alc_Ast *default_type;
     } GENERIC_PLACEHOLDER_TYPE;
     struct {
-      struct __alc_ast_t **generic_types;
+      struct __Alc_Ast **generic_types;
       usize generic_types_num;
     } GENERIC_TYPE_LIST;
     struct {
       char *name;
-      struct __alc_ast_t *generic_type_list;
+      struct __Alc_Ast *generic_type_list;
     } GENERIC_TYPE;
     struct {
       char *name;
-      struct __alc_ast_t *generic_type_list;
-      struct __alc_ast_t *subobject;
+      struct __Alc_Ast *generic_type_list;
+      struct __Alc_Ast *subobject;
     } GENERIC_NAMESPACE;
   } data;
 
   usize pos;
-  alc_ast_kind_t kind;
-} alc_ast_t;
+  Alc_Ast_Kind kind;
+} Alc_Ast;
 
-ALC_API void alc_ast_print(const alc_ast_t *ast);
+ALC_API void alc_ast_print(const Alc_Ast *ast);
 
 #endif // __ALC_AST_H__

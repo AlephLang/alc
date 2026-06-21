@@ -8,9 +8,9 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static alc_ast_t *parse_enum_element(alc_parser_t *p);
+static Alc_Ast *parse_enum_element(Alc_Parser *p);
 
-alc_ast_t *parse_enum(alc_parser_t *p)
+Alc_Ast *parse_enum(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
@@ -24,7 +24,7 @@ alc_ast_t *parse_enum(alc_parser_t *p)
 
   usize pos = p->pos++;
 
-  alc_ast_t *attribute_list = nullptr;
+  Alc_Ast *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
     attribute_list = parse_attribute_list(p);
     _VERIFY_AST(attribute_list);
@@ -35,9 +35,9 @@ alc_ast_t *parse_enum(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t **elements = vector_create(alc_ast_t *);
+  Alc_Ast **elements = vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    alc_ast_t *element = parse_enum_element(p);
+    Alc_Ast *element = parse_enum_element(p);
     if ALC_UNLIKELY (element == nullptr) {
       vector_destroy(elements);
       return nullptr;
@@ -64,7 +64,7 @@ alc_ast_t *parse_enum(alc_parser_t *p)
   }
 
   if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
-    alc_token_type_t *expected_v = vector_reserve(alc_token_type_t, 2);
+    Alc_Token_Type *expected_v = vector_reserve(Alc_Token_Type, 2);
     vector_push(expected_v, ALC_TOKEN_TYPE_RCBRACK);
     vector_push(expected_v, ALC_TOKEN_TYPE_COMMA);
     add_error_unexpected_token_v(p, p->pos++, expected_v);
@@ -74,9 +74,9 @@ alc_ast_t *parse_enum(alc_parser_t *p)
 
   p->pos++;
 
-  alc_ast_t *enum_ast =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-  enum_ast->data.ENUM.name = (char *)enum_ast + sizeof(alc_ast_t);
+  Alc_Ast *enum_ast =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+  enum_ast->data.ENUM.name = (char *)enum_ast + sizeof(Alc_Ast);
   enum_ast->data.ENUM.elements = vector_to_array(elements, &enum_ast->data.ENUM.elements_num);
   enum_ast->data.ENUM.attribute_list = attribute_list;
   enum_ast->pos = pos;
@@ -85,7 +85,7 @@ alc_ast_t *parse_enum(alc_parser_t *p)
   return enum_ast;
 }
 
-static alc_ast_t *parse_enum_element(alc_parser_t *p)
+static Alc_Ast *parse_enum_element(Alc_Parser *p)
 {
   _VERIFY_POS(p, p->pos);
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
@@ -95,7 +95,7 @@ static alc_ast_t *parse_enum_element(alc_parser_t *p)
 
   usize pos = p->pos++;
 
-  alc_ast_t *expr = nullptr;
+  Alc_Ast *expr = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_EQ) {
     p->pos++;
 
@@ -103,9 +103,9 @@ static alc_ast_t *parse_enum_element(alc_parser_t *p)
     _VERIFY_AST(expr);
   }
 
-  alc_ast_t *enum_element =
-    alloc_arena_allocate(&ctx()->arena, sizeof(alc_ast_t) + sizeof(char) * name_len);
-  enum_element->data.ENUM_ELEMENT.name = (char *)enum_element + sizeof(alc_ast_t);
+  Alc_Ast *enum_element =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+  enum_element->data.ENUM_ELEMENT.name = (char *)enum_element + sizeof(Alc_Ast);
   enum_element->data.ENUM_ELEMENT.expression = expr;
   enum_element->pos = pos;
   enum_element->kind = ALC_AST_KIND_ENUM_ELEMENT;

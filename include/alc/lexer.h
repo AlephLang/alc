@@ -8,11 +8,11 @@ typedef struct {
   const char *src;
   usize src_len;
   usize pos, line, llp;
-} alc_lexer_t;
+} Alc_Lexer;
 
-ALC_API alc_lexer_t alc_lexer_create(const char *src);
+ALC_API Alc_Lexer alc_lexer_create(const char *src);
 
 // If tokenization fails, only errors will be put into "out_tokens"
-ALC_API b8 alc_lexer_tokenize(alc_lexer_t *lexer, alc_token_t **out_tokens, usize *out_n);
+ALC_API b8 alc_lexer_tokenize(Alc_Lexer *lexer, Alc_Token **out_tokens, usize *out_n);
 
 #endif // __ALC_LEXER_H__

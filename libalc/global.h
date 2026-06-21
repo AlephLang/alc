@@ -4,9 +4,9 @@
 #include "allocs/alloc_arena.h"
 
 typedef struct {
-  alloc_arena_t arena;
-} ctx_t;
+  Alloc_Arena arena;
+} Ctx;
 
-ctx_t *ctx(void);
+Ctx *ctx(void);
 
 #endif // __ALC_GLOBAL_H__

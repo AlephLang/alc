@@ -265,7 +265,7 @@ static string_t *to_string(const alc_ast_t *ast)
   case ALC_AST_KIND_CASE_CHAIN: {
     string_t **children_vs_v = vector_reserve(string_t *, ast->data.CASE_CHAIN.cases_num + 1);
     array_to_strings(children_vs_v, ast->data.CASE_CHAIN.cases, ast->data.CASE_CHAIN.cases_num);
-    vector_push(children_vs_v, ast->data.CASE_CHAIN.body);
+    vector_push(children_vs_v, to_string(ast->data.CASE_CHAIN.body));
     return build_tree(string_create_from("CASE_CHAIN"), children_vs_v);
   }
 

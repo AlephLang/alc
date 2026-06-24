@@ -47,6 +47,7 @@ s32 main(s32 argc, char **argv)
     char *data = malloc(sizeof(char) * (size + 1));
     fread(data, sizeof(char), size, f);
     data[size] = 0;
+    fclose(f);
 
     Error_Handler error_handler = error_handler_create(file_name, data);
 
@@ -87,6 +88,8 @@ s32 main(s32 argc, char **argv)
     alc_parser_destroy(parser);
 
     error_handler_destroy(&error_handler);
+
+    free(data);
   }
 
   alc_shutdown();

@@ -1,3 +1,4 @@
+#include <alc/defs.h>
 #include <alc/ast.h>
 #include <alc/parser.h>
 #include <alc/token.h>
@@ -11,6 +12,7 @@ enum {
   EXIT_FLAG_SUCCESS = 0,
   EXIT_FLAG_FAILED_TO_OPEN = (1 << 0),
   EXIT_FLAG_FAILED_TO_TOKENIZE = (1 << 1),
+  EXIT_FLAG_FAILED_TO_PARSE = (1 << 2),
 };
 
 s32 main(s32 argc, char **argv)
@@ -53,22 +55,34 @@ s32 main(s32 argc, char **argv)
     usize n_tokens;
     if ALC_UNLIKELY (!alc_lexer_tokenize(&lexer, &tokens, &n_tokens)) {
       error_handler_handle_lexer_errors(&error_handler, tokens, n_tokens);
-
       result |= EXIT_FLAG_FAILED_TO_TOKENIZE;
       continue;
     }
 
-    error_handler_set_tokens(&error_handler, tokens, n_tokens);
-
+#ifdef _DEBUG
     for (usize i = 0; i < n_tokens; i++) {
       char buf[1024] = { 0 };
       alc_token_to_string(&tokens[i], buf, 1024);
       printf("(%zu) %s\n", i, buf);
     }
+#endif
+
+    error_handler_set_tokens(&error_handler, tokens, n_tokens);
 
     Alc_Parser *parser = alc_parser_create(tokens, n_tokens);
     Alc_Ast *root = alc_parser_parse(parser);
+#ifdef _DEBUG
     alc_ast_print(root);
+#endif
+
+    usize parser_errors_num;
+    Alc_Parser_Error *parser_errors = alc_parser_get_errors(parser, &parser_errors_num);
+    if ALC_UNLIKELY (parser_errors_num > 0) {
+      error_handler_handle_parser_errors(&error_handler, parser_errors, parser_errors_num);
+
+      result |= EXIT_FLAG_FAILED_TO_PARSE;
+      continue;
+    }
 
     alc_parser_destroy(parser);
 

@@ -37,10 +37,7 @@ typedef u8 Ansi_Mode;
 #define ANSI_RESET ((Ansi_Mode) - 1)
 
 const char *ansi_reset(void);
-const char *ansi_color(Ansi_Color color);
-const char *ansi_graphics(Ansi_Graphics graphics);
-
-Ansi_Color ansi_get_color(Ansi_Mode mode);
-Ansi_Graphics ansi_get_graphics(Ansi_Mode mode);
+const char *ansi_color(Ansi_Mode mode);
+const char *ansi_graphics(Ansi_Mode mode);
 
 #endif // __ANSI_H__

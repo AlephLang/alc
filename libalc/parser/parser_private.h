@@ -66,7 +66,7 @@ Alc_Ast *parse_stmt_defer(Alc_Parser *p);
 static inline void add_error(Alc_Parser *p, Alc_Parser_Error error)
 {
   ALC_ASSUME(p != nullptr);
-  printf("PARSER ERROR!!!\n"); // TODO: Remove this message when basic error handler is done.
+
   vector_push(p->errors, error);
 }
 

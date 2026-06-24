@@ -12,6 +12,7 @@
 
 static Alc_Ast *pratt_parse(Alc_Parser *p, b8 is_toplevel, u8 min_prec, b8 has_assign);
 static u8 get_precedence(Alc_Ast_Kind op_kind);
+static usize get_operator_length(Alc_Ast_Kind op_kind);
 static Alc_Ast *parse_operator(Alc_Parser *p);
 static b8 is_namespace(const Alc_Parser *p);
 static b8 is_generic_call_or_namespace(const Alc_Parser *p);
@@ -87,7 +88,6 @@ static Alc_Ast *pratt_parse(Alc_Parser *p, b8 is_toplevel, u8 min_prec, b8 has_a
       break;
     }
 
-    b8 assign = false;
     switch (operator->kind) {
     case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_EQ:
     case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_ADDEQ:
@@ -100,28 +100,28 @@ static Alc_Ast *pratt_parse(Alc_Parser *p, b8 is_toplevel, u8 min_prec, b8 has_a
     case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_ANDEQ:
     case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_OREQ:
     case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_XOREQ: {
-      assign = true;
       if ALC_UNLIKELY (has_assign) {
         Alc_Parser_Error two_assign_operators_error = {
           .pos = operator->pos,
-          .len = 1,
+          .len = get_operator_length(operator->kind),
           .type = ALC_PARSER_ERROR_TYPE_TWO_ASSIGN_OPERATORS_IN_EXPRESSION,
         };
         add_error(p, two_assign_operators_error);
       } else if ALC_UNLIKELY (!is_toplevel) {
         Alc_Parser_Error assign_in_non_toplevel_error = {
           .pos = operator->pos,
-          .len = 1,
+          .len = get_operator_length(operator->kind),
           .type = ALC_PARSER_ERROR_TYPE_ASSIGN_OPERATOR_IN_NON_TOPLEVEL_EXPRESSION,
         };
         add_error(p, assign_in_non_toplevel_error);
       }
+      has_assign = true;
     }
     default:
       break;
     }
 
-    Alc_Ast *rhs = pratt_parse(p, is_toplevel, prec, has_assign || assign);
+    Alc_Ast *rhs = pratt_parse(p, is_toplevel, prec, has_assign);
     _VERIFY_AST(rhs);
 
     Alc_Ast *expr = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
@@ -181,6 +181,54 @@ static u8 get_precedence(Alc_Ast_Kind op_kind)
   case ALC_AST_KIND_EXPR_OPERATOR_BINARY_OR:
   case ALC_AST_KIND_EXPR_OPERATOR_BINARY_XOR:
     return 7;
+
+  default:
+    ALC_NOREACH();
+  }
+}
+
+static usize get_operator_length(Alc_Ast_Kind op_kind)
+{
+  switch (op_kind) {
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_SHLEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_SHREQ:
+    return 3;
+
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_SHL:
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_SHR:
+  case ALC_AST_KIND_EXPR_OPERATOR_COMPARE_EQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_COMPARE_NOTEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_COMPARE_LTHANEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_COMPARE_GTHANEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_BOOLEAN_AND:
+  case ALC_AST_KIND_EXPR_OPERATOR_BOOLEAN_OR:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_ADDEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_SUBEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_MULEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_DIVEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_MODEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_ANDEQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_OREQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_XOREQ:
+    return 2;
+
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_ADD:
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_SUB:
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_MUL:
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_DIV:
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_MOD:
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_AND:
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_OR:
+  case ALC_AST_KIND_EXPR_OPERATOR_BINARY_XOR:
+  case ALC_AST_KIND_EXPR_OPERATOR_COMPARE_LTHAN:
+  case ALC_AST_KIND_EXPR_OPERATOR_COMPARE_GTHAN:
+  case ALC_AST_KIND_EXPR_OPERATOR_ASSIGN_EQ:
+  case ALC_AST_KIND_EXPR_OPERATOR_PREFIX_NOT:
+  case ALC_AST_KIND_EXPR_OPERATOR_PREFIX_BOOLEAN_NOT:
+  case ALC_AST_KIND_EXPR_OPERATOR_PREFIX_NEGATIVE:
+  case ALC_AST_KIND_EXPR_OPERATOR_PREFIX_DEREFERENCE:
+  case ALC_AST_KIND_EXPR_OPERATOR_PREFIX_ADDRESS:
+    return 1;
 
   default:
     ALC_NOREACH();

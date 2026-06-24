@@ -30,26 +30,14 @@ const char *ansi_reset(void)
   return "\033[0m";
 }
 
-const char *ansi_color(Ansi_Color color)
+const char *ansi_color(Ansi_Mode mode)
 {
-  if ((u8)color == (u8)-1)
-    return "\033[0m";
-  return _colors[color >> ANSI_COLOR_OFFSET];
+  Ansi_Color color = (mode & ANSI_COLOR_MASK) >> ANSI_COLOR_OFFSET;
+  return _colors[color];
 }
 
-const char *ansi_graphics(Ansi_Graphics graphics)
+const char *ansi_graphics(Ansi_Mode mode)
 {
-  if ((u8)graphics == (u8)-1)
-    return "\033[0m";
-  return _graphics[graphics >> ANSI_GRAPHICS_OFFSET];
-}
-
-Ansi_Color ansi_get_color(Ansi_Mode mode)
-{
-  return mode & ANSI_COLOR_MASK;
-}
-
-Ansi_Graphics ansi_get_graphics(Ansi_Mode mode)
-{
-  return mode & ANSI_GRAPHICS_MASK;
+  Ansi_Graphics graphics = (mode & ANSI_GRAPHICS_MASK) >> ANSI_GRAPHICS_OFFSET;
+  return _graphics[graphics];
 }

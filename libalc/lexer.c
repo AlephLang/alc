@@ -145,19 +145,12 @@ b8 alc_lexer_tokenize(Alc_Lexer *lexer, Alc_Token **out_tokens, usize *out_n)
         failed = true;
         vector_clear(tokens);
       }
-      printf("FAILURE: %zu:%zu: %c\n", lexer->line + 1, lexer->pos - lexer->llp,
-             lexer->src[lexer->pos]);
       vector_push(tokens, process_error(lexer));
       break;
     }
   }
 
-  if ALC_LIKELY (vector_get_length(tokens) > 0)
-    *out_tokens = vector_to_array(tokens, out_n);
-  else {
-    *out_tokens = nullptr;
-    *out_n = 0;
-  }
+  *out_tokens = vector_to_array(tokens, out_n);
   vector_destroy(tokens);
   return !failed;
 }

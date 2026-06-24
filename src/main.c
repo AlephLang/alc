@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <alc/alc.h>
 #include <stdlib.h>
+#include "error_handler.h"
 
 enum {
   EXIT_FLAG_SUCCESS = 0,
@@ -45,14 +46,19 @@ s32 main(s32 argc, char **argv)
     fread(data, sizeof(char), size, f);
     data[size] = 0;
 
+    Error_Handler error_handler = error_handler_create(file_name, data);
+
     Alc_Lexer lexer = alc_lexer_create(data);
     Alc_Token *tokens = nullptr;
     usize n_tokens;
     if ALC_UNLIKELY (!alc_lexer_tokenize(&lexer, &tokens, &n_tokens)) {
-      ALC_TODO("Report tokenization failure.");
+      error_handler_handle_lexer_errors(&error_handler, tokens, n_tokens);
+
       result |= EXIT_FLAG_FAILED_TO_TOKENIZE;
       continue;
     }
+
+    error_handler_set_tokens(&error_handler, tokens, n_tokens);
 
     for (usize i = 0; i < n_tokens; i++) {
       char buf[1024] = { 0 };
@@ -65,6 +71,8 @@ s32 main(s32 argc, char **argv)
     alc_ast_print(root);
 
     alc_parser_destroy(parser);
+
+    error_handler_destroy(&error_handler);
   }
 
   alc_shutdown();

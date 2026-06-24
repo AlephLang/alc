@@ -82,6 +82,7 @@ s32 main(s32 argc, char **argv)
       error_handler_handle_parser_errors(&error_handler, parser_errors, parser_errors_num);
 
       result |= EXIT_FLAG_FAILED_TO_PARSE;
+      alc_parser_destroy(parser);
       continue;
     }
 

@@ -114,7 +114,7 @@ void error_handler_handle_parser_errors(Error_Handler *handler, Alc_Parser_Error
     case ALC_PARSER_ERROR_TYPE_UNEXPECTED_WHITESPACE:
     case ALC_PARSER_ERROR_TYPE_ASSIGN_OPERATOR_IN_NON_TOPLEVEL_EXPRESSION:
     case ALC_PARSER_ERROR_TYPE_TWO_ASSIGN_OPERATORS_IN_EXPRESSION: {
-      get_message_start(message_start, 4096, handler->filename, handler->source_lines_num,
+      get_message_start(message_start, 4096, handler->filename, handler->tokens[error->pos].line,
                         handler->tokens[error->pos].pos, "error",
                         ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD);
     } break;

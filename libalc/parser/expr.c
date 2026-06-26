@@ -903,10 +903,6 @@ static Alc_Ast *parse_cast(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
-  _VERIFY_VALUE(p, p->pos, "cast");
-
   usize pos = p->pos++;
 
   _VERIFY_POS(p, p->pos);
@@ -930,7 +926,7 @@ static Alc_Ast *parse_cast(Alc_Parser *p)
   cast_ast->data.EXPR_OPERAND_CAST_TO.expression = expr;
   cast_ast->pos = pos;
   cast_ast->kind = ALC_AST_KIND_EXPR_OPERAND_CAST_TO;
-  return nullptr;
+  return cast_ast;
 }
 
 static Alc_Ast *parse_prefix_expr(Alc_Parser *p)

@@ -38,16 +38,8 @@ Alc_Ast *parse_enum(Alc_Parser *p)
   Alc_Ast **elements = vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
     Alc_Ast *element = parse_enum_element(p);
-    if ALC_UNLIKELY (element == nullptr) {
-      vector_destroy(elements);
-      return nullptr;
-    }
-
-    if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-      add_error_unexpected_eof(p, p->pos);
-      vector_destroy(elements);
-      return nullptr;
-    }
+    _VERIFY_AST(element, { vector_destroy(elements); });
+    _VERIFY_POS(p, p->pos, { vector_destroy(elements); });
 
     vector_push(elements, element);
 
@@ -57,19 +49,14 @@ Alc_Ast *parse_enum(Alc_Parser *p)
     p->pos++;
   }
 
-  if ALC_UNLIKELY (p->pos >= p->tokens_num) {
-    add_error_unexpected_eof(p, p->pos);
-    vector_destroy(elements);
-    return nullptr;
-  }
+  _VERIFY_POS(p, p->pos, { vector_destroy(elements); });
 
-  if ALC_UNLIKELY (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
+  {
     Alc_Token_Type *expected_v = vector_reserve(Alc_Token_Type, 2);
     vector_push(expected_v, ALC_TOKEN_TYPE_RCBRACK);
     vector_push(expected_v, ALC_TOKEN_TYPE_COMMA);
-    add_error_unexpected_token_v(p, p->pos++, expected_v);
-    vector_destroy(elements);
-    return nullptr;
+    _VERIFY_TOKEN_V(p, p->pos, expected_v, { vector_destroy(elements); });
+    vector_destroy(expected_v);
   }
 
   p->pos++;

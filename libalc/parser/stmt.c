@@ -69,14 +69,24 @@ Alc_Ast *parse_stmt(Alc_Parser *p)
     if (stmt != (void *)-1)
       return stmt;
 
+    if (is_qualifier(p->tokens[p->pos].value)) {
+      return parse_decldef(p, nullptr);
+    }
+
     if (p->pos + 1 < p->tokens_num && p->tokens[p->pos + 1].type == ALC_TOKEN_TYPE_COLON) {
       if (p->pos + 2 < p->tokens_num && p->tokens[p->pos + 2].type == ALC_TOKEN_TYPE_COLON) {
-        if (p->pos + 3 < p->tokens_num && p->tokens[p->pos + 3].type == ALC_TOKEN_TYPE_LPAREN)
+        if ((p->pos + 3 < p->tokens_num && p->tokens[p->pos + 3].type == ALC_TOKEN_TYPE_LPAREN) ||
+            (p->pos + 3 < p->tokens_num && p->tokens[p->pos + 3].type == ALC_TOKEN_TYPE_LARROW))
           return parse_function(p, nullptr, ALC_AST_FUNCTION_KIND_DEFAULT);
         else
           return parse_stmt_expr(p);
       }
-      return parse_decldef_var(p, nullptr);
+      Alc_Ast *decldef_var = parse_decldef_var(p, nullptr);
+      _VERIFY_AST(decldef_var);
+      _VERIFY_POS(p, p->pos);
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_SEMICOLON);
+      p->pos++;
+      return decldef_var;
     }
   } break;
 

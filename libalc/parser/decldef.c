@@ -8,8 +8,6 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static b8 is_qualifier(const char *str);
-
 Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
 {
   ALC_ASSUME(p != nullptr);
@@ -141,9 +139,4 @@ __vardef:
   vardecl_ast->kind = ALC_AST_KIND_VAR_DECL;
   memcpy(vardecl_ast->data.VAR_DECL.name, name, name_len);
   return vardecl_ast;
-}
-
-static b8 is_qualifier(const char *str)
-{
-  return strcmp(str, "const") == 0 || strcmp(str, "persist") == 0 || strcmp(str, "inline") == 0;
 }

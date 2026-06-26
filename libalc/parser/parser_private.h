@@ -62,6 +62,7 @@ Alc_Ast *parse_stmt_for(Alc_Parser *p);
 Alc_Ast *parse_stmt_foreach(Alc_Parser *p);
 Alc_Ast *parse_stmt_switch(Alc_Parser *p);
 Alc_Ast *parse_stmt_defer(Alc_Parser *p);
+b8 is_qualifier(const char *str);
 
 static inline void add_error(Alc_Parser *p, Alc_Parser_Error error)
 {

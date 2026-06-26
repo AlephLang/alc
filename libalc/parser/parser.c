@@ -103,6 +103,8 @@ Alc_Ast *parse_ids(Alc_Parser *p)
     return parse_stmt_switch(p);
   else if (strcmp(p->tokens[p->pos].value, "defer") == 0)
     return parse_stmt_defer(p);
+  else if (strcmp(p->tokens[p->pos].value, "func") == 0)
+    return parse_decldef(p, nullptr);
   else if (strcmp(p->tokens[p->pos].value, "export") == 0) {
     p->pos++;
     return parse_function(p, nullptr, ALC_AST_FUNCTION_KIND_EXPORTED);
@@ -125,4 +127,9 @@ Alc_Token *peek(const Alc_Parser *p, s32 adv)
 {
   ALC_ASSUME(p != nullptr);
   return p->pos + adv < p->tokens_num ? &p->tokens[p->pos + adv] : nullptr;
+}
+
+b8 is_qualifier(const char *str)
+{
+  return strcmp(str, "const") == 0 || strcmp(str, "persist") == 0 || strcmp(str, "inline") == 0;
 }

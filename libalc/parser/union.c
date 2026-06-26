@@ -31,10 +31,7 @@ Alc_Ast *parse_union(Alc_Parser *p)
 
   Alc_Ast **children = vector_create(Alc_Ast *);
 
-  while (p->pos < p->tokens_num) {
-    if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_RCBRACK)
-      break;
-
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
     Alc_Ast *attribs = nullptr;
     if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
       attribs = parse_attribute_list(p);
@@ -48,17 +45,17 @@ Alc_Ast *parse_union(Alc_Parser *p)
       child = parse_ids(p);
       if (child == (void *)-1) {
         child = nullptr;
+      } else {
+        _VERIFY_AST(child, { vector_destroy(children); });
       }
-
-      _VERIFY_AST(child, { vector_destroy(children); });
     }
 
     if (child == nullptr) {
       if ALC_UNLIKELY (p->tokens[p->pos].type == ALC_TOKEN_TYPE_SEMICOLON) {
-        p->pos++;
         child = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-        child->pos = pos;
+        child->pos = p->pos;
         child->kind = ALC_AST_KIND_NONE;
+        p->pos++;
       } else {
         child = parse_decldef(p, attribs);
         _VERIFY_AST(child, { vector_destroy(children); });
@@ -79,7 +76,7 @@ Alc_Ast *parse_union(Alc_Parser *p)
   union_ast->data.UNION.attribute_list = attribute_list;
   union_ast->data.UNION.children = vector_to_array(children, &union_ast->data.UNION.children_num);
   union_ast->pos = pos;
-  union_ast->kind = ALC_AST_KIND_STRUCT;
+  union_ast->kind = ALC_AST_KIND_UNION;
   memcpy(union_ast->data.UNION.name, name, name_len);
   return union_ast;
 }

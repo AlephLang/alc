@@ -176,12 +176,10 @@ static Alc_Ast *parse_generic_type_or_namespace(Alc_Parser *p)
   _VERIFY_POS(p, p->pos);
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
-  usize pos = p->pos;
-
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
 
-  p->pos++;
+  usize pos = p->pos++;
 
   Alc_Ast *generic_type_list = parse_generic_type_list(p);
   _VERIFY_AST(generic_type_list);

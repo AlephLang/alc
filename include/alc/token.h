@@ -3,7 +3,7 @@
 
 // #define ALC_TOKEN_TYPE_X(_name, _str_value)
 
-#include "alc/defs.h"
+#include <alc/defs.h>
 #define ALC_TOKEN_TYPES                         \
   ALC_TOKEN_TYPE_X(ERROR, "<error>")            \
   ALC_TOKEN_TYPE_X(ID, "<id>")                  \

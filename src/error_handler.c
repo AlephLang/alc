@@ -360,6 +360,8 @@ static void highlight_token_by_pointer(Error_Handler *handler, char *dst, usize 
 static void highlight_token_range(Error_Handler *handler, char *dst, usize n, usize start_index,
                                   usize end_index, Ansi_Mode ansi_mode, const char *message_after)
 {
+  b8 continue_after = handler->tokens[start_index].line != handler->tokens[end_index].line;
+
   Alc_Token *start_token = &handler->tokens[start_index];
   Alc_Token *end_token;
   do {
@@ -387,13 +389,15 @@ static void highlight_token_range(Error_Handler *handler, char *dst, usize n, us
   usize range_length = end_token->pos - start_token->pos + end_token->len;
 
   char mark[2048] = { 0 };
-  memset(mark, '~', sizeof(char) * ALC_MIN(2047, range_length));
+  memset(mark, '~', sizeof(char) * ALC_MIN(2047, range_length + (continue_after ? 4 : 0)));
   mark[0] = '^';
   mark[2047] = 0;
 
   char fmt[4096];
-  snprintf(fmt, n, " %zu | %s\n %%+%zus | %s%s %%+%zus%s\033[0m\n", line_num, formatted_line,
-           line_num_len, color, graphics, start_token->pos + range_length - 1, message_after);
+
+  snprintf(fmt, n, " %zu | %s%s\n %%+%zus | %s%s %%+%zus%s\033[0m\n", line_num, formatted_line,
+           continue_after ? " ..." : "", line_num_len, color, graphics,
+           start_token->pos + range_length - 1 + (continue_after ? 4 : 0), message_after);
   snprintf(dst, n, fmt, " ", mark);
 }
 

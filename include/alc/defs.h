@@ -128,4 +128,6 @@ typedef uintptr_t uptr;
 #define nullptr (void *)0
 #endif
 
+#define loop while (true)
+
 #endif // __ALC_DEFS_H__

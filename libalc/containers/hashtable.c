@@ -11,6 +11,7 @@
 #define CONTROL_EMPTY 0x00
 
 #define MAX_OCCUPANCY 0.75f
+#define GROW_FACTOR 2
 
 #define ALC_HASH_1_MASK (0xFFFFFF00)
 #define ALC_HASH_2_MASK (0xFF)
@@ -22,6 +23,7 @@ typedef u32 Alc_Hash_1;
 typedef u8 Alc_Hash_2;
 
 static Alc_Hash fnv_1a(const char *str);
+static void grow_and_rehash(Alc_Hashtable *ht);
 
 Alc_Hashtable hashtable_create(usize stride, b8 is_pointer)
 {
@@ -90,6 +92,10 @@ void *hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
 
       ht->control_block[pos] = h2;
       ht->occupied++;
+
+      if ((f32)ht->occupied / (f32)ht->capacity > MAX_OCCUPANCY)
+        grow_and_rehash(ht);
+
       return slot;
     } else if (control == h2 && strcmp(key, ht->key_block[pos]) == 0) {
       void *slot = ht->value_block + (ht->stride * pos);
@@ -155,4 +161,53 @@ static Alc_Hash fnv_1a(const char *str)
     hash *= FNV_PRIME;
   }
   return hash;
+}
+
+static void grow_and_rehash(Alc_Hashtable *ht)
+{
+  usize old_capacity = ht->capacity;
+  Alc_Control *old_control_block = ht->control_block;
+  char **old_key_block = ht->key_block;
+  void *old_value_block = ht->value_block;
+
+  usize new_capacity = ht->capacity * GROW_FACTOR;
+  usize new_block_size = (sizeof(Alc_Control) + sizeof(char *) + ht->stride) * new_capacity;
+  void *new_block = malloc(new_block_size);
+  memset(new_block, 0, new_block_size);
+  ht->control_block = new_block;
+  ht->key_block = new_block + sizeof(Alc_Control) * new_capacity;
+  ht->value_block = new_block + ((sizeof(Alc_Control) + sizeof(char *)) * new_capacity);
+  ht->capacity = new_capacity;
+
+  for (usize i = 0; i < old_capacity; i++) {
+    if (old_control_block[i] == CONTROL_EMPTY)
+      continue;
+
+    char *key = old_key_block[i];
+    Alc_Hash hash = fnv_1a(key);
+    Alc_Hash_1 h1 = ALC_HASH_1(hash);
+    Alc_Hash_2 h2 = ALC_HASH_2(hash);
+    usize pos = h1 % ht->capacity;
+    loop
+    {
+      Alc_Control control = ht->control_block[pos];
+      if (control == CONTROL_EMPTY) {
+        ht->key_block[pos] = key;
+        ht->control_block[pos] = h2;
+
+        void *slot_dst = ht->value_block + (ht->stride * pos);
+        void *slot_src = old_value_block + (ht->stride * i);
+        if (ht->is_pointer)
+          *(void **)slot_dst = *(void **)slot_src;
+        else
+          memcpy(slot_dst, slot_src, ht->stride);
+
+        break;
+      }
+
+      pos = (pos + 1) % ht->capacity;
+    }
+  }
+
+  free(old_control_block);
 }

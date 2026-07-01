@@ -1,4 +1,5 @@
 #include "error_handler.h"
+#include <alc/ast.h>
 #include <alc/parser.h>
 #include "ansi.h"
 #include <alc/token.h>
@@ -297,7 +298,7 @@ static const char *token_type_to_string(Alc_Token_Type type)
     ALC_TOKEN_TYPES
 #undef ALC_TOKEN_TYPE_X
   }
-  return "<Unknown>";
+  ALC_NOREACH();
 }
 
 static void insert_at(char *dst, const char *src, usize pos)
@@ -347,14 +348,14 @@ static void highlight_token_by_pointer(Error_Handler *handler, char *dst, usize 
   insert_at(formatted_line, color, token->pos);
 
   char mark[2048] = { 0 };
-  memset(mark, '~', sizeof(char) * ALC_MIN(2047, token->len));
-  mark[0] = '^';
-  mark[2047] = 0;
+  memset(mark, ' ', sizeof(char) * ALC_MIN(2047, token->pos));
+  memset(mark + token->pos, '~', sizeof(char) * ALC_MIN(2047 - token->pos, token->len));
+  mark[token->pos] = '^';
 
   char fmt[4096];
-  snprintf(fmt, n, " %zu | %s\n %%+%zus | %s%s %%+%zus%s\033[0m\n", line_num, formatted_line,
-           line_num_len, color, graphics, token->pos + token->len - 1, message_after);
-  snprintf(dst, n, fmt, " ", mark);
+  snprintf(fmt, n, " %zu | %s\n %%+%zus | %s%s%s%s\033[0m\n", line_num, formatted_line,
+           line_num_len, color, graphics, mark, message_after);
+  snprintf(dst, n, fmt, " ");
 }
 
 static void highlight_token_range(Error_Handler *handler, char *dst, usize n, usize start_index,

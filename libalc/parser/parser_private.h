@@ -6,18 +6,8 @@
 #include "alc/parser.h"
 #include "alc/token.h"
 #include "allocs/alloc_arena.h"
-#include "containers/vector.h"
 #include "global.h"
 #include <string.h>
-
-typedef struct __Alc_Parser {
-  Alc_Token *tokens;
-  usize tokens_num;
-
-  Alc_Parser_Error *errors;
-
-  usize pos;
-} Alc_Parser;
 
 Alc_Token *peek(const Alc_Parser *p, s32 adv);
 
@@ -68,7 +58,7 @@ static inline void add_error(Alc_Parser *p, Alc_Parser_Error error)
 {
   ALC_ASSUME(p != nullptr);
 
-  vector_push(p->errors, error);
+  alc_vector_push(p->errors, error);
 }
 
 static inline void add_error_unexpected_eof(Alc_Parser *p, usize pos)
@@ -112,8 +102,8 @@ static inline void add_error_unexpected_token_v(Alc_Parser *p, usize pos,
   };
   if ALC_LIKELY (expected_v != nullptr) {
     error.data.UNEXPECTED_TOKEN.expected_token_types =
-      vector_to_array(expected_v, &error.data.UNEXPECTED_TOKEN.expected_token_types_num);
-    vector_destroy(expected_v);
+      alc_vector_to_array(expected_v, &error.data.UNEXPECTED_TOKEN.expected_token_types_num);
+    alc_vector_destroy(expected_v);
   }
   add_error(p, error);
   p->pos++;
@@ -149,8 +139,8 @@ static inline void add_error_unexpected_value_v(Alc_Parser *p, usize pos, const 
   };
   if ALC_LIKELY (expected_v != nullptr) {
     error.data.UNEXPECTED_VALUE.expected_values =
-      vector_to_array(expected_v, &error.data.UNEXPECTED_VALUE.expected_values_num);
-    vector_destroy(expected_v);
+      alc_vector_to_array(expected_v, &error.data.UNEXPECTED_VALUE.expected_values_num);
+    alc_vector_destroy(expected_v);
   }
   add_error(p, error);
   p->pos++;

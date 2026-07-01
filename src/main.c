@@ -1,3 +1,4 @@
+#include <alc/vector.h>
 #include <alc/defs.h>
 #include <alc/ast.h>
 #include <alc/parser.h>
@@ -76,10 +77,9 @@ s32 main(s32 argc, char **argv)
     alc_ast_print(root);
 #endif
 
-    usize parser_errors_num;
-    Alc_Parser_Error *parser_errors = alc_parser_get_errors(parser, &parser_errors_num);
-    if ALC_UNLIKELY (parser_errors_num > 0) {
-      error_handler_handle_parser_errors(&error_handler, parser_errors, parser_errors_num);
+    Alc_Vector(Alc_Parser_Error) parser_errors = alc_parser_get_errors(parser);
+    if ALC_UNLIKELY (alc_vector_get_length(parser_errors) > 0) {
+      error_handler_handle_parser_errors(&error_handler, parser_errors);
 
       result |= EXIT_FLAG_FAILED_TO_PARSE;
       alc_parser_destroy(parser);

@@ -2,8 +2,8 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
+#include "alc/vector.h"
 #include "allocs/alloc_arena.h"
-#include "containers/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <ctype.h>
@@ -399,13 +399,13 @@ static Alc_Ast **parse_call_arguments(Alc_Parser *p, usize *out_n)
   p->pos++;
 
   b8 first = true;
-  Alc_Ast **arguments = vector_create(Alc_Ast *);
+  Alc_Vector(Alc_Ast *) arguments = alc_vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num) {
     if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_RPAREN)
       break;
 
     if (!first) {
-      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { vector_destroy(arguments); });
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { alc_vector_destroy(arguments); });
       p->pos++;
     }
 
@@ -429,20 +429,20 @@ static Alc_Ast **parse_call_arguments(Alc_Parser *p, usize *out_n)
     } break;
     }
 
-    _VERIFY_AST(argument, { vector_destroy(arguments); });
+    _VERIFY_AST(argument, { alc_vector_destroy(arguments); });
 
-    vector_push(arguments, argument);
+    alc_vector_push(arguments, argument);
 
     first = false;
   }
 
-  _VERIFY_POS(p, p->pos, { vector_destroy(arguments); });
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN, { vector_destroy(arguments); });
+  _VERIFY_POS(p, p->pos, { alc_vector_destroy(arguments); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN, { alc_vector_destroy(arguments); });
 
   p->pos++;
 
-  Alc_Ast **arr = vector_to_array(arguments, out_n);
-  vector_destroy(arguments);
+  Alc_Ast **arr = alc_vector_to_array(arguments, out_n);
+  alc_vector_destroy(arguments);
   return arr;
 }
 
@@ -586,16 +586,16 @@ static Alc_Ast *parse_operands(Alc_Parser *p)
   }
 
   default: {
-    Alc_Token_Type *expected_v = vector_reserve(Alc_Token_Type, 9);
-    vector_push(expected_v, ALC_TOKEN_TYPE_ID);
-    vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER);
-    vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER_HEX);
-    vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER_BIN);
-    vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER_OCT);
-    vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER_FLOAT);
-    vector_push(expected_v, ALC_TOKEN_TYPE_STRING);
-    vector_push(expected_v, ALC_TOKEN_TYPE_SYMBOL);
-    vector_push(expected_v, ALC_TOKEN_TYPE_LPAREN);
+    Alc_Vector(Alc_Token_Type) expected_v = alc_vector_reserve(Alc_Token_Type, 9);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_ID);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER_HEX);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER_BIN);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER_OCT);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_NUMBER_FLOAT);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_STRING);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_SYMBOL);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_LPAREN);
     add_error_unexpected_token_v(p, p->pos++, expected_v);
     return nullptr;
   }

@@ -1,6 +1,7 @@
 #ifndef __ERROR_HANDLER_H__
 #define __ERROR_HANDLER_H__
 
+#include <alc/vector.h>
 #include <alc/parser.h>
 #include <alc/defs.h>
 #include <alc/token.h>
@@ -26,7 +27,7 @@ void error_handler_set_tokens(Error_Handler *handler, Alc_Token *tokens, usize t
 
 void error_handler_handle_lexer_errors(Error_Handler *handler, Alc_Token *invalid_tokens,
                                        usize invalid_tokens_num);
-void error_handler_handle_parser_errors(Error_Handler *handler, Alc_Parser_Error *errors,
-                                        usize errors_num);
+void error_handler_handle_parser_errors(Error_Handler *handler,
+                                        Alc_Vector(Alc_Parser_Error) errors);
 
 #endif // __ERROR_HANDLER_H__

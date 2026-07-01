@@ -3,7 +3,7 @@
 #include "alc/parser.h"
 #include "alc/token.h"
 #include "allocs/alloc_arena.h"
-#include "containers/vector.h"
+#include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -119,34 +119,34 @@ Alc_Ast *parse_function_arguments(Alc_Parser *p)
 
   usize pos = p->pos++;
 
-  Alc_Ast **args = vector_create(Alc_Ast *);
+  Alc_Vector(Alc_Ast *) args = alc_vector_create(Alc_Ast *);
   b8 first = true;
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN) {
     if (!first) {
-      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { vector_destroy(args); });
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { alc_vector_destroy(args); });
       p->pos++;
     }
 
     Alc_Ast *arg = p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD ? parse_variadic_args(p) :
                                                                      parse_decldef_var(p, nullptr);
-    _VERIFY_AST(arg, { vector_destroy(args); });
+    _VERIFY_AST(arg, { alc_vector_destroy(args); });
 
-    vector_push(args, arg);
+    alc_vector_push(args, arg);
 
     first = false;
   }
 
-  _VERIFY_POS(p, p->pos, { vector_destroy(args); });
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN, { vector_destroy(args); });
+  _VERIFY_POS(p, p->pos, { alc_vector_destroy(args); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN, { alc_vector_destroy(args); });
 
   p->pos++;
 
   Alc_Ast *argument_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   argument_list->data.ARGUMENT_LIST.arguments =
-    vector_to_array(args, &argument_list->data.ARGUMENT_LIST.arguments_num);
+    alc_vector_to_array(args, &argument_list->data.ARGUMENT_LIST.arguments_num);
   argument_list->pos = pos;
   argument_list->kind = ALC_AST_KIND_ARGUMENT_LIST;
-  vector_destroy(args);
+  alc_vector_destroy(args);
   return argument_list;
 }
 

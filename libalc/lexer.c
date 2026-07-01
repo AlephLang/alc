@@ -2,7 +2,7 @@
 #include "alc/defs.h"
 #include "alc/token.h"
 #include "allocs/alloc_arena.h"
-#include "containers/vector.h"
+#include "alc/vector.h"
 #include "global.h"
 #include <ctype.h>
 #include <string.h>
@@ -74,7 +74,7 @@ b8 alc_lexer_tokenize(Alc_Lexer *lexer, Alc_Token **out_tokens, usize *out_n)
   ALC_ASSERT(out_tokens != nullptr);
   ALC_ASSERT(out_n != nullptr);
 
-  Alc_Token *tokens = vector_create(Alc_Token);
+  Alc_Vector(Alc_Token) tokens = alc_vector_create(Alc_Token);
   b8 failed = false;
 
   while (lexer->pos < lexer->src_len) {
@@ -85,14 +85,14 @@ b8 alc_lexer_tokenize(Alc_Lexer *lexer, Alc_Token **out_tokens, usize *out_n)
 
     char c = lexer->src[lexer->pos];
     switch (c) {
-#define CHAR_CASE_X(_char, _type_name)                                                            \
-  case (_char): {                                                                                 \
-    if ALC_LIKELY (!failed) {                                                                     \
-      vector_push(tokens,                                                                         \
-                  gen_token(nullptr, ALC_TOKEN_TYPE_FULL_NAME(_type_name), lexer->line,           \
-                            lexer->llp, lexer->pos, 1, is_whitespace_at(lexer, lexer->pos + 1))); \
-    }                                                                                             \
-    lexer->pos++;                                                                                 \
+#define CHAR_CASE_X(_char, _type_name)                                                 \
+  case (_char): {                                                                      \
+    if ALC_LIKELY (!failed) {                                                          \
+      alc_vector_push(tokens, gen_token(nullptr, ALC_TOKEN_TYPE_FULL_NAME(_type_name), \
+                                        lexer->line, lexer->llp, lexer->pos, 1,        \
+                                        is_whitespace_at(lexer, lexer->pos + 1)));     \
+    }                                                                                  \
+    lexer->pos++;                                                                      \
   } break;
       CHAR_CASES
 #undef CHAR_CASE_X
@@ -108,8 +108,9 @@ b8 alc_lexer_tokenize(Alc_Lexer *lexer, Alc_Token **out_tokens, usize *out_n)
       } break;
       default:
         if ALC_LIKELY (!failed) {
-          vector_push(tokens, gen_token(nullptr, ALC_TOKEN_TYPE_SLASH, lexer->line, lexer->llp,
-                                        lexer->pos, 1, is_whitespace_at(lexer, lexer->pos + 1)));
+          alc_vector_push(tokens,
+                          gen_token(nullptr, ALC_TOKEN_TYPE_SLASH, lexer->line, lexer->llp,
+                                    lexer->pos, 1, is_whitespace_at(lexer, lexer->pos + 1)));
         }
         lexer->pos++;
         break;
@@ -119,39 +120,39 @@ b8 alc_lexer_tokenize(Alc_Lexer *lexer, Alc_Token **out_tokens, usize *out_n)
     case '"': {
       Alc_Token string_token = process_string(lexer);
       if ALC_LIKELY (!failed)
-        vector_push(tokens, string_token);
+        alc_vector_push(tokens, string_token);
       break;
     }
     case '\'': {
       Alc_Token symbol_token = process_symbol(lexer);
       if ALC_LIKELY (!failed)
-        vector_push(tokens, symbol_token);
+        alc_vector_push(tokens, symbol_token);
       break;
     }
     default:
       if (is_start_of_id(c)) {
         Alc_Token id_token = process_id(lexer);
         if ALC_LIKELY (!failed)
-          vector_push(tokens, id_token);
+          alc_vector_push(tokens, id_token);
         break;
       } else if (isdigit(c)) {
         Alc_Token num_token = process_num(lexer);
         if ALC_LIKELY (!failed)
-          vector_push(tokens, num_token);
+          alc_vector_push(tokens, num_token);
         break;
       }
 
       if ALC_LIKELY (!failed) {
         failed = true;
-        vector_clear(tokens);
+        alc_vector_clear(tokens);
       }
-      vector_push(tokens, process_error(lexer));
+      alc_vector_push(tokens, process_error(lexer));
       break;
     }
   }
 
-  *out_tokens = vector_to_array(tokens, out_n);
-  vector_destroy(tokens);
+  *out_tokens = alc_vector_to_array(tokens, out_n);
+  alc_vector_destroy(tokens);
   return !failed;
 }
 

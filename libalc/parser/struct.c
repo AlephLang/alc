@@ -1,7 +1,7 @@
 #include "alc/ast.h"
 #include "alc/token.h"
 #include "allocs/alloc_arena.h"
-#include "containers/vector.h"
+#include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -35,14 +35,14 @@ Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
 
   p->pos++;
 
-  Alc_Ast **children = vector_create(Alc_Ast *);
+  Alc_Vector(Alc_Ast *) children = alc_vector_create(Alc_Ast *);
 
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
     Alc_Ast *attribs = nullptr;
     if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
       attribs = parse_attribute_list(p);
-      _VERIFY_AST(attribs, { vector_destroy(children); });
-      _VERIFY_POS(p, p->pos, { vector_destroy(children); });
+      _VERIFY_AST(attribs, { alc_vector_destroy(children); });
+      _VERIFY_POS(p, p->pos, { alc_vector_destroy(children); });
     }
 
     Alc_Ast *child = nullptr;
@@ -52,7 +52,7 @@ Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
       if (child == (void *)-1) {
         child = nullptr;
       } else {
-        _VERIFY_AST(child, { vector_destroy(children); });
+        _VERIFY_AST(child, { alc_vector_destroy(children); });
       }
     }
 
@@ -64,15 +64,15 @@ Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
         child->kind = ALC_AST_KIND_NONE;
       } else {
         child = parse_decldef(p, attribs);
-        _VERIFY_AST(child, { vector_destroy(children); });
+        _VERIFY_AST(child, { alc_vector_destroy(children); });
       }
     }
 
-    vector_push(children, child);
+    alc_vector_push(children, child);
   }
 
-  _VERIFY_POS(p, p->pos, { vector_destroy(children); });
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RCBRACK, { vector_destroy(children); });
+  _VERIFY_POS(p, p->pos, { alc_vector_destroy(children); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RCBRACK, { alc_vector_destroy(children); });
 
   p->pos++;
 
@@ -84,12 +84,12 @@ Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
       generic_placeholder_type_list;
     generic_struct_ast->data.GENERIC_STRUCT.attribute_list = attribute_list;
     generic_struct_ast->data.GENERIC_STRUCT.children =
-      vector_to_array(children, &generic_struct_ast->data.GENERIC_STRUCT.children_num);
+      alc_vector_to_array(children, &generic_struct_ast->data.GENERIC_STRUCT.children_num);
     generic_struct_ast->data.GENERIC_STRUCT.kind = kind;
     generic_struct_ast->pos = pos;
     generic_struct_ast->kind = ALC_AST_KIND_GENERIC_STRUCT;
     memcpy(generic_struct_ast->data.GENERIC_STRUCT.name, name, name_len);
-    vector_destroy(children);
+    alc_vector_destroy(children);
     return generic_struct_ast;
   } else {
     Alc_Ast *struct_ast =
@@ -97,12 +97,12 @@ Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
     struct_ast->data.STRUCT.name = (char *)struct_ast + sizeof(Alc_Ast);
     struct_ast->data.STRUCT.attribute_list = attribute_list;
     struct_ast->data.STRUCT.children =
-      vector_to_array(children, &struct_ast->data.STRUCT.children_num);
+      alc_vector_to_array(children, &struct_ast->data.STRUCT.children_num);
     struct_ast->data.STRUCT.kind = kind;
     struct_ast->pos = pos;
     struct_ast->kind = ALC_AST_KIND_STRUCT;
     memcpy(struct_ast->data.STRUCT.name, name, name_len);
-    vector_destroy(children);
+    alc_vector_destroy(children);
     return struct_ast;
   }
 }

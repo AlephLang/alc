@@ -1,4 +1,5 @@
 #include "error_handler.h"
+#include <alc/vector.h>
 #include <alc/ast.h>
 #include <alc/parser.h>
 #include "ansi.h"
@@ -91,13 +92,12 @@ void error_handler_handle_lexer_errors(Error_Handler *handler, Alc_Token *invali
   }
 }
 
-void error_handler_handle_parser_errors(Error_Handler *handler, Alc_Parser_Error *errors,
-                                        usize errors_num)
+void error_handler_handle_parser_errors(Error_Handler *handler, Alc_Vector(Alc_Parser_Error) errors)
 {
   ALC_ASSUME(handler != nullptr);
   ALC_ASSUME(errors != nullptr);
-  ALC_ASSUME(errors_num > 0);
 
+  usize errors_num = alc_vector_get_length(errors);
   for (usize i = 0; i < errors_num; i++) {
     Alc_Parser_Error *error = &errors[i];
 

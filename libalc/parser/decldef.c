@@ -2,8 +2,8 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
+#include "alc/vector.h"
 #include "allocs/alloc_arena.h"
-#include "containers/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -18,21 +18,21 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
   if (is_qualifier(p->tokens[p->pos].value)) {
     // 2 qualifier names are the maximum you can really have.
     // If you have more, you probably did something wrong.
-    const char **names = vector_reserve(const char *, 2);
+    Alc_Vector(const char *) names = alc_vector_reserve(const char *, 2);
 
     while (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_ID &&
            is_qualifier(p->tokens[p->pos].value)) {
-      vector_push(names, p->tokens[p->pos].value);
+      alc_vector_push(names, p->tokens[p->pos].value);
       p->pos++;
     }
 
     usize last_pos = p->pos;
 
     Alc_Ast *qualified = parse_decldef(p, attribute_list);
-    _VERIFY_AST(qualified, { vector_destroy(names); });
+    _VERIFY_AST(qualified, { alc_vector_destroy(names); });
 
     Alc_Ast *qualifier_ast;
-    for (sptr i = vector_get_length(names) - 1; i >= 0; i--) {
+    for (sptr i = alc_vector_get_length(names) - 1; i >= 0; i--) {
       usize name_len = strlen(names[i]) + 1;
       qualifier_ast =
         alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
@@ -43,7 +43,7 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
       memcpy(qualifier_ast->data.QUALIFIER.name, names[i], sizeof(char) * name_len);
       qualified = qualifier_ast;
     }
-    vector_destroy(names);
+    alc_vector_destroy(names);
 
     return qualifier_ast;
   } else if (strcmp(p->tokens[p->pos].value, "func") == 0) {

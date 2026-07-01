@@ -1,33 +1,33 @@
-#include "containers/string.h"
+#include "alc/string.h"
 #include <stdlib.h>
 #include <string.h>
 
-String string_create(void)
+Alc_String alc_string_create(void)
 {
   char *empty_cstr = malloc(sizeof(char));
   *empty_cstr = 0;
-  return (String){ .c_str = empty_cstr, .len = 0 };
+  return (Alc_String){ .c_str = empty_cstr, .len = 0 };
 }
 
-String string_create_from(const char *src)
+Alc_String alc_string_create_from(const char *src)
 {
   ALC_ASSUME(src != nullptr);
 
   usize len = strlen(src);
   char *value = malloc(sizeof(char) * (len + 1));
   memcpy(value, src, len + 1);
-  return (String){ .c_str = value, .len = len };
+  return (Alc_String){ .c_str = value, .len = len };
 }
 
-String string_create_from_char(char c)
+Alc_String alc_string_create_from_char(char c)
 {
   char *value = malloc(sizeof(char) * 2);
   value[0] = c;
   value[1] = 0;
-  return (String){ .c_str = value, .len = 1 };
+  return (Alc_String){ .c_str = value, .len = 1 };
 }
 
-void string_destroy(String *str)
+void alc_string_destroy(Alc_String *str)
 {
   ALC_ASSUME(str != nullptr);
   ALC_ASSUME(str->c_str != nullptr);
@@ -36,7 +36,7 @@ void string_destroy(String *str)
   str->len = 0;
 }
 
-void string_append(String *dst, const String *src)
+void alc_string_append(Alc_String *dst, const Alc_String *src)
 {
   ALC_ASSUME(dst != nullptr);
   ALC_ASSUME(dst->c_str != nullptr);
@@ -66,7 +66,7 @@ void string_append(String *dst, const String *src)
   dst->len = new_len;
 }
 
-void string_append_cstr(String *dst, const char *src)
+void alc_string_append_cstr(Alc_String *dst, const char *src)
 {
   ALC_ASSUME(dst != nullptr);
   ALC_ASSUME(dst->c_str != nullptr);
@@ -96,7 +96,7 @@ void string_append_cstr(String *dst, const char *src)
   dst->len = new_len;
 }
 
-void string_append_char(String *dst, char c)
+void alc_string_append_char(Alc_String *dst, char c)
 {
   ALC_ASSUME(dst != nullptr);
   ALC_ASSUME(dst->c_str != nullptr);

@@ -2,7 +2,7 @@
 #include "alc/parser.h"
 #include "alc/token.h"
 #include "allocs/alloc_arena.h"
-#include "containers/vector.h"
+#include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
 
@@ -13,12 +13,12 @@ Alc_Ast *parse_stmt_block(Alc_Parser *p)
 
   usize pos = p->pos++;
 
-  Alc_Ast **statements = vector_create(Alc_Ast *);
+  Alc_Vector(Alc_Ast *) statements = alc_vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
     Alc_Ast *statement = parse_stmt(p);
-    _VERIFY_AST(statement, { vector_destroy(statements); });
+    _VERIFY_AST(statement, { alc_vector_destroy(statements); });
 
-    vector_push(statements, statement);
+    alc_vector_push(statements, statement);
   }
 
   _VERIFY_POS(p, p->pos);
@@ -28,10 +28,10 @@ Alc_Ast *parse_stmt_block(Alc_Parser *p)
 
   Alc_Ast *stmt_block = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_block->data.STMT_BLOCK.statements =
-    vector_to_array(statements, &stmt_block->data.STMT_BLOCK.statements_num);
+    alc_vector_to_array(statements, &stmt_block->data.STMT_BLOCK.statements_num);
   stmt_block->pos = pos;
   stmt_block->kind = ALC_AST_KIND_STMT_BLOCK;
-  vector_destroy(statements);
+  alc_vector_destroy(statements);
   return stmt_block;
 }
 
@@ -69,9 +69,8 @@ Alc_Ast *parse_stmt(Alc_Parser *p)
     if (stmt != (void *)-1)
       return stmt;
 
-    if (is_qualifier(p->tokens[p->pos].value)) {
+    if (is_qualifier(p->tokens[p->pos].value))
       return parse_decldef(p, nullptr);
-    }
 
     if (p->pos + 1 < p->tokens_num && p->tokens[p->pos + 1].type == ALC_TOKEN_TYPE_COLON) {
       if (p->pos + 2 < p->tokens_num && p->tokens[p->pos + 2].type == ALC_TOKEN_TYPE_COLON) {

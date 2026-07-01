@@ -3,7 +3,7 @@
 #include "alc/parser.h"
 #include "alc/token.h"
 #include "allocs/alloc_arena.h"
-#include "containers/vector.h"
+#include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -35,13 +35,13 @@ Alc_Ast *parse_enum(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast **elements = vector_create(Alc_Ast *);
+  Alc_Vector(Alc_Ast *) elements = alc_vector_create(Alc_Ast *);
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
     Alc_Ast *element = parse_enum_element(p);
-    _VERIFY_AST(element, { vector_destroy(elements); });
-    _VERIFY_POS(p, p->pos, { vector_destroy(elements); });
+    _VERIFY_AST(element, { alc_vector_destroy(elements); });
+    _VERIFY_POS(p, p->pos, { alc_vector_destroy(elements); });
 
-    vector_push(elements, element);
+    alc_vector_push(elements, element);
 
     if (p->tokens[p->pos].type != ALC_TOKEN_TYPE_COMMA)
       break;
@@ -49,14 +49,14 @@ Alc_Ast *parse_enum(Alc_Parser *p)
     p->pos++;
   }
 
-  _VERIFY_POS(p, p->pos, { vector_destroy(elements); });
+  _VERIFY_POS(p, p->pos, { alc_vector_destroy(elements); });
 
   {
-    Alc_Token_Type *expected_v = vector_reserve(Alc_Token_Type, 2);
-    vector_push(expected_v, ALC_TOKEN_TYPE_RCBRACK);
-    vector_push(expected_v, ALC_TOKEN_TYPE_COMMA);
-    _VERIFY_TOKEN_V(p, p->pos, expected_v, { vector_destroy(elements); });
-    vector_destroy(expected_v);
+    Alc_Token_Type *expected_v = alc_vector_reserve(Alc_Token_Type, 2);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_RCBRACK);
+    alc_vector_push(expected_v, ALC_TOKEN_TYPE_COMMA);
+    _VERIFY_TOKEN_V(p, p->pos, expected_v, { alc_vector_destroy(elements); });
+    alc_vector_destroy(expected_v);
   }
 
   p->pos++;
@@ -64,7 +64,7 @@ Alc_Ast *parse_enum(Alc_Parser *p)
   Alc_Ast *enum_ast =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   enum_ast->data.ENUM.name = (char *)enum_ast + sizeof(Alc_Ast);
-  enum_ast->data.ENUM.elements = vector_to_array(elements, &enum_ast->data.ENUM.elements_num);
+  enum_ast->data.ENUM.elements = alc_vector_to_array(elements, &enum_ast->data.ENUM.elements_num);
   enum_ast->data.ENUM.attribute_list = attribute_list;
   enum_ast->pos = pos;
   enum_ast->kind = ALC_AST_KIND_ENUM;

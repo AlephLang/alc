@@ -2,7 +2,7 @@
 #define __ALC_ALLOC_ARENA_H__
 
 #include "alc/defs.h"
-#include "containers/vector.h"
+#include "alc/vector.h"
 
 // NOTE: To debug arena, uncomment this define:
 // #define _DEBUG_ARENA_ALLOC
@@ -14,7 +14,7 @@ typedef struct {
 } Alloc_Arena_Block;
 
 typedef struct {
-  Vector(Alloc_Arena_Block) blocks;
+  Alc_Vector(Alloc_Arena_Block) blocks;
   usize blocks_num;
 #ifdef _DEBUG_ARENA_ALLOC
   usize allocations;

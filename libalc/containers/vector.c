@@ -1,4 +1,4 @@
-#include "containers/vector.h"
+#include "alc/vector.h"
 #include "alc/defs.h"
 #include "allocs/alloc_arena.h"
 #include "global.h"
@@ -16,7 +16,7 @@ static inline __header_t *get_header(void *v)
   return (__header_t *)((char *)v - sizeof(__header_t));
 }
 
-void *__vector_create_impl(usize stride, usize capacity)
+void *__alc_vector_create_impl(usize stride, usize capacity)
 {
   ALC_ASSUME(stride > 0);
   ALC_ASSUME(capacity > 0);
@@ -29,7 +29,7 @@ void *__vector_create_impl(usize stride, usize capacity)
   return (char *)block + sizeof(__header_t);
 }
 
-void __vector_destroy_impl(void *vec)
+void __alc_vector_destroy_impl(void *vec)
 {
   ALC_ASSUME(vec != nullptr);
 
@@ -37,7 +37,7 @@ void __vector_destroy_impl(void *vec)
   free(start);
 }
 
-void *__vector_push_impl(void *vec, const void *item)
+void *__alc_vector_push_impl(void *vec, const void *item)
 {
   ALC_ASSUME(vec != nullptr);
   ALC_ASSUME(item != nullptr);
@@ -55,7 +55,7 @@ void *__vector_push_impl(void *vec, const void *item)
   return vec;
 }
 
-void __vector_pop_impl(void *vec, void *out_item)
+void __alc_vector_pop_impl(void *vec, void *out_item)
 {
   ALC_ASSUME(vec != nullptr);
   ALC_ASSUME(out_item != nullptr);
@@ -64,28 +64,28 @@ void __vector_pop_impl(void *vec, void *out_item)
   ALC_ASSUME(h->length > 0);
 }
 
-usize __vector_get_capacity_impl(const void *vec)
+usize __alc_vector_get_capacity_impl(const void *vec)
 {
   ALC_ASSUME(vec != nullptr);
 
   return get_header((void *)vec)->capacity;
 }
 
-usize __vector_get_stride_impl(const void *vec)
+usize __alc_vector_get_stride_impl(const void *vec)
 {
   ALC_ASSUME(vec != nullptr);
 
   return get_header((void *)vec)->stride;
 }
 
-usize __vector_get_length_impl(const void *vec)
+usize __alc_vector_get_length_impl(const void *vec)
 {
   ALC_ASSUME(vec != nullptr);
 
   return get_header((void *)vec)->length;
 }
 
-void *__vector_to_array_impl(const void *vec, usize *out_n)
+void *__alc_vector_to_array_impl(const void *vec, usize *out_n)
 {
   ALC_ASSUME(vec != nullptr);
   ALC_ASSUME(out_n != nullptr);
@@ -104,7 +104,7 @@ void *__vector_to_array_impl(const void *vec, usize *out_n)
   return out_arr;
 }
 
-void __vector_clear_impl(void *vec)
+void __alc_vector_clear_impl(void *vec)
 {
   ALC_ASSUME(vec != nullptr);
 
@@ -123,6 +123,6 @@ static inline void *resize(void *v)
 
   void *new_v = (char *)new_block + sizeof(__header_t);
   memcpy(new_v, v, old_h->stride * old_h->capacity);
-  __vector_destroy_impl(v);
+  __alc_vector_destroy_impl(v);
   return new_v;
 }

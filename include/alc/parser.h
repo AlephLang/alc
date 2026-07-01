@@ -1,6 +1,7 @@
 #ifndef __ALC_PARSER_H__
 #define __ALC_PARSER_H__
 
+#include <alc/vector.h>
 #include <alc/token.h>
 #include <alc/defs.h>
 #include <alc/ast.h>
@@ -31,13 +32,20 @@ typedef struct {
   } type;
 } Alc_Parser_Error;
 
-typedef struct __Alc_Parser Alc_Parser;
+typedef struct __Alc_Parser {
+  Alc_Token *tokens;
+  usize tokens_num;
+
+  Alc_Vector(Alc_Parser_Error) errors;
+
+  usize pos;
+} Alc_Parser;
 
 ALC_API Alc_Parser *alc_parser_create(Alc_Token *tokens, usize tokens_num);
 ALC_API void alc_parser_destroy(Alc_Parser *parser);
 
 ALC_API Alc_Ast *alc_parser_parse(Alc_Parser *parser);
 
-ALC_API Alc_Parser_Error *alc_parser_get_errors(const Alc_Parser *parser, usize *out_n);
+ALC_API Alc_Vector(Alc_Parser_Error) alc_parser_get_errors(const Alc_Parser *parser);
 
 #endif // __ALC_PARSER_H__

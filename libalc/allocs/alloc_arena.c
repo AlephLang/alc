@@ -1,6 +1,6 @@
 #include "allocs/alloc_arena.h"
 #include "alc/defs.h"
-#include "containers/vector.h"
+#include "alc/vector.h"
 #include <stdlib.h>
 
 #define MIN_BLOCK_SIZE (1 << 20)
@@ -17,7 +17,7 @@ static void *try_allocate_from_block(Alloc_Arena_Block *alloc_block, usize size,
 Alloc_Arena alloc_arena_create(void)
 {
   return (Alloc_Arena){
-    .blocks = vector_create(Alloc_Arena_Block),
+    .blocks = alc_vector_create(Alloc_Arena_Block),
     .blocks_num = 0,
 #ifdef _DEBUG_ARENA_ALLOC
     .allocations = 0,
@@ -34,7 +34,7 @@ void alloc_arena_destroy(Alloc_Arena *alloc)
     free(alloc->blocks[i].memory);
   }
 
-  vector_destroy(alloc->blocks);
+  alc_vector_destroy(alloc->blocks);
   alloc->blocks = nullptr;
   alloc->blocks_num = 0;
 }
@@ -86,7 +86,7 @@ static inline Alloc_Arena_Block *add_block(Alloc_Arena *alloc, usize size)
     .size = size,
   };
 
-  vector_push(alloc->blocks, block);
+  alc_vector_push(alloc->blocks, block);
   return &alloc->blocks[alloc->blocks_num++];
 }
 

@@ -34,6 +34,7 @@ static Alc_Ast *parse_namespace(Alc_Parser *p);
 static Alc_Ast *parse_generic_call_or_namespace(Alc_Parser *p);
 static Alc_Ast *parse_sizeof(Alc_Parser *p);
 static Alc_Ast *parse_alignof(Alc_Parser *p);
+static Alc_Ast *parse_offsetof(Alc_Parser *p);
 static Alc_Ast *parse_cast(Alc_Parser *p);
 static Alc_Ast *parse_prefix_expr(Alc_Parser *p);
 static Alc_Ast *parse_operands_or_prefix(Alc_Parser *p);
@@ -493,6 +494,8 @@ static Alc_Ast *parse_operands(Alc_Parser *p)
       return parse_sizeof(p);
     else if (strcmp(p->tokens[p->pos].value, "alignof") == 0)
       return parse_alignof(p);
+    else if (strcmp(p->tokens[p->pos].value, "offsetof") == 0)
+      return parse_offsetof(p);
     else if (strcmp(p->tokens[p->pos].value, "cast") == 0)
       return parse_cast(p);
     return parse_namespaces_and_identifier_operands(p);
@@ -897,6 +900,40 @@ static Alc_Ast *parse_alignof(Alc_Parser *p)
   alignof_ast->pos = pos;
   alignof_ast->kind = ALC_AST_KIND_EXPR_OPERAND_ALIGN_OF;
   return alignof_ast;
+}
+
+static Alc_Ast *parse_offsetof(Alc_Parser *p)
+{
+  usize pos = p->pos++;
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LPAREN);
+
+  p->pos++;
+
+  Alc_Ast *base_structure = parse_type_raw(p);
+  _VERIFY_AST(base_structure);
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA);
+
+  p->pos++;
+
+  // Maybe should do it in other way to make analysis easier.
+  Alc_Ast *field_expression = parse_expr(p, false);
+  _VERIFY_AST(field_expression);
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN);
+
+  p->pos++;
+
+  Alc_Ast *offsetof_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  offsetof_ast->data.EXPR_OPERAND_OFFSET_OF.base_structure = base_structure;
+  offsetof_ast->data.EXPR_OPERAND_OFFSET_OF.field_expression = field_expression;
+  offsetof_ast->pos = pos;
+  offsetof_ast->kind = ALC_AST_KIND_EXPR_OPERAND_OFFSET_OF;
+  return offsetof_ast;
 }
 
 static Alc_Ast *parse_cast(Alc_Parser *p)

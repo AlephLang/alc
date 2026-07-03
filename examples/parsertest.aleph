@@ -237,7 +237,7 @@ _ :: () -> s32 {
   x := 123 + 3.14f + 123u + 3.1415lf * (false / true) + "string" + "string with a typespec"l
      + access.member + namespace::subobject + namespace::call() + generic_namespace!<s32>::x
      + call() + generic_call!<s32, f32>(123, 3.14f) + 'a' + some_array[14] + cast(s32)3.14f + 'x'l
-     + sizeof(s32) + sizeof(typeof(123.4f)) + alignof(x);
+     + sizeof(s32) + sizeof(typeof(123.4f)) + alignof(x) + offsetof(MegaStruct, y);
 
   struct MegaStruct {
     x: s32;

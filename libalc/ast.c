@@ -672,6 +672,14 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(alc_string_create_from("EXPR_OPERAND_ALIGN_OF"), children_vs_v);
   }
 
+  case ALC_AST_KIND_EXPR_OPERAND_OFFSET_OF: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
+    alc_vector_push(children_vs_v, to_string(ast->data.EXPR_OPERAND_OFFSET_OF.base_structure));
+    alc_vector_push(children_vs_v, to_string(ast->data.EXPR_OPERAND_OFFSET_OF.field_expression));
+    return build_tree(alc_string_create_from("EXPR_OPERAND_OFFSET_OF"), children_vs_v);
+  }
+
   case ALC_AST_KIND_EXPR_OPERATOR_BINARY_ADD: {
     Alc_String *out_v = alc_vector_reserve(Alc_String, 1);
     alc_vector_push(out_v, alc_string_create_from("EXPR_OPERATOR_BINARY_ADD"));

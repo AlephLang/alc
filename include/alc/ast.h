@@ -67,6 +67,7 @@
   ALC_AST_KIND_X(EXPR_OPERAND_ACCESS_MEMBER, "Access member operand")                  \
   ALC_AST_KIND_X(EXPR_OPERAND_SIZE_OF, "Size of operand")                              \
   ALC_AST_KIND_X(EXPR_OPERAND_ALIGN_OF, "Align of operand")                            \
+  ALC_AST_KIND_X(EXPR_OPERAND_OFFSET_OF, "Offset of field in structure")               \
   ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_ADD, "Binary addition operator")                 \
   ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_SUB, "Binary subtraction operator")              \
   ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_MUL, "Binary multiplication operator")           \
@@ -379,6 +380,10 @@ typedef struct __Alc_Ast {
     struct {
       struct __Alc_Ast *expression;
     } EXPR_OPERAND_ALIGN_OF;
+    struct {
+      struct __Alc_Ast *base_structure;
+      struct __Alc_Ast *field_expression;
+    } EXPR_OPERAND_OFFSET_OF;
     struct {
       struct __Alc_Ast **entries;
       usize entries_num;

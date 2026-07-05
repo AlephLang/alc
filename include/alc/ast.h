@@ -193,6 +193,7 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast **elements;
       usize elements_num;
       struct __Alc_Ast *attribute_list;
+      b8 is_enum_flags;
     } ENUM;
     struct {
       char *name;

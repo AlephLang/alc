@@ -225,7 +225,8 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     array_to_strings(children_vs_v, ast->data.ENUM.elements, ast->data.ENUM.elements_num);
     Alc_String header = alc_string_create_from("ENUM { name: \"");
     alc_string_append_cstr(&header, ast->data.ENUM.name);
-    alc_string_append_cstr(&header, "\" }");
+    alc_string_append_cstr(&header, "\" is_enum_flags: ");
+    alc_string_append_cstr(&header, ast->data.ENUM.is_enum_flags ? "true }" : "false }");
     return build_tree(header, children_vs_v);
   }
 

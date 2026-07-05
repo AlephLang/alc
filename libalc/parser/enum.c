@@ -16,6 +16,13 @@ Alc_Ast *parse_enum(Alc_Parser *p)
 
   p->pos++;
 
+  b8 is_enum_flags = false;
+  if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_ID &&
+      strcmp(p->tokens[p->pos].value, "flags") == 0) {
+    is_enum_flags = true;
+    p->pos++;
+  }
+
   _VERIFY_POS(p, p->pos);
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
@@ -66,6 +73,7 @@ Alc_Ast *parse_enum(Alc_Parser *p)
   enum_ast->data.ENUM.name = (char *)enum_ast + sizeof(Alc_Ast);
   enum_ast->data.ENUM.elements = alc_vector_to_array(elements, &enum_ast->data.ENUM.elements_num);
   enum_ast->data.ENUM.attribute_list = attribute_list;
+  enum_ast->data.ENUM.is_enum_flags = is_enum_flags;
   enum_ast->pos = pos;
   enum_ast->kind = ALC_AST_KIND_ENUM;
   memcpy(enum_ast->data.ENUM.name, name, name_len);

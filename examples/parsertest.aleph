@@ -254,7 +254,7 @@ _ :: () -> s32 {
   array: s32[12] = { [0] = 123 };
 }
 
-enum EnumFlags {
+enum flags EnumFlags {
   FLAG_NONE = 0,
   FLAG_1,
   FLAG_2,

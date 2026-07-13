@@ -72,13 +72,12 @@ Alc_Ast *parse_union(Alc_Parser *p)
 
   Alc_Ast *union_ast =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  union_ast->data.UNION.name = (char *)union_ast + sizeof(Alc_Ast);
-  union_ast->data.UNION.attribute_list = attribute_list;
-  union_ast->data.UNION.children =
-    alc_vector_to_array(children, &union_ast->data.UNION.children_num);
+  union_ast->UNION.name = (char *)union_ast + sizeof(Alc_Ast);
+  union_ast->UNION.attribute_list = attribute_list;
+  union_ast->UNION.children = alc_vector_to_array(children, &union_ast->UNION.children_num);
   union_ast->pos = pos;
   union_ast->kind = ALC_AST_KIND_UNION;
-  memcpy(union_ast->data.UNION.name, name, name_len);
+  memcpy(union_ast->UNION.name, name, name_len);
   alc_vector_destroy(children);
   return union_ast;
 }

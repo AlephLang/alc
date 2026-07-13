@@ -47,11 +47,11 @@ static Alc_Ast *__var(Alc_Parser *p, usize pos, const char *name, usize name_len
 
   Alc_Ast *extern_vardecl =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  extern_vardecl->data.EXTERN_VARDECL.name = (char *)extern_vardecl + sizeof(Alc_Ast);
-  extern_vardecl->data.EXTERN_VARDECL.type = var_type;
+  extern_vardecl->EXTERN_VARDECL.name = (char *)extern_vardecl + sizeof(Alc_Ast);
+  extern_vardecl->EXTERN_VARDECL.type = var_type;
   extern_vardecl->pos = pos;
   extern_vardecl->kind = ALC_AST_KIND_EXTERN_VARDECL;
-  memcpy(extern_vardecl->data.EXTERN_VARDECL.name, name, name_len);
+  memcpy(extern_vardecl->EXTERN_VARDECL.name, name, name_len);
   return extern_vardecl;
 }
 
@@ -84,11 +84,11 @@ static Alc_Ast *__function(Alc_Parser *p, usize pos, const char *name, usize nam
 
   Alc_Ast *extern_func =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  extern_func->data.EXTERN_FUNC.name = (char *)extern_func + sizeof(Alc_Ast);
-  extern_func->data.EXTERN_FUNC.argument_list = argument_list;
-  extern_func->data.EXTERN_FUNC.return_type = return_type;
+  extern_func->EXTERN_FUNC.name = (char *)extern_func + sizeof(Alc_Ast);
+  extern_func->EXTERN_FUNC.argument_list = argument_list;
+  extern_func->EXTERN_FUNC.return_type = return_type;
   extern_func->pos = pos;
   extern_func->kind = ALC_AST_KIND_EXTERN_FUNC;
-  memcpy(extern_func->data.EXTERN_FUNC.name, name, name_len);
+  memcpy(extern_func->EXTERN_FUNC.name, name, name_len);
   return extern_func;
 }

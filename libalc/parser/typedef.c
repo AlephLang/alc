@@ -46,12 +46,12 @@ Alc_Ast *parse_typedef(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *typedef_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-  typedef_ast->data.TYPEDEF.name = (char *)typedef_ast + sizeof(Alc_Ast);
-  typedef_ast->data.TYPEDEF.aliased_type = aliased_type;
-  typedef_ast->data.TYPEDEF.generic_placeholder_type_list = generic_placeholder_type_list;
-  typedef_ast->data.TYPEDEF.attribute_list = attribute_list;
+  typedef_ast->TYPEDEF.name = (char *)typedef_ast + sizeof(Alc_Ast);
+  typedef_ast->TYPEDEF.aliased_type = aliased_type;
+  typedef_ast->TYPEDEF.generic_placeholder_type_list = generic_placeholder_type_list;
+  typedef_ast->TYPEDEF.attribute_list = attribute_list;
   typedef_ast->pos = pos;
   typedef_ast->kind = ALC_AST_KIND_TYPEDEF;
-  memcpy(typedef_ast->data.TYPEDEF.name, name, name_len);
+  memcpy(typedef_ast->TYPEDEF.name, name, name_len);
   return typedef_ast;
 }

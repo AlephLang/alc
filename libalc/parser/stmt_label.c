@@ -18,7 +18,7 @@ Alc_Ast *parse_stmt_label(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *stmt_label_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_label_ast->data.STMT_LABEL.label = label;
+  stmt_label_ast->STMT_LABEL.label = label;
   stmt_label_ast->pos = label->pos;
   stmt_label_ast->kind = ALC_AST_KIND_STMT_LABEL;
   return stmt_label_ast;

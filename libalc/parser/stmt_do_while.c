@@ -46,9 +46,9 @@ Alc_Ast *parse_stmt_do_while(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *stmt_do_while_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_do_while_ast->data.STMT_DO_WHILE.condition = cond_expr;
-  stmt_do_while_ast->data.STMT_DO_WHILE.body = body;
-  stmt_do_while_ast->data.STMT_DO_WHILE.attribute_list = attribute_list;
+  stmt_do_while_ast->STMT_DO_WHILE.condition = cond_expr;
+  stmt_do_while_ast->STMT_DO_WHILE.body = body;
+  stmt_do_while_ast->STMT_DO_WHILE.attribute_list = attribute_list;
   stmt_do_while_ast->pos = pos;
   stmt_do_while_ast->kind = ALC_AST_KIND_STMT_DO_WHILE;
   return stmt_do_while_ast;

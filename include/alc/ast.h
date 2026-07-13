@@ -439,7 +439,7 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *generic_type_list;
       struct __Alc_Ast *subobject;
     } GENERIC_NAMESPACE;
-  } data;
+  };
 
   usize pos;
   Alc_Ast_Kind kind;

@@ -34,11 +34,11 @@ Alc_Ast *parse_module(Alc_Parser *p)
   }
 
   Alc_Ast *module_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-  module_ast->data.MODULE.name = (char *)module_ast + sizeof(Alc_Ast);
-  module_ast->data.MODULE.submodule = submodule;
+  module_ast->MODULE.name = (char *)module_ast + sizeof(Alc_Ast);
+  module_ast->MODULE.submodule = submodule;
   module_ast->pos = pos;
   module_ast->kind = ALC_AST_KIND_MODULE;
-  memcpy(module_ast->data.MODULE.name, name, name_len);
+  memcpy(module_ast->MODULE.name, name, name_len);
 
   return module_ast;
 }

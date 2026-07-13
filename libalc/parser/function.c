@@ -82,30 +82,30 @@ Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function
   if (generic_placeholder_type_list == nullptr) {
     Alc_Ast *function_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-    function_ast->data.FUNC.name = (char *)function_ast + sizeof(Alc_Ast);
-    function_ast->data.FUNC.argument_list = argument_list;
-    function_ast->data.FUNC.return_type = return_type;
-    function_ast->data.FUNC.body = body;
-    function_ast->data.FUNC.attribute_list = attribute_list;
-    function_ast->data.FUNC.kind = kind;
+    function_ast->FUNC.name = (char *)function_ast + sizeof(Alc_Ast);
+    function_ast->FUNC.argument_list = argument_list;
+    function_ast->FUNC.return_type = return_type;
+    function_ast->FUNC.body = body;
+    function_ast->FUNC.attribute_list = attribute_list;
+    function_ast->FUNC.kind = kind;
     function_ast->pos = pos;
     function_ast->kind = ALC_AST_KIND_FUNC;
-    memcpy(function_ast->data.FUNC.name, name, name_len);
+    memcpy(function_ast->FUNC.name, name, name_len);
     return function_ast;
   } else {
     Alc_Ast *generic_function_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-    generic_function_ast->data.GENERIC_FUNC.name = (char *)generic_function_ast + sizeof(Alc_Ast);
-    generic_function_ast->data.GENERIC_FUNC.generic_placeholder_type_list =
+    generic_function_ast->GENERIC_FUNC.name = (char *)generic_function_ast + sizeof(Alc_Ast);
+    generic_function_ast->GENERIC_FUNC.generic_placeholder_type_list =
       generic_placeholder_type_list;
-    generic_function_ast->data.GENERIC_FUNC.argument_list = argument_list;
-    generic_function_ast->data.GENERIC_FUNC.return_type = return_type;
-    generic_function_ast->data.GENERIC_FUNC.body = body;
-    generic_function_ast->data.GENERIC_FUNC.attribute_list = attribute_list;
-    generic_function_ast->data.GENERIC_FUNC.kind = kind;
+    generic_function_ast->GENERIC_FUNC.argument_list = argument_list;
+    generic_function_ast->GENERIC_FUNC.return_type = return_type;
+    generic_function_ast->GENERIC_FUNC.body = body;
+    generic_function_ast->GENERIC_FUNC.attribute_list = attribute_list;
+    generic_function_ast->GENERIC_FUNC.kind = kind;
     generic_function_ast->pos = pos;
     generic_function_ast->kind = ALC_AST_KIND_GENERIC_FUNC;
-    memcpy(generic_function_ast->data.GENERIC_FUNC.name, name, name_len);
+    memcpy(generic_function_ast->GENERIC_FUNC.name, name, name_len);
     return generic_function_ast;
   }
 }
@@ -142,8 +142,8 @@ Alc_Ast *parse_function_arguments(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *argument_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  argument_list->data.ARGUMENT_LIST.arguments =
-    alc_vector_to_array(args, &argument_list->data.ARGUMENT_LIST.arguments_num);
+  argument_list->ARGUMENT_LIST.arguments =
+    alc_vector_to_array(args, &argument_list->ARGUMENT_LIST.arguments_num);
   argument_list->pos = pos;
   argument_list->kind = ALC_AST_KIND_ARGUMENT_LIST;
   alc_vector_destroy(args);

@@ -46,9 +46,9 @@ Alc_Ast *alc_parser_parse(Alc_Parser *parser)
   Alc_Ast *root = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   root->pos = 0;
   root->kind = ALC_AST_KIND_ROOT;
-  root->data.ROOT.toplevel_statements =
+  root->ROOT.toplevel_statements =
     alc_vector_get_length(toplevels) > 0 ?
-      alc_vector_to_array(toplevels, &root->data.ROOT.toplevel_statements_num) :
+      alc_vector_to_array(toplevels, &root->ROOT.toplevel_statements_num) :
       nullptr;
   alc_vector_destroy(toplevels);
 

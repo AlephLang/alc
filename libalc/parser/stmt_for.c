@@ -51,11 +51,11 @@ Alc_Ast *parse_stmt_for(Alc_Parser *p)
   _VERIFY_AST(body);
 
   Alc_Ast *stmt_for_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_for_ast->data.STMT_FOR.init_statement = init_statement;
-  stmt_for_ast->data.STMT_FOR.condition = condition;
-  stmt_for_ast->data.STMT_FOR.expression = expression;
-  stmt_for_ast->data.STMT_FOR.body = body;
-  stmt_for_ast->data.STMT_FOR.attribute_list = attribute_list;
+  stmt_for_ast->STMT_FOR.init_statement = init_statement;
+  stmt_for_ast->STMT_FOR.condition = condition;
+  stmt_for_ast->STMT_FOR.expression = expression;
+  stmt_for_ast->STMT_FOR.body = body;
+  stmt_for_ast->STMT_FOR.attribute_list = attribute_list;
   stmt_for_ast->pos = pos;
   stmt_for_ast->kind = ALC_AST_KIND_STMT_FOR;
   return stmt_for_ast;

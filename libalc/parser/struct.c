@@ -79,29 +79,28 @@ Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
   if (generic_placeholder_type_list != nullptr) {
     Alc_Ast *generic_struct_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-    generic_struct_ast->data.GENERIC_STRUCT.name = (char *)generic_struct_ast + sizeof(Alc_Ast);
-    generic_struct_ast->data.GENERIC_STRUCT.generic_placeholder_type_list =
+    generic_struct_ast->GENERIC_STRUCT.name = (char *)generic_struct_ast + sizeof(Alc_Ast);
+    generic_struct_ast->GENERIC_STRUCT.generic_placeholder_type_list =
       generic_placeholder_type_list;
-    generic_struct_ast->data.GENERIC_STRUCT.attribute_list = attribute_list;
-    generic_struct_ast->data.GENERIC_STRUCT.children =
-      alc_vector_to_array(children, &generic_struct_ast->data.GENERIC_STRUCT.children_num);
-    generic_struct_ast->data.GENERIC_STRUCT.kind = kind;
+    generic_struct_ast->GENERIC_STRUCT.attribute_list = attribute_list;
+    generic_struct_ast->GENERIC_STRUCT.children =
+      alc_vector_to_array(children, &generic_struct_ast->GENERIC_STRUCT.children_num);
+    generic_struct_ast->GENERIC_STRUCT.kind = kind;
     generic_struct_ast->pos = pos;
     generic_struct_ast->kind = ALC_AST_KIND_GENERIC_STRUCT;
-    memcpy(generic_struct_ast->data.GENERIC_STRUCT.name, name, name_len);
+    memcpy(generic_struct_ast->GENERIC_STRUCT.name, name, name_len);
     alc_vector_destroy(children);
     return generic_struct_ast;
   } else {
     Alc_Ast *struct_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-    struct_ast->data.STRUCT.name = (char *)struct_ast + sizeof(Alc_Ast);
-    struct_ast->data.STRUCT.attribute_list = attribute_list;
-    struct_ast->data.STRUCT.children =
-      alc_vector_to_array(children, &struct_ast->data.STRUCT.children_num);
-    struct_ast->data.STRUCT.kind = kind;
+    struct_ast->STRUCT.name = (char *)struct_ast + sizeof(Alc_Ast);
+    struct_ast->STRUCT.attribute_list = attribute_list;
+    struct_ast->STRUCT.children = alc_vector_to_array(children, &struct_ast->STRUCT.children_num);
+    struct_ast->STRUCT.kind = kind;
     struct_ast->pos = pos;
     struct_ast->kind = ALC_AST_KIND_STRUCT;
-    memcpy(struct_ast->data.STRUCT.name, name, name_len);
+    memcpy(struct_ast->STRUCT.name, name, name_len);
     alc_vector_destroy(children);
     return struct_ast;
   }

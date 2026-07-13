@@ -63,7 +63,7 @@ Alc_Ast *parse_stmt_expr(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *stmt_expr = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_expr->data.STMT_EXPR.expression = expr;
+  stmt_expr->STMT_EXPR.expression = expr;
   stmt_expr->pos = expr->pos;
   stmt_expr->kind = ALC_AST_KIND_STMT_EXPR;
   return stmt_expr;
@@ -126,9 +126,9 @@ static Alc_Ast *pratt_parse(Alc_Parser *p, b8 is_toplevel, u8 min_prec, b8 has_a
     _VERIFY_AST(rhs);
 
     Alc_Ast *expr = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-    expr->data.EXPR.lhs = lhs;
-    expr->data.EXPR.rhs = rhs;
-    expr->data.EXPR.operator = operator;
+    expr->EXPR.lhs = lhs;
+    expr->EXPR.rhs = rhs;
+    expr->EXPR.operator = operator;
     expr->pos = lhs->pos;
     expr->kind = ALC_AST_KIND_EXPR;
     lhs = expr;
@@ -473,13 +473,12 @@ static Alc_Ast *parse_explicit_call_argument(Alc_Parser *p)
 
   Alc_Ast *explicit_call_argument_ast =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  explicit_call_argument_ast->data.EXPLICIT_CALL_ARGUMENT.name =
+  explicit_call_argument_ast->EXPLICIT_CALL_ARGUMENT.name =
     (char *)explicit_call_argument_ast + sizeof(Alc_Ast);
-  explicit_call_argument_ast->data.EXPLICIT_CALL_ARGUMENT.expression = expr;
+  explicit_call_argument_ast->EXPLICIT_CALL_ARGUMENT.expression = expr;
   explicit_call_argument_ast->pos = pos;
   explicit_call_argument_ast->kind = ALC_AST_KIND_EXPLICIT_CALL_ARGUMENT;
-  memcpy(explicit_call_argument_ast->data.EXPLICIT_CALL_ARGUMENT.name, name,
-         sizeof(char) * name_len);
+  memcpy(explicit_call_argument_ast->EXPLICIT_CALL_ARGUMENT.name, name, sizeof(char) * name_len);
   return explicit_call_argument_ast;
 }
 
@@ -514,8 +513,8 @@ static Alc_Ast *parse_operands(Alc_Parser *p)
     char *typespec = parse_typespec(p, has_ws);
 
     Alc_Ast *number_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-    number_ast->data.EXPR_OPERAND_NUMBER.value = value;
-    number_ast->data.EXPR_OPERAND_NUMBER.typespec = typespec;
+    number_ast->EXPR_OPERAND_NUMBER.value = value;
+    number_ast->EXPR_OPERAND_NUMBER.typespec = typespec;
     number_ast->pos = pos;
     number_ast->kind = ALC_AST_KIND_EXPR_OPERAND_NUMBER;
     return parse_post(p, number_ast);
@@ -531,8 +530,8 @@ static Alc_Ast *parse_operands(Alc_Parser *p)
     char *typespec = parse_typespec(p, has_ws);
 
     Alc_Ast *number_float_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-    number_float_ast->data.EXPR_OPERAND_NUMBER_FLOAT.value = value;
-    number_float_ast->data.EXPR_OPERAND_NUMBER_FLOAT.typespec = typespec;
+    number_float_ast->EXPR_OPERAND_NUMBER_FLOAT.value = value;
+    number_float_ast->EXPR_OPERAND_NUMBER_FLOAT.typespec = typespec;
     number_float_ast->pos = pos;
     number_float_ast->kind = ALC_AST_KIND_EXPR_OPERAND_NUMBER_FLOAT;
     return parse_post(p, number_float_ast);
@@ -550,11 +549,11 @@ static Alc_Ast *parse_operands(Alc_Parser *p)
     char *typespec = parse_typespec(p, has_ws);
     Alc_Ast *string_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * content_len);
-    string_ast->data.EXPR_OPERAND_STRING.content = (char *)string_ast + sizeof(Alc_Ast);
-    string_ast->data.EXPR_OPERAND_STRING.typespec = typespec;
+    string_ast->EXPR_OPERAND_STRING.content = (char *)string_ast + sizeof(Alc_Ast);
+    string_ast->EXPR_OPERAND_STRING.typespec = typespec;
     string_ast->pos = pos;
     string_ast->kind = ALC_AST_KIND_EXPR_OPERAND_STRING;
-    memcpy(string_ast->data.EXPR_OPERAND_STRING.content, content, content_len);
+    memcpy(string_ast->EXPR_OPERAND_STRING.content, content, content_len);
     return parse_post(p, string_ast);
   }
 
@@ -567,11 +566,11 @@ static Alc_Ast *parse_operands(Alc_Parser *p)
     char *typespec = parse_typespec(p, has_ws);
     Alc_Ast *symbol_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * content_len);
-    symbol_ast->data.EXPR_OPERAND_SYMBOL.content = (char *)symbol_ast + sizeof(Alc_Ast);
-    symbol_ast->data.EXPR_OPERAND_SYMBOL.typespec = typespec;
+    symbol_ast->EXPR_OPERAND_SYMBOL.content = (char *)symbol_ast + sizeof(Alc_Ast);
+    symbol_ast->EXPR_OPERAND_SYMBOL.typespec = typespec;
     symbol_ast->pos = pos;
     symbol_ast->kind = ALC_AST_KIND_EXPR_OPERAND_SYMBOL;
-    memcpy(symbol_ast->data.EXPR_OPERAND_SYMBOL.content, content, content_len);
+    memcpy(symbol_ast->EXPR_OPERAND_SYMBOL.content, content, content_len);
     return parse_post(p, symbol_ast);
   }
 
@@ -647,8 +646,8 @@ static Alc_Ast *parse_post(Alc_Parser *p, Alc_Ast *ast)
     p->pos++;
 
     Alc_Ast *array = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-    array->data.EXPR_OPERAND_ARRAY_ELEMENT.array = ast;
-    array->data.EXPR_OPERAND_ARRAY_ELEMENT.index_expression = index_expr;
+    array->EXPR_OPERAND_ARRAY_ELEMENT.array = ast;
+    array->EXPR_OPERAND_ARRAY_ELEMENT.index_expression = index_expr;
     array->pos = pos;
     array->kind = ALC_AST_KIND_EXPR_OPERAND_ARRAY_ELEMENT;
     ast = array;
@@ -661,8 +660,8 @@ static Alc_Ast *parse_post(Alc_Parser *p, Alc_Ast *ast)
     _VERIFY_AST(member);
 
     Alc_Ast *access_member = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-    access_member->data.EXPR_OPERAND_ACCESS_MEMBER.from = ast;
-    access_member->data.EXPR_OPERAND_ACCESS_MEMBER.what = member;
+    access_member->EXPR_OPERAND_ACCESS_MEMBER.from = ast;
+    access_member->EXPR_OPERAND_ACCESS_MEMBER.what = member;
     access_member->pos = ast->pos;
     access_member->kind = ALC_AST_KIND_EXPR_OPERAND_ACCESS_MEMBER;
     return access_member;
@@ -684,10 +683,10 @@ static Alc_Ast *parse_identifier(Alc_Parser *p)
   usize pos = p->pos++;
 
   Alc_Ast *identifier_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-  identifier_ast->data.EXPR_OPERAND_IDENTIFIER.name = (char *)identifier_ast + sizeof(Alc_Ast);
+  identifier_ast->EXPR_OPERAND_IDENTIFIER.name = (char *)identifier_ast + sizeof(Alc_Ast);
   identifier_ast->pos = pos;
   identifier_ast->kind = ALC_AST_KIND_EXPR_OPERAND_IDENTIFIER;
-  memcpy(identifier_ast->data.EXPR_OPERAND_IDENTIFIER.name, name, name_len);
+  memcpy(identifier_ast->EXPR_OPERAND_IDENTIFIER.name, name, name_len);
 
   return identifier_ast;
 }
@@ -710,12 +709,12 @@ static Alc_Ast *parse_call(Alc_Parser *p)
     return nullptr;
 
   Alc_Ast *call_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-  call_ast->data.EXPR_OPERAND_CALL.callee_name = (char *)call_ast + sizeof(Alc_Ast);
-  call_ast->data.EXPR_OPERAND_CALL.arguments = arguments_array;
-  call_ast->data.EXPR_OPERAND_CALL.arguments_num = arguments_num;
+  call_ast->EXPR_OPERAND_CALL.callee_name = (char *)call_ast + sizeof(Alc_Ast);
+  call_ast->EXPR_OPERAND_CALL.arguments = arguments_array;
+  call_ast->EXPR_OPERAND_CALL.arguments_num = arguments_num;
   call_ast->pos = pos;
   call_ast->kind = ALC_AST_KIND_EXPR_OPERAND_CALL;
-  memcpy(call_ast->data.EXPR_OPERAND_CALL.callee_name, name, name_len);
+  memcpy(call_ast->EXPR_OPERAND_CALL.callee_name, name, name_len);
   return call_ast;
 }
 
@@ -740,14 +739,14 @@ static Alc_Ast *parse_generic_call(Alc_Parser *p)
     return nullptr;
 
   Alc_Ast *generic_call_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-  generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.callee_name =
+  generic_call_ast->EXPR_OPERAND_GENERIC_CALL.callee_name =
     (char *)generic_call_ast + sizeof(Alc_Ast);
-  generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.generic_type_list = generic_type_list;
-  generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.arguments = arguments_array;
-  generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.arguments_num = arguments_num;
+  generic_call_ast->EXPR_OPERAND_GENERIC_CALL.generic_type_list = generic_type_list;
+  generic_call_ast->EXPR_OPERAND_GENERIC_CALL.arguments = arguments_array;
+  generic_call_ast->EXPR_OPERAND_GENERIC_CALL.arguments_num = arguments_num;
   generic_call_ast->pos = pos;
   generic_call_ast->kind = ALC_AST_KIND_EXPR_OPERAND_CALL;
-  memcpy(generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.callee_name, name, name_len);
+  memcpy(generic_call_ast->EXPR_OPERAND_GENERIC_CALL.callee_name, name, name_len);
   return generic_call_ast;
 }
 
@@ -778,11 +777,11 @@ static Alc_Ast *parse_namespace(Alc_Parser *p)
   _VERIFY_AST(subobject);
 
   Alc_Ast *namespace_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  namespace_ast->data.NAMESPACE.name = (char *)namespace_ast + sizeof(Alc_Ast);
-  namespace_ast->data.NAMESPACE.subobject = subobject;
+  namespace_ast->NAMESPACE.name = (char *)namespace_ast + sizeof(Alc_Ast);
+  namespace_ast->NAMESPACE.subobject = subobject;
   namespace_ast->pos = pos;
   namespace_ast->kind = ALC_AST_KIND_NAMESPACE;
-  memcpy(namespace_ast->data.NAMESPACE.name, name, name_len);
+  memcpy(namespace_ast->NAMESPACE.name, name, name_len);
   return namespace_ast;
 }
 
@@ -812,13 +811,12 @@ static Alc_Ast *parse_generic_call_or_namespace(Alc_Parser *p)
 
     Alc_Ast *generic_namespace_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-    generic_namespace_ast->data.GENERIC_NAMESPACE.name =
-      (char *)generic_namespace_ast + sizeof(Alc_Ast);
-    generic_namespace_ast->data.GENERIC_NAMESPACE.generic_type_list = generic_type_list;
-    generic_namespace_ast->data.GENERIC_NAMESPACE.subobject = subobject;
+    generic_namespace_ast->GENERIC_NAMESPACE.name = (char *)generic_namespace_ast + sizeof(Alc_Ast);
+    generic_namespace_ast->GENERIC_NAMESPACE.generic_type_list = generic_type_list;
+    generic_namespace_ast->GENERIC_NAMESPACE.subobject = subobject;
     generic_namespace_ast->pos = pos;
     generic_namespace_ast->kind = ALC_AST_KIND_GENERIC_NAMESPACE;
-    memcpy(generic_namespace_ast->data.GENERIC_NAMESPACE.name, name, name_len);
+    memcpy(generic_namespace_ast->GENERIC_NAMESPACE.name, name, name_len);
     return generic_namespace_ast;
   }
 
@@ -831,14 +829,14 @@ static Alc_Ast *parse_generic_call_or_namespace(Alc_Parser *p)
     return nullptr;
 
   Alc_Ast *generic_call_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-  generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.callee_name =
+  generic_call_ast->EXPR_OPERAND_GENERIC_CALL.callee_name =
     (char *)generic_call_ast + sizeof(Alc_Ast);
-  generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.generic_type_list = generic_type_list;
-  generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.arguments = arguments_array;
-  generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.arguments_num = arguments_num;
+  generic_call_ast->EXPR_OPERAND_GENERIC_CALL.generic_type_list = generic_type_list;
+  generic_call_ast->EXPR_OPERAND_GENERIC_CALL.arguments = arguments_array;
+  generic_call_ast->EXPR_OPERAND_GENERIC_CALL.arguments_num = arguments_num;
   generic_call_ast->pos = pos;
   generic_call_ast->kind = ALC_AST_KIND_EXPR_OPERAND_GENERIC_CALL;
-  memcpy(generic_call_ast->data.EXPR_OPERAND_GENERIC_CALL.callee_name, name, name_len);
+  memcpy(generic_call_ast->EXPR_OPERAND_GENERIC_CALL.callee_name, name, name_len);
   return generic_call_ast;
 }
 
@@ -866,7 +864,7 @@ static Alc_Ast *parse_sizeof(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *sizeof_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  sizeof_ast->data.EXPR_OPERAND_SIZE_OF.type = type;
+  sizeof_ast->EXPR_OPERAND_SIZE_OF.type = type;
   sizeof_ast->pos = pos;
   sizeof_ast->kind = ALC_AST_KIND_EXPR_OPERAND_SIZE_OF;
   return sizeof_ast;
@@ -896,7 +894,7 @@ static Alc_Ast *parse_alignof(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *alignof_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  alignof_ast->data.EXPR_OPERAND_ALIGN_OF.expression = expr;
+  alignof_ast->EXPR_OPERAND_ALIGN_OF.expression = expr;
   alignof_ast->pos = pos;
   alignof_ast->kind = ALC_AST_KIND_EXPR_OPERAND_ALIGN_OF;
   return alignof_ast;
@@ -929,8 +927,8 @@ static Alc_Ast *parse_offsetof(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *offsetof_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  offsetof_ast->data.EXPR_OPERAND_OFFSET_OF.base_structure = base_structure;
-  offsetof_ast->data.EXPR_OPERAND_OFFSET_OF.field_expression = field_expression;
+  offsetof_ast->EXPR_OPERAND_OFFSET_OF.base_structure = base_structure;
+  offsetof_ast->EXPR_OPERAND_OFFSET_OF.field_expression = field_expression;
   offsetof_ast->pos = pos;
   offsetof_ast->kind = ALC_AST_KIND_EXPR_OPERAND_OFFSET_OF;
   return offsetof_ast;
@@ -959,8 +957,8 @@ static Alc_Ast *parse_cast(Alc_Parser *p)
   _VERIFY_AST(expr);
 
   Alc_Ast *cast_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  cast_ast->data.EXPR_OPERAND_CAST_TO.type = type;
-  cast_ast->data.EXPR_OPERAND_CAST_TO.expression = expr;
+  cast_ast->EXPR_OPERAND_CAST_TO.type = type;
+  cast_ast->EXPR_OPERAND_CAST_TO.expression = expr;
   cast_ast->pos = pos;
   cast_ast->kind = ALC_AST_KIND_EXPR_OPERAND_CAST_TO;
   return cast_ast;
@@ -1005,8 +1003,8 @@ static Alc_Ast *parse_prefix_expr(Alc_Parser *p)
   operator_ast->kind = kind;
 
   Alc_Ast *prefix_expr_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  prefix_expr_ast->data.PREFIX_EXPR.operand = operand;
-  prefix_expr_ast->data.PREFIX_EXPR.operator = operator_ast;
+  prefix_expr_ast->PREFIX_EXPR.operand = operand;
+  prefix_expr_ast->PREFIX_EXPR.operator = operator_ast;
   prefix_expr_ast->pos = operand->pos;
   prefix_expr_ast->kind = ALC_AST_KIND_PREFIX_EXPR;
 

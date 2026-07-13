@@ -42,8 +42,8 @@ Alc_Ast *parse_initlist(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *initlist_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  initlist_ast->data.INITLIST.entries =
-    alc_vector_to_array(entries, &initlist_ast->data.INITLIST.entries_num);
+  initlist_ast->INITLIST.entries =
+    alc_vector_to_array(entries, &initlist_ast->INITLIST.entries_num);
   initlist_ast->pos = pos;
   initlist_ast->kind = ALC_AST_KIND_INITLIST;
   alc_vector_destroy(entries);
@@ -71,7 +71,7 @@ static Alc_Ast *parse_entry_default(Alc_Parser *p)
   _VERIFY_AST(expr);
 
   Alc_Ast *entry_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  entry_ast->data.INITLIST_ENTRY.expression = expr;
+  entry_ast->INITLIST_ENTRY.expression = expr;
   entry_ast->pos = expr->pos;
   entry_ast->kind = ALC_AST_KIND_INITLIST_ENTRY;
   return entry_ast;
@@ -105,12 +105,11 @@ static Alc_Ast *parse_entry_explicit(Alc_Parser *p)
 
   Alc_Ast *entry_explicit =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  entry_explicit->data.INITLIST_ENTRY_EXPLICIT.field_name =
-    (char *)entry_explicit + sizeof(Alc_Ast);
-  entry_explicit->data.INITLIST_ENTRY_EXPLICIT.expression = expr;
+  entry_explicit->INITLIST_ENTRY_EXPLICIT.field_name = (char *)entry_explicit + sizeof(Alc_Ast);
+  entry_explicit->INITLIST_ENTRY_EXPLICIT.expression = expr;
   entry_explicit->pos = pos;
   entry_explicit->kind = ALC_AST_KIND_INITLIST_ENTRY_EXPLICIT;
-  memcpy(entry_explicit->data.INITLIST_ENTRY_EXPLICIT.field_name, name, sizeof(char) * name_len);
+  memcpy(entry_explicit->INITLIST_ENTRY_EXPLICIT.field_name, name, sizeof(char) * name_len);
   return entry_explicit;
 }
 
@@ -146,11 +145,11 @@ static Alc_Ast *parse_entry_explicit_array_elem(Alc_Parser *p)
   _VERIFY_AST(expr, { alc_vector_destroy(expr); });
 
   Alc_Ast *entry_explicit_array_element = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  entry_explicit_array_element->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions =
-    alc_vector_to_array(index_expressions,
-                        &entry_explicit_array_element->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT
-                           .index_expressions_num);
-  entry_explicit_array_element->data.INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.expression = expr;
+  entry_explicit_array_element->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions =
+    alc_vector_to_array(
+      index_expressions,
+      &entry_explicit_array_element->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions_num);
+  entry_explicit_array_element->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.expression = expr;
   entry_explicit_array_element->pos = pos;
   entry_explicit_array_element->kind = ALC_AST_KIND_INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT;
   alc_vector_destroy(index_expressions);

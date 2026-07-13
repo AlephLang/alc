@@ -36,11 +36,11 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
       usize name_len = strlen(names[i]) + 1;
       qualifier_ast =
         alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-      qualifier_ast->data.QUALIFIER.name = (char *)qualifier_ast + sizeof(Alc_Ast);
-      qualifier_ast->data.QUALIFIER.qualified = qualified;
+      qualifier_ast->QUALIFIER.name = (char *)qualifier_ast + sizeof(Alc_Ast);
+      qualifier_ast->QUALIFIER.qualified = qualified;
       qualifier_ast->pos = --last_pos;
       qualifier_ast->kind = ALC_AST_KIND_QUALIFIER;
-      memcpy(qualifier_ast->data.QUALIFIER.name, names[i], sizeof(char) * name_len);
+      memcpy(qualifier_ast->QUALIFIER.name, names[i], sizeof(char) * name_len);
       qualified = qualifier_ast;
     }
     alc_vector_destroy(names);
@@ -120,23 +120,23 @@ __vardef:
 
     Alc_Ast *vardef_ast =
       alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-    vardef_ast->data.VAR_DEF.name = (char *)vardef_ast + sizeof(Alc_Ast);
-    vardef_ast->data.VAR_DEF.type = type;
-    vardef_ast->data.VAR_DEF.expression = expr;
-    vardef_ast->data.VAR_DEF.attribute_list = attribute_list;
+    vardef_ast->VAR_DEF.name = (char *)vardef_ast + sizeof(Alc_Ast);
+    vardef_ast->VAR_DEF.type = type;
+    vardef_ast->VAR_DEF.expression = expr;
+    vardef_ast->VAR_DEF.attribute_list = attribute_list;
     vardef_ast->pos = pos;
     vardef_ast->kind = ALC_AST_KIND_VAR_DEF;
-    memcpy(vardef_ast->data.VAR_DEF.name, name, name_len);
+    memcpy(vardef_ast->VAR_DEF.name, name, name_len);
     return vardef_ast;
   }
 
   Alc_Ast *vardecl_ast =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  vardecl_ast->data.VAR_DECL.name = (char *)vardecl_ast + sizeof(Alc_Ast);
-  vardecl_ast->data.VAR_DECL.type = type;
-  vardecl_ast->data.VAR_DECL.attribute_list = attribute_list;
+  vardecl_ast->VAR_DECL.name = (char *)vardecl_ast + sizeof(Alc_Ast);
+  vardecl_ast->VAR_DECL.type = type;
+  vardecl_ast->VAR_DECL.attribute_list = attribute_list;
   vardecl_ast->pos = pos;
   vardecl_ast->kind = ALC_AST_KIND_VAR_DECL;
-  memcpy(vardecl_ast->data.VAR_DECL.name, name, name_len);
+  memcpy(vardecl_ast->VAR_DECL.name, name, name_len);
   return vardecl_ast;
 }

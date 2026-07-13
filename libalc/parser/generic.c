@@ -41,9 +41,9 @@ Alc_Ast *parse_generic_placeholder_type_list(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *generic_placeholder_type_list_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  generic_placeholder_type_list_ast->data.GENERIC_PLACEHOLDER_TYPE_LIST.generic_placeholder_types =
+  generic_placeholder_type_list_ast->GENERIC_PLACEHOLDER_TYPE_LIST.generic_placeholder_types =
     alc_vector_to_array(placeholder_types,
-                        &generic_placeholder_type_list_ast->data.GENERIC_PLACEHOLDER_TYPE_LIST
+                        &generic_placeholder_type_list_ast->GENERIC_PLACEHOLDER_TYPE_LIST
                            .generic_placeholder_types_num);
   generic_placeholder_type_list_ast->pos = pos;
   generic_placeholder_type_list_ast->kind = ALC_AST_KIND_GENERIC_PLACEHOLDER_TYPE_LIST;
@@ -88,8 +88,8 @@ Alc_Ast *parse_generic_type_list(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *generic_type_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  generic_type_list->data.GENERIC_TYPE_LIST.generic_types = alc_vector_to_array(
-    types_in_type_list, &generic_type_list->data.GENERIC_TYPE_LIST.generic_types_num);
+  generic_type_list->GENERIC_TYPE_LIST.generic_types = alc_vector_to_array(
+    types_in_type_list, &generic_type_list->GENERIC_TYPE_LIST.generic_types_num);
   generic_type_list->pos = pos;
   generic_type_list->kind = ALC_AST_KIND_GENERIC_TYPE_LIST;
   alc_vector_destroy(types_in_type_list);
@@ -118,11 +118,11 @@ static Alc_Ast *parse_generic_placeholder_type(Alc_Parser *p)
 
   Alc_Ast *generic_placeholder_type =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-  generic_placeholder_type->data.GENERIC_PLACEHOLDER_TYPE.name =
+  generic_placeholder_type->GENERIC_PLACEHOLDER_TYPE.name =
     (char *)generic_placeholder_type + sizeof(Alc_Ast);
-  generic_placeholder_type->data.GENERIC_PLACEHOLDER_TYPE.default_type = default_type;
+  generic_placeholder_type->GENERIC_PLACEHOLDER_TYPE.default_type = default_type;
   generic_placeholder_type->pos = pos;
   generic_placeholder_type->kind = ALC_AST_KIND_GENERIC_PLACEHOLDER_TYPE;
-  memcpy(generic_placeholder_type->data.GENERIC_PLACEHOLDER_TYPE.name, name, name_len);
+  memcpy(generic_placeholder_type->GENERIC_PLACEHOLDER_TYPE.name, name, name_len);
   return generic_placeholder_type;
 }

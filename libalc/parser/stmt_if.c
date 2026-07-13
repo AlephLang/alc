@@ -42,10 +42,10 @@ Alc_Ast *parse_stmt_if(Alc_Parser *p)
   }
 
   Alc_Ast *stmt_if_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_if_ast->data.STMT_IF.condition = cond_expr;
-  stmt_if_ast->data.STMT_IF.body = body;
-  stmt_if_ast->data.STMT_IF.else_statement = stmt_else;
-  stmt_if_ast->data.STMT_IF.attribute_list = attribute_list;
+  stmt_if_ast->STMT_IF.condition = cond_expr;
+  stmt_if_ast->STMT_IF.body = body;
+  stmt_if_ast->STMT_IF.else_statement = stmt_else;
+  stmt_if_ast->STMT_IF.attribute_list = attribute_list;
   stmt_if_ast->pos = pos;
   stmt_if_ast->kind = ALC_AST_KIND_STMT_IF;
   return stmt_if_ast;

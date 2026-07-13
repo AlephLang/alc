@@ -27,8 +27,8 @@ Alc_Ast *parse_stmt_block(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *stmt_block = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_block->data.STMT_BLOCK.statements =
-    alc_vector_to_array(statements, &stmt_block->data.STMT_BLOCK.statements_num);
+  stmt_block->STMT_BLOCK.statements =
+    alc_vector_to_array(statements, &stmt_block->STMT_BLOCK.statements_num);
   stmt_block->pos = pos;
   stmt_block->kind = ALC_AST_KIND_STMT_BLOCK;
   alc_vector_destroy(statements);

@@ -44,8 +44,8 @@ Alc_Ast *parse_attribute_list(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *attribute_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  attribute_list->data.ATTRIBUTE_LIST.attributes =
-    alc_vector_to_array(attrs, &attribute_list->data.ATTRIBUTE_LIST.attributes_num);
+  attribute_list->ATTRIBUTE_LIST.attributes =
+    alc_vector_to_array(attrs, &attribute_list->ATTRIBUTE_LIST.attributes_num);
   attribute_list->pos = pos;
   attribute_list->kind = ALC_AST_KIND_ATTRIBUTE_LIST;
   alc_vector_destroy(attrs);
@@ -93,13 +93,13 @@ static Alc_Ast *parse_attribute(Alc_Parser *p)
   }
 
   Alc_Ast *attribute_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
-  attribute_ast->data.ATTRIBUTE.name = (char *)attribute_ast + sizeof(Alc_Ast);
-  attribute_ast->data.ATTRIBUTE.arguments =
-    alc_vector_to_array(arguments, &attribute_ast->data.ATTRIBUTE.arguments_num);
-  attribute_ast->data.ATTRIBUTE.has_arguments = has_arguments;
+  attribute_ast->ATTRIBUTE.name = (char *)attribute_ast + sizeof(Alc_Ast);
+  attribute_ast->ATTRIBUTE.arguments =
+    alc_vector_to_array(arguments, &attribute_ast->ATTRIBUTE.arguments_num);
+  attribute_ast->ATTRIBUTE.has_arguments = has_arguments;
   attribute_ast->pos = pos;
   attribute_ast->kind = ALC_AST_KIND_ATTRIBUTE;
-  memcpy(attribute_ast->data.ATTRIBUTE.name, name, name_len);
+  memcpy(attribute_ast->ATTRIBUTE.name, name, name_len);
   alc_vector_destroy(arguments);
   return attribute_ast;
 }

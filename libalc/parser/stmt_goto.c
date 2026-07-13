@@ -21,7 +21,7 @@ Alc_Ast *parse_stmt_goto(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *stmt_goto_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_goto_ast->data.STMT_GOTO.label = label;
+  stmt_goto_ast->STMT_GOTO.label = label;
   stmt_goto_ast->pos = pos;
   stmt_goto_ast->kind = ALC_AST_KIND_STMT_GOTO;
   return stmt_goto_ast;

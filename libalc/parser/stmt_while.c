@@ -34,9 +34,9 @@ Alc_Ast *parse_stmt_while(Alc_Parser *p)
   _VERIFY_AST(body);
 
   Alc_Ast *stmt_while_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_while_ast->data.STMT_WHILE.condition = cond_expr;
-  stmt_while_ast->data.STMT_WHILE.body = body;
-  stmt_while_ast->data.STMT_WHILE.attribute_list = attribute_list;
+  stmt_while_ast->STMT_WHILE.condition = cond_expr;
+  stmt_while_ast->STMT_WHILE.body = body;
+  stmt_while_ast->STMT_WHILE.attribute_list = attribute_list;
   stmt_while_ast->pos = pos;
   stmt_while_ast->kind = ALC_AST_KIND_STMT_WHILE;
   return stmt_while_ast;

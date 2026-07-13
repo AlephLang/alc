@@ -47,9 +47,9 @@ Alc_Ast *parse_stmt_switch(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *stmt_switch_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_switch_ast->data.STMT_SWITCH.expression = expression;
-  stmt_switch_ast->data.STMT_SWITCH.case_chains =
-    alc_vector_to_array(case_chains, &stmt_switch_ast->data.STMT_SWITCH.case_chains_num);
+  stmt_switch_ast->STMT_SWITCH.expression = expression;
+  stmt_switch_ast->STMT_SWITCH.case_chains =
+    alc_vector_to_array(case_chains, &stmt_switch_ast->STMT_SWITCH.case_chains_num);
   stmt_switch_ast->pos = pos;
   stmt_switch_ast->kind = ALC_AST_KIND_STMT_SWITCH;
   alc_vector_destroy(case_chains);
@@ -88,9 +88,9 @@ static Alc_Ast *parse_case_chain(Alc_Parser *p)
   _VERIFY_AST(body, { alc_vector_destroy(cases); });
 
   Alc_Ast *case_chain_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  case_chain_ast->data.CASE_CHAIN.cases =
-    alc_vector_to_array(cases, &case_chain_ast->data.CASE_CHAIN.cases_num);
-  case_chain_ast->data.CASE_CHAIN.body = body;
+  case_chain_ast->CASE_CHAIN.cases =
+    alc_vector_to_array(cases, &case_chain_ast->CASE_CHAIN.cases_num);
+  case_chain_ast->CASE_CHAIN.body = body;
   case_chain_ast->pos = pos;
   case_chain_ast->kind = ALC_AST_KIND_CASE_CHAIN;
   alc_vector_destroy(cases);
@@ -110,7 +110,7 @@ static Alc_Ast *parse_case(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *case_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  case_ast->data.CASE.expression = expression;
+  case_ast->CASE.expression = expression;
   case_ast->pos = pos;
   case_ast->kind = ALC_AST_KIND_CASE;
   return case_ast;

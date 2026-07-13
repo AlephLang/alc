@@ -70,13 +70,13 @@ Alc_Ast *parse_enum(Alc_Parser *p)
 
   Alc_Ast *enum_ast =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  enum_ast->data.ENUM.name = (char *)enum_ast + sizeof(Alc_Ast);
-  enum_ast->data.ENUM.elements = alc_vector_to_array(elements, &enum_ast->data.ENUM.elements_num);
-  enum_ast->data.ENUM.attribute_list = attribute_list;
-  enum_ast->data.ENUM.is_enum_flags = is_enum_flags;
+  enum_ast->ENUM.name = (char *)enum_ast + sizeof(Alc_Ast);
+  enum_ast->ENUM.elements = alc_vector_to_array(elements, &enum_ast->ENUM.elements_num);
+  enum_ast->ENUM.attribute_list = attribute_list;
+  enum_ast->ENUM.is_enum_flags = is_enum_flags;
   enum_ast->pos = pos;
   enum_ast->kind = ALC_AST_KIND_ENUM;
-  memcpy(enum_ast->data.ENUM.name, name, name_len);
+  memcpy(enum_ast->ENUM.name, name, name_len);
   return enum_ast;
 }
 
@@ -100,10 +100,10 @@ static Alc_Ast *parse_enum_element(Alc_Parser *p)
 
   Alc_Ast *enum_element =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  enum_element->data.ENUM_ELEMENT.name = (char *)enum_element + sizeof(Alc_Ast);
-  enum_element->data.ENUM_ELEMENT.expression = expr;
+  enum_element->ENUM_ELEMENT.name = (char *)enum_element + sizeof(Alc_Ast);
+  enum_element->ENUM_ELEMENT.expression = expr;
   enum_element->pos = pos;
   enum_element->kind = ALC_AST_KIND_ENUM_ELEMENT;
-  memcpy(enum_element->data.ENUM_ELEMENT.name, name, name_len);
+  memcpy(enum_element->ENUM_ELEMENT.name, name, name_len);
   return enum_element;
 }

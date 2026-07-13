@@ -27,9 +27,9 @@ Alc_Ast *parse_label(Alc_Parser *p)
 
   Alc_Ast *label_ast =
     alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  label_ast->data.LABEL.name = (char *)label_ast + sizeof(Alc_Ast);
+  label_ast->LABEL.name = (char *)label_ast + sizeof(Alc_Ast);
   label_ast->pos = pos;
   label_ast->kind = ALC_AST_KIND_LABEL;
-  memcpy(label_ast->data.LABEL.name, name, sizeof(char) * name_len);
+  memcpy(label_ast->LABEL.name, name, sizeof(char) * name_len);
   return label_ast;
 }

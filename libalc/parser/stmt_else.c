@@ -14,7 +14,7 @@ Alc_Ast *parse_stmt_else(Alc_Parser *p)
   _VERIFY_AST(body);
 
   Alc_Ast *stmt_else_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  stmt_else_ast->data.STMT_ELSE.body = body;
+  stmt_else_ast->STMT_ELSE.body = body;
   stmt_else_ast->pos = pos;
   stmt_else_ast->kind = ALC_AST_KIND_STMT_ELSE;
   return stmt_else_ast;

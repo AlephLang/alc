@@ -61,17 +61,17 @@ Alc_Ast *parse_stmt_foreach(Alc_Parser *p)
 
   Alc_Ast *stmt_foreach_ast = alloc_arena_allocate(
     &ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * (item_name_len + i_name_len));
-  stmt_foreach_ast->data.STMT_FOREACH.item_name = (char *)stmt_foreach_ast + sizeof(Alc_Ast);
-  stmt_foreach_ast->data.STMT_FOREACH.iterator = expr;
-  stmt_foreach_ast->data.STMT_FOREACH.body = body;
-  stmt_foreach_ast->data.STMT_FOREACH.attribute_list = attribute_list;
-  stmt_foreach_ast->data.STMT_FOREACH.i_name =
+  stmt_foreach_ast->STMT_FOREACH.item_name = (char *)stmt_foreach_ast + sizeof(Alc_Ast);
+  stmt_foreach_ast->STMT_FOREACH.iterator = expr;
+  stmt_foreach_ast->STMT_FOREACH.body = body;
+  stmt_foreach_ast->STMT_FOREACH.attribute_list = attribute_list;
+  stmt_foreach_ast->STMT_FOREACH.i_name =
     i_name != nullptr ? (char *)stmt_foreach_ast + sizeof(Alc_Ast) + sizeof(char) * item_name_len :
                         nullptr;
   stmt_foreach_ast->pos = pos;
   stmt_foreach_ast->kind = ALC_AST_KIND_STMT_FOREACH;
-  memcpy(stmt_foreach_ast->data.STMT_FOREACH.item_name, item_name, sizeof(char) * item_name_len);
+  memcpy(stmt_foreach_ast->STMT_FOREACH.item_name, item_name, sizeof(char) * item_name_len);
   if (i_name != nullptr)
-    memcpy(stmt_foreach_ast->data.STMT_FOREACH.i_name, i_name, sizeof(char) * i_name_len);
+    memcpy(stmt_foreach_ast->STMT_FOREACH.i_name, i_name, sizeof(char) * i_name_len);
   return stmt_foreach_ast;
 }

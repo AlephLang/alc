@@ -24,7 +24,8 @@ ALC_API void alc_hashtable_destroy(Alc_Hashtable *ht);
 ALC_API void *alc_hashtable_put(Alc_Hashtable *ht, const char *key, const void *value);
 ALC_API void *alc_hashtable_get(Alc_Hashtable *ht, const char *key);
 
-typedef void (*Alc_Foreach_Fn)(usize index, void *value, void *user_data);
-ALC_API void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn, void *user_data);
+typedef void (*Alc_Foreach_Fn)(usize index, void *restrict value, void *restrict user_data);
+ALC_API void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn,
+                                   void *restrict user_data);
 
 #endif // __ALC_HASHTABLE_H__

@@ -27,7 +27,7 @@ static void grow_and_rehash(Alc_Hashtable *ht);
 
 Alc_Hashtable hashtable_create(usize stride, b8 is_pointer)
 {
-  ALC_ASSUME(stride > 0 || is_pointer);
+  ALC_ASSERT(stride > 0 || is_pointer);
 
   stride = is_pointer ? sizeof(void *) : stride;
 
@@ -52,7 +52,7 @@ Alc_Hashtable hashtable_create(usize stride, b8 is_pointer)
 
 void hashtable_destroy(Alc_Hashtable *ht)
 {
-  ALC_ASSUME(ht != nullptr);
+  ALC_ASSERT(ht != nullptr);
 
   if (ht->occupied > 0) {
     for (usize i = 0; i < ht->capacity; i++) {
@@ -67,9 +67,9 @@ void hashtable_destroy(Alc_Hashtable *ht)
 
 void hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
 {
-  ALC_ASSUME(ht != nullptr);
-  ALC_ASSUME(key != nullptr);
-  ALC_ASSUME(value != nullptr);
+  ALC_ASSERT(ht != nullptr);
+  ALC_ASSERT(key != nullptr);
+  ALC_ASSERT(value != nullptr);
 
   Alc_Hash hash = fnv_1a(key);
   Alc_Hash_1 h1 = ALC_HASH_1(hash);
@@ -113,8 +113,8 @@ void hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
 
 void *hashtable_get(Alc_Hashtable *ht, const char *key)
 {
-  ALC_ASSUME(ht != nullptr);
-  ALC_ASSUME(key != nullptr);
+  ALC_ASSERT(ht != nullptr);
+  ALC_ASSERT(key != nullptr);
 
   Alc_Hash hash = fnv_1a(key);
   Alc_Hash_1 h1 = ALC_HASH_1(hash);
@@ -138,8 +138,8 @@ void *hashtable_get(Alc_Hashtable *ht, const char *key)
 
 void hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn)
 {
-  ALC_ASSUME(ht != nullptr);
-  ALC_ASSUME(foreach_fn != nullptr);
+  ALC_ASSERT(ht != nullptr);
+  ALC_ASSERT(foreach_fn != nullptr);
 
   if (ht->occupied == 0)
     return;

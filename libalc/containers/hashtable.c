@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FNV_PRIME (0x01000193)
-#define FNV_OFFSET_BASIS (0x811c9dc5)
+#define FNV_PRIME (0x00000100000001b3ULL)
+#define FNV_OFFSET_BASIS (0xcbf29ce484222325ULL)
 
 #define INITIAL_CAPACITY (1 << 10)
 
@@ -13,13 +13,13 @@
 #define MAX_OCCUPANCY 0.75f
 #define GROW_FACTOR 2
 
-#define ALC_HASH_1_MASK (0xFFFFFF00)
-#define ALC_HASH_2_MASK (0xFF)
+#define ALC_HASH_1_MASK (~0xFFULL)
+#define ALC_HASH_2_MASK (0xFFULL)
 
 #define ALC_HASH_1(_hash) (((_hash) & ALC_HASH_1_MASK) >> 8)
 #define ALC_HASH_2(_hash) ((_hash) & ALC_HASH_2_MASK)
 
-typedef u32 Alc_Hash_1;
+typedef u64 Alc_Hash_1;
 typedef u8 Alc_Hash_2;
 
 static Alc_Hash fnv_1a(const char *str);

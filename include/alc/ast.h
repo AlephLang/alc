@@ -5,115 +5,115 @@
 
 // #define ALC_AST_KIND_X(_name, _str_name)
 #define ALC_AST_KINDS                                                                  \
-  ALC_AST_KIND_X(ROOT, "Root")                                                         \
-  ALC_AST_KIND_X(EXPR, "Expression")                                                   \
-  ALC_AST_KIND_X(PREFIX_EXPR, "Prefix expression")                                     \
-  ALC_AST_KIND_X(MODULE, "Module")                                                     \
-  ALC_AST_KIND_X(IMPORT, "Import")                                                     \
-  ALC_AST_KIND_X(TYPEDEF, "Type definition")                                           \
-  ALC_AST_KIND_X(EXTERN_FUNC, "External function declaration")                         \
-  ALC_AST_KIND_X(EXTERN_VARDECL, "Extern variable declaration")                        \
-  ALC_AST_KIND_X(QUALIFIER, "Qualifier")                                               \
-  ALC_AST_KIND_X(NONE, "None")                                                         \
-  ALC_AST_KIND_X(VARIADIC, "Variadic argument")                                        \
-  ALC_AST_KIND_X(STRUCT, "Structure definition")                                       \
-  ALC_AST_KIND_X(UNION, "Union definition")                                            \
-  ALC_AST_KIND_X(ENUM, "Enum definition")                                              \
-  ALC_AST_KIND_X(ENUM_ELEMENT, "Enum element")                                         \
-  ALC_AST_KIND_X(FUNC, "Function definition")                                          \
-  ALC_AST_KIND_X(ARGUMENT_LIST, "Argument list")                                       \
-  ALC_AST_KIND_X(NAMESPACE, "Namespace")                                               \
-  ALC_AST_KIND_X(SCOPE, "Scope")                                                       \
-  ALC_AST_KIND_X(CASE_CHAIN, "Case chain")                                             \
-  ALC_AST_KIND_X(CASE, "Case")                                                         \
-  ALC_AST_KIND_X(DEFAULT, "Default")                                                   \
-  ALC_AST_KIND_X(ATTRIBUTE, "Attribute")                                               \
-  ALC_AST_KIND_X(ATTRIBUTE_LIST, "Attribute list")                                     \
-  ALC_AST_KIND_X(EXPLICIT_CALL_ARGUMENT, "Explicit call argument")                     \
-  ALC_AST_KIND_X(LABEL, "Label")                                                       \
-  ALC_AST_KIND_X(STMT_BLOCK, "Statement block")                                        \
-  ALC_AST_KIND_X(STMT_RETURN, "Return statement")                                      \
+  ALC_AST_KIND_X(ROOT, "root")                                                         \
+  ALC_AST_KIND_X(EXPR, "expression")                                                   \
+  ALC_AST_KIND_X(PREFIX_EXPR, "prefix expression")                                     \
+  ALC_AST_KIND_X(MODULE, "module")                                                     \
+  ALC_AST_KIND_X(IMPORT, "import")                                                     \
+  ALC_AST_KIND_X(TYPEDEF, "type definition")                                           \
+  ALC_AST_KIND_X(EXTERN_FUNC, "external function declaration")                         \
+  ALC_AST_KIND_X(EXTERN_VARDECL, "extern variable declaration")                        \
+  ALC_AST_KIND_X(QUALIFIER, "qualifier")                                               \
+  ALC_AST_KIND_X(NONE, "none")                                                         \
+  ALC_AST_KIND_X(VARIADIC, "variadic argument")                                        \
+  ALC_AST_KIND_X(STRUCT, "structure definition")                                       \
+  ALC_AST_KIND_X(UNION, "union definition")                                            \
+  ALC_AST_KIND_X(ENUM, "enum definition")                                              \
+  ALC_AST_KIND_X(ENUM_ELEMENT, "enum element")                                         \
+  ALC_AST_KIND_X(FUNC, "function definition")                                          \
+  ALC_AST_KIND_X(ARGUMENT_LIST, "argument list")                                       \
+  ALC_AST_KIND_X(NAMESPACE, "namespace")                                               \
+  ALC_AST_KIND_X(SCOPE, "scope")                                                       \
+  ALC_AST_KIND_X(CASE_CHAIN, "case chain")                                             \
+  ALC_AST_KIND_X(CASE, "case")                                                         \
+  ALC_AST_KIND_X(DEFAULT, "default")                                                   \
+  ALC_AST_KIND_X(ATTRIBUTE, "attribute")                                               \
+  ALC_AST_KIND_X(ATTRIBUTE_LIST, "attribute list")                                     \
+  ALC_AST_KIND_X(EXPLICIT_CALL_ARGUMENT, "explicit call argument")                     \
+  ALC_AST_KIND_X(LABEL, "label")                                                       \
+  ALC_AST_KIND_X(STMT_BLOCK, "statement block")                                        \
+  ALC_AST_KIND_X(STMT_RETURN, "return statement")                                      \
   ALC_AST_KIND_X(STMT_GOTO, "GOTO statement")                                          \
-  ALC_AST_KIND_X(STMT_LABEL, "Label")                                                  \
-  ALC_AST_KIND_X(STMT_BREAK, "Break statement")                                        \
-  ALC_AST_KIND_X(STMT_CONTINUE, "Continue statement")                                  \
-  ALC_AST_KIND_X(STMT_FALLTHROUGH, "Fallthrough statement")                            \
-  ALC_AST_KIND_X(STMT_WHILE, "While loop")                                             \
-  ALC_AST_KIND_X(STMT_FOR, "For loop")                                                 \
-  ALC_AST_KIND_X(STMT_DO_WHILE, "Do-while loop")                                       \
-  ALC_AST_KIND_X(STMT_LOOP, "Loop")                                                    \
-  ALC_AST_KIND_X(STMT_FOREACH, "For-each loop")                                        \
-  ALC_AST_KIND_X(STMT_EXPR, "Expression statement")                                    \
-  ALC_AST_KIND_X(STMT_SWITCH, "Switch statement")                                      \
-  ALC_AST_KIND_X(STMT_DEFER, "Defer statement")                                        \
-  ALC_AST_KIND_X(STMT_IF, "If statement")                                              \
-  ALC_AST_KIND_X(STMT_ELSE, "Else statement")                                          \
-  ALC_AST_KIND_X(TYPE_PLAIN, "Plain type")                                             \
-  ALC_AST_KIND_X(TYPE_POINTER, "Pointer type")                                         \
-  ALC_AST_KIND_X(TYPE_ARRAY, "Array type")                                             \
-  ALC_AST_KIND_X(TYPE_FUNCTION_POINTER, "Function pointer type")                       \
-  ALC_AST_KIND_X(TYPE_TYPE_OF, "Type of")                                              \
-  ALC_AST_KIND_X(VAR_DECL, "Variable declaration")                                     \
-  ALC_AST_KIND_X(VAR_DEF, "Variable definition")                                       \
-  ALC_AST_KIND_X(EXPR_OPERAND_IDENTIFIER, "Identifier operand")                        \
-  ALC_AST_KIND_X(EXPR_OPERAND_NUMBER, "Number operand")                                \
-  ALC_AST_KIND_X(EXPR_OPERAND_NUMBER_FLOAT, "Floating-point number operand")           \
-  ALC_AST_KIND_X(EXPR_OPERAND_ARRAY_ELEMENT, "Array element operand")                  \
-  ALC_AST_KIND_X(EXPR_OPERAND_CAST_TO, "Cast-to operand")                              \
-  ALC_AST_KIND_X(EXPR_OPERAND_CALL, "Call operand")                                    \
-  ALC_AST_KIND_X(EXPR_OPERAND_GENERIC_CALL, "Generic call operand")                    \
-  ALC_AST_KIND_X(EXPR_OPERAND_STRING, "String operand")                                \
-  ALC_AST_KIND_X(EXPR_OPERAND_SYMBOL, "Symbol operand")                                \
-  ALC_AST_KIND_X(EXPR_OPERAND_ACCESS_MEMBER, "Access member operand")                  \
-  ALC_AST_KIND_X(EXPR_OPERAND_SIZE_OF, "Size of operand")                              \
-  ALC_AST_KIND_X(EXPR_OPERAND_ALIGN_OF, "Align of operand")                            \
-  ALC_AST_KIND_X(EXPR_OPERAND_OFFSET_OF, "Offset of field in structure")               \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_ADD, "Binary addition operator")                 \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_SUB, "Binary subtraction operator")              \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_MUL, "Binary multiplication operator")           \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_DIV, "Binary division operator")                 \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_MOD, "Binary module operator")                   \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_SHL, "Binary shift-left operator")               \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_SHR, "Binary shift-right operator")              \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_AND, "Binary AND operator")                      \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_OR, "Binary OR operator")                        \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_XOR, "Binary XOR operator")                      \
-  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_EQ, "Compare equals operator")                  \
-  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_NOTEQ, "Compare not-equals operator")           \
-  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_LTHAN, "Compare less-than operator")            \
-  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_GTHAN, "Compare greater-than operator")         \
-  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_LTHANEQ, "Compare less-than-equal operator")    \
-  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_GTHANEQ, "Compare greater-than-equal operator") \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BOOLEAN_AND, "Boolean AND operator")                    \
-  ALC_AST_KIND_X(EXPR_OPERATOR_BOOLEAN_OR, "Boolean OR operator")                      \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_EQ, "Assign equals operator")                    \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_ADDEQ, "Assign add-equals operator")             \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_SUBEQ, "Assign sub-equals operator")             \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_MULEQ, "Assign mul-equals operator")             \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_DIVEQ, "Assign div-equals operator")             \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_MODEQ, "Assign mod-equals operator")             \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_SHLEQ, "Assign shift-left-equals operator")      \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_SHREQ, "Assign shift-right-equals operator")     \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_ANDEQ, "Assign AND-equals operator")             \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_OREQ, "Assign OR-equals operator")               \
-  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_XOREQ, "Assign XOR-equals operator")             \
-  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_NOT, "Prefix NOT operator")                      \
-  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_BOOLEAN_NOT, "Prefix boolean NOT operator")      \
-  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_NEGATIVE, "Prefix negative operator")            \
-  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_DEREFERENCE, "Prefix dereference operator")      \
-  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_ADDRESS, "Prefix take-address operator")         \
-  ALC_AST_KIND_X(INITLIST, "Initialization list")                                      \
-  ALC_AST_KIND_X(INITLIST_ENTRY, "Initialization list entry")                          \
-  ALC_AST_KIND_X(INITLIST_ENTRY_EXPLICIT, "Initialization list explicit entry")        \
+  ALC_AST_KIND_X(STMT_LABEL, "label")                                                  \
+  ALC_AST_KIND_X(STMT_BREAK, "break statement")                                        \
+  ALC_AST_KIND_X(STMT_CONTINUE, "continue statement")                                  \
+  ALC_AST_KIND_X(STMT_FALLTHROUGH, "fallthrough statement")                            \
+  ALC_AST_KIND_X(STMT_WHILE, "while loop")                                             \
+  ALC_AST_KIND_X(STMT_FOR, "for loop")                                                 \
+  ALC_AST_KIND_X(STMT_DO_WHILE, "do-while loop")                                       \
+  ALC_AST_KIND_X(STMT_LOOP, "loop")                                                    \
+  ALC_AST_KIND_X(STMT_FOREACH, "for-each loop")                                        \
+  ALC_AST_KIND_X(STMT_EXPR, "expression statement")                                    \
+  ALC_AST_KIND_X(STMT_SWITCH, "switch statement")                                      \
+  ALC_AST_KIND_X(STMT_DEFER, "defer statement")                                        \
+  ALC_AST_KIND_X(STMT_IF, "if statement")                                              \
+  ALC_AST_KIND_X(STMT_ELSE, "else statement")                                          \
+  ALC_AST_KIND_X(TYPE_PLAIN, "plain type")                                             \
+  ALC_AST_KIND_X(TYPE_POINTER, "pointer type")                                         \
+  ALC_AST_KIND_X(TYPE_ARRAY, "array type")                                             \
+  ALC_AST_KIND_X(TYPE_FUNCTION_POINTER, "function pointer type")                       \
+  ALC_AST_KIND_X(TYPE_TYPE_OF, "type of")                                              \
+  ALC_AST_KIND_X(VAR_DECL, "variable declaration")                                     \
+  ALC_AST_KIND_X(VAR_DEF, "variable definition")                                       \
+  ALC_AST_KIND_X(EXPR_OPERAND_IDENTIFIER, "identifier operand")                        \
+  ALC_AST_KIND_X(EXPR_OPERAND_NUMBER, "number operand")                                \
+  ALC_AST_KIND_X(EXPR_OPERAND_NUMBER_FLOAT, "floating-point number operand")           \
+  ALC_AST_KIND_X(EXPR_OPERAND_ARRAY_ELEMENT, "array element operand")                  \
+  ALC_AST_KIND_X(EXPR_OPERAND_CAST_TO, "cast-to operand")                              \
+  ALC_AST_KIND_X(EXPR_OPERAND_CALL, "call operand")                                    \
+  ALC_AST_KIND_X(EXPR_OPERAND_GENERIC_CALL, "generic call operand")                    \
+  ALC_AST_KIND_X(EXPR_OPERAND_STRING, "string operand")                                \
+  ALC_AST_KIND_X(EXPR_OPERAND_SYMBOL, "symbol operand")                                \
+  ALC_AST_KIND_X(EXPR_OPERAND_ACCESS_MEMBER, "access member operand")                  \
+  ALC_AST_KIND_X(EXPR_OPERAND_SIZE_OF, "size of operand")                              \
+  ALC_AST_KIND_X(EXPR_OPERAND_ALIGN_OF, "align of operand")                            \
+  ALC_AST_KIND_X(EXPR_OPERAND_OFFSET_OF, "offset of field in structure")               \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_ADD, "binary addition operator")                 \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_SUB, "binary subtraction operator")              \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_MUL, "binary multiplication operator")           \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_DIV, "binary division operator")                 \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_MOD, "binary module operator")                   \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_SHL, "binary shift-left operator")               \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_SHR, "binary shift-right operator")              \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_AND, "binary AND operator")                      \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_OR, "binary OR operator")                        \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BINARY_XOR, "binary XOR operator")                      \
+  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_EQ, "compare equals operator")                  \
+  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_NOTEQ, "compare not-equals operator")           \
+  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_LTHAN, "compare less-than operator")            \
+  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_GTHAN, "compare greater-than operator")         \
+  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_LTHANEQ, "compare less-than-equal operator")    \
+  ALC_AST_KIND_X(EXPR_OPERATOR_COMPARE_GTHANEQ, "compare greater-than-equal operator") \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BOOLEAN_AND, "boolean AND operator")                    \
+  ALC_AST_KIND_X(EXPR_OPERATOR_BOOLEAN_OR, "boolean OR operator")                      \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_EQ, "assign equals operator")                    \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_ADDEQ, "assign add-equals operator")             \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_SUBEQ, "assign sub-equals operator")             \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_MULEQ, "assign mul-equals operator")             \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_DIVEQ, "assign div-equals operator")             \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_MODEQ, "assign mod-equals operator")             \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_SHLEQ, "assign shift-left-equals operator")      \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_SHREQ, "assign shift-right-equals operator")     \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_ANDEQ, "assign AND-equals operator")             \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_OREQ, "assign OR-equals operator")               \
+  ALC_AST_KIND_X(EXPR_OPERATOR_ASSIGN_XOREQ, "assign XOR-equals operator")             \
+  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_NOT, "prefix NOT operator")                      \
+  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_BOOLEAN_NOT, "prefix boolean NOT operator")      \
+  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_NEGATIVE, "prefix negative operator")            \
+  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_DEREFERENCE, "prefix dereference operator")      \
+  ALC_AST_KIND_X(EXPR_OPERATOR_PREFIX_ADDRESS, "prefix take-address operator")         \
+  ALC_AST_KIND_X(INITLIST, "initialization list")                                      \
+  ALC_AST_KIND_X(INITLIST_ENTRY, "initialization list entry")                          \
+  ALC_AST_KIND_X(INITLIST_ENTRY_EXPLICIT, "initialization list explicit entry")        \
   ALC_AST_KIND_X(INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT,                                \
-                 "Initialization list explicit array element entry")                   \
-  ALC_AST_KIND_X(GENERIC_STRUCT, "Generic structure definition")                       \
-  ALC_AST_KIND_X(GENERIC_FUNC, "Generic function definition")                          \
-  ALC_AST_KIND_X(GENERIC_PLACEHOLDER_TYPE_LIST, "Generic placeholder type list")       \
-  ALC_AST_KIND_X(GENERIC_PLACEHOLDER_TYPE, "Generic placeholder type")                 \
-  ALC_AST_KIND_X(GENERIC_TYPE_LIST, "Generic type list")                               \
-  ALC_AST_KIND_X(GENERIC_TYPE, "Generic type")                                         \
-  ALC_AST_KIND_X(GENERIC_NAMESPACE, "Generic namespace")
+                 "initialization list explicit array element entry")                   \
+  ALC_AST_KIND_X(GENERIC_STRUCT, "generic structure definition")                       \
+  ALC_AST_KIND_X(GENERIC_FUNC, "generic function definition")                          \
+  ALC_AST_KIND_X(GENERIC_PLACEHOLDER_TYPE_LIST, "generic placeholder type list")       \
+  ALC_AST_KIND_X(GENERIC_PLACEHOLDER_TYPE, "generic placeholder type")                 \
+  ALC_AST_KIND_X(GENERIC_TYPE_LIST, "generic type list")                               \
+  ALC_AST_KIND_X(GENERIC_TYPE, "generic type")                                         \
+  ALC_AST_KIND_X(GENERIC_NAMESPACE, "generic namespace")
 
 #define ALC_AST_KIND_FULL_NAME(_name) ALC_AST_KIND_##_name
 

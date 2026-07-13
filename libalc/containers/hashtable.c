@@ -25,7 +25,7 @@ typedef u8 Alc_Hash_2;
 static Alc_Hash fnv_1a(const char *str);
 static void grow_and_rehash(Alc_Hashtable *ht);
 
-Alc_Hashtable hashtable_create(usize stride, b8 is_pointer)
+Alc_Hashtable alc_hashtable_create(usize stride, b8 is_pointer)
 {
   ALC_ASSERT(stride > 0 || is_pointer);
 
@@ -50,7 +50,7 @@ Alc_Hashtable hashtable_create(usize stride, b8 is_pointer)
   return ht;
 }
 
-void hashtable_destroy(Alc_Hashtable *ht)
+void alc_hashtable_destroy(Alc_Hashtable *ht)
 {
   ALC_ASSERT(ht != nullptr);
 
@@ -65,7 +65,7 @@ void hashtable_destroy(Alc_Hashtable *ht)
   memset(ht, 0, sizeof(Alc_Hashtable));
 }
 
-void *hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
+void *alc_hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
 {
   ALC_ASSERT(ht != nullptr);
   ALC_ASSERT(key != nullptr);
@@ -95,7 +95,7 @@ void *hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
 
       if ((f32)ht->occupied / (f32)ht->capacity > MAX_OCCUPANCY) {
         grow_and_rehash(ht);
-        slot = hashtable_get(ht, key);
+        slot = alc_hashtable_get(ht, key);
       }
 
       return slot;
@@ -115,7 +115,7 @@ void *hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
   return nullptr;
 }
 
-void *hashtable_get(Alc_Hashtable *ht, const char *key)
+void *alc_hashtable_get(Alc_Hashtable *ht, const char *key)
 {
   ALC_ASSERT(ht != nullptr);
   ALC_ASSERT(key != nullptr);
@@ -140,7 +140,7 @@ void *hashtable_get(Alc_Hashtable *ht, const char *key)
   return nullptr;
 }
 
-void hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn)
+void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn)
 {
   ALC_ASSERT(ht != nullptr);
   ALC_ASSERT(foreach_fn != nullptr);

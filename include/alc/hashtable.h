@@ -21,7 +21,7 @@ typedef struct {
 ALC_API Alc_Hashtable hashtable_create(usize stride, b8 is_pointer);
 ALC_API void hashtable_destroy(Alc_Hashtable *ht);
 
-ALC_API void hashtable_put(Alc_Hashtable *ht, const char *key, const void *value);
+ALC_API void *hashtable_put(Alc_Hashtable *ht, const char *key, const void *value);
 ALC_API void *hashtable_get(Alc_Hashtable *ht, const char *key);
 
 typedef void (*Alc_Foreach_Fn)(usize index, void *value);

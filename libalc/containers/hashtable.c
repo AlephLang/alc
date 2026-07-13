@@ -65,7 +65,7 @@ void hashtable_destroy(Alc_Hashtable *ht)
   memset(ht, 0, sizeof(Alc_Hashtable));
 }
 
-void hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
+void *hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
 {
   ALC_ASSERT(ht != nullptr);
   ALC_ASSERT(key != nullptr);
@@ -93,10 +93,12 @@ void hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
       ht->control_block[pos] = h2;
       ht->occupied++;
 
-      if ((f32)ht->occupied / (f32)ht->capacity > MAX_OCCUPANCY)
+      if ((f32)ht->occupied / (f32)ht->capacity > MAX_OCCUPANCY) {
         grow_and_rehash(ht);
+        slot = hashtable_get(ht, key);
+      }
 
-      break;
+      return slot;
     } else if (control == h2 && strcmp(key, ht->key_block[pos]) == 0) {
       void *slot = ht->value_block + (ht->stride * pos);
       if (ht->is_pointer)
@@ -104,11 +106,13 @@ void hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
       else
         memcpy(slot, value, ht->stride);
 
-      break;
+      return slot;
     }
 
     pos = (pos + 1) % ht->capacity;
   }
+
+  return nullptr;
 }
 
 void *hashtable_get(Alc_Hashtable *ht, const char *key)

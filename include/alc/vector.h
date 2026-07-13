@@ -19,6 +19,7 @@
 #define alc_vector_get_length(_v) __alc_vector_get_length_impl((_v))
 #define alc_vector_to_array(_v, _out_n) __alc_vector_to_array_impl((_v), (_out_n))
 #define alc_vector_clear(_v) __alc_vector_clear_impl((_v))
+#define alc_vector_concat(_v1, _v2) __alc_vector_concat_impl((_v1), (_v2))
 
 ALC_API void *__alc_vector_create_impl(usize stride, usize capacity);
 ALC_API void __alc_vector_destroy_impl(void *vec);
@@ -29,5 +30,6 @@ ALC_API usize __alc_vector_get_stride_impl(const void *vec);
 ALC_API usize __alc_vector_get_length_impl(const void *vec);
 ALC_API void *__alc_vector_to_array_impl(const void *vec, usize *out_n);
 ALC_API void __alc_vector_clear_impl(void *vec);
+ALC_API void *__alc_vector_concat_impl(const void *vec1, const void *vec2);
 
 #endif // __ALC_VECTOR_H__

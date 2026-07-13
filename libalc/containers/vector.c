@@ -111,6 +111,43 @@ void __alc_vector_clear_impl(void *vec)
   get_header(vec)->length = 0;
 }
 
+void *__alc_vector_concat_impl(const void *vec1, const void *vec2)
+{
+  ALC_ASSUME(vec1 != nullptr);
+  ALC_ASSUME(vec2 != nullptr);
+
+  __header_t *v1_h = get_header((void *)vec1);
+  __header_t *v2_h = get_header((void *)vec2);
+
+  ALC_ASSERT(v1_h->stride == v2_h->stride);
+
+  usize stride = v1_h->stride;
+  usize capacity = v1_h->capacity + v2_h->capacity;
+
+  void *block = malloc(sizeof(__header_t) + (stride * capacity));
+  void *out_vec = block + sizeof(__header_t);
+
+  __header_t *header = block;
+
+  usize v1_length = v1_h->length;
+  usize v2_length = v2_h->length;
+
+  header->capacity = capacity;
+  header->stride = stride;
+  header->length = v1_length + v2_length;
+
+  uptr addr_1 = (uptr)block;
+  usize size_1 = stride * v1_length;
+
+  uptr addr_2 = addr_1 + size_1;
+  usize size_2 = stride * v2_length;
+
+  memcpy((void *)addr_1, vec1, size_1);
+  memcpy((void *)addr_2, vec2, size_2);
+
+  return out_vec;
+}
+
 static inline void *resize(void *v)
 {
   __header_t *old_h = get_header(v);

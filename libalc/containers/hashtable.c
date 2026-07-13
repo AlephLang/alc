@@ -140,7 +140,7 @@ void *alc_hashtable_get(Alc_Hashtable *ht, const char *key)
   return nullptr;
 }
 
-void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn)
+void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn, void *user_data)
 {
   ALC_ASSERT(ht != nullptr);
   ALC_ASSERT(foreach_fn != nullptr);
@@ -151,7 +151,7 @@ void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn)
   for (usize i = 0; i < ht->capacity; i++) {
     Alc_Control control = ht->control_block[i];
     if (control != CONTROL_EMPTY)
-      foreach_fn(i, ht->value_block + (ht->stride * i));
+      foreach_fn(i, ht->value_block + (ht->stride * i), user_data);
   }
 }
 

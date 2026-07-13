@@ -93,18 +93,23 @@ void *alc_hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
       ht->control_block[pos] = h2;
       ht->occupied++;
 
-      if ((f32)ht->occupied / (f32)ht->capacity > MAX_OCCUPANCY) {
+      b8 should_resize = (f32)ht->occupied / (f32)ht->capacity > MAX_OCCUPANCY;
+      if ALC_UNLIKELY (should_resize) {
         grow_and_rehash(ht);
-        slot = alc_hashtable_get(ht, key);
       }
 
-      return slot;
+      if (ht->is_pointer)
+        break;
+
+      return should_resize ? alc_hashtable_get(ht, key) : slot;
     } else if (control == h2 && strcmp(key, ht->key_block[pos]) == 0) {
       void *slot = ht->value_block + (ht->stride * pos);
-      if (ht->is_pointer)
+      if (ht->is_pointer) {
         *(void **)slot = (void *)value;
-      else
-        memcpy(slot, value, ht->stride);
+        break;
+      }
+
+      memcpy(slot, value, ht->stride);
 
       return slot;
     }

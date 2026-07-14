@@ -61,21 +61,17 @@ s32 main(s32 argc, char **argv)
       continue;
     }
 
-#ifdef _DEBUG
     for (usize i = 0; i < n_tokens; i++) {
       char buf[1024] = { 0 };
       alc_token_to_string(&tokens[i], buf, 1024);
       printf("(%zu) %s\n", i, buf);
     }
-#endif
 
     error_handler_set_tokens(&error_handler, tokens, n_tokens);
 
     Alc_Parser *parser = alc_parser_create(tokens, n_tokens);
     Alc_Ast *root = alc_parser_parse(parser);
-#ifdef _DEBUG
     alc_ast_print(root);
-#endif
 
     Alc_Vector(Alc_Parser_Error) parser_errors = alc_parser_get_errors(parser);
     if ALC_UNLIKELY (alc_vector_get_length(parser_errors) > 0) {

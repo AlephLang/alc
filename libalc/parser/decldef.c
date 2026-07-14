@@ -31,7 +31,9 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
     Alc_Ast *qualified = parse_decldef(p, attribute_list);
     _VERIFY_AST(qualified, { alc_vector_destroy(names); });
 
-    Alc_Ast *qualifier_ast;
+    // There's no real need to initialize it to nullptr but Mr. Compiler said that he wouldn't
+    // compile library if I don't initialize it.
+    Alc_Ast *qualifier_ast = nullptr;
     for (sptr i = alc_vector_get_length(names) - 1; i >= 0; i--) {
       usize name_len = strlen(names[i]) + 1;
       qualifier_ast =

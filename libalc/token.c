@@ -2,11 +2,12 @@
 
 void alc_token_to_string(Alc_Token *token, char *buf, usize n)
 {
-  ALC_ASSERT(token != nullptr);
-  ALC_ASSERT(buf != nullptr);
+  ALC_ASSUME(token != nullptr);
+  ALC_ASSUME(buf != nullptr);
   ALC_ASSERT(n > 0);
 
-  const char *token_name;
+  // COMPILER! HE SAID ME TO INITIALIZE THIS VARIABLE!
+  const char *token_name = nullptr;
   switch (token->type) {
 #define ALC_TOKEN_TYPE_X(_name, _str_value) \
   case ALC_TOKEN_TYPE_FULL_NAME(_name):     \
@@ -28,7 +29,7 @@ void alc_token_to_string(Alc_Token *token, char *buf, usize n)
   case ALC_TOKEN_TYPE_NUMBER_FLOAT:
   case ALC_TOKEN_TYPE_STRING:
   case ALC_TOKEN_TYPE_SYMBOL:
-    ALC_ASSERT(token->value != nullptr);
+    ALC_ASSUME(token->value != nullptr);
     snprintf(
       buf, n,
       "{ type: { %s { value: \"%s\" } }, line: %zu, pos: %zu, len: %zu, has_whitespace_after: %s }",

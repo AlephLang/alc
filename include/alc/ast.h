@@ -12,7 +12,7 @@
   ALC_AST_KIND_X(IMPORT, "import")                                                     \
   ALC_AST_KIND_X(TYPEDEF, "type definition")                                           \
   ALC_AST_KIND_X(EXTERN_FUNC, "external function declaration")                         \
-  ALC_AST_KIND_X(EXTERN_VARDECL, "extern variable declaration")                        \
+  ALC_AST_KIND_X(EXTERN_VARDECL, "external variable declaration")                      \
   ALC_AST_KIND_X(QUALIFIER, "qualifier")                                               \
   ALC_AST_KIND_X(NONE, "none")                                                         \
   ALC_AST_KIND_X(VARIADIC, "variadic argument")                                        \

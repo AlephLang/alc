@@ -138,8 +138,10 @@ void *alc_hashtable_get(Alc_Hashtable *ht, const char *key)
 
     if (control == CONTROL_EMPTY)
       break;
-    else if (control == h2 && strcmp(ht->key_block[pos], key) == 0)
-      return get_slot(ht->value_block, ht->stride, pos);
+    else if (control == h2 && strcmp(ht->key_block[pos], key) == 0) {
+      void *slot = get_slot(ht->value_block, ht->stride, pos);
+      return ht->is_pointer ? *(void **)slot : slot;
+    }
 
     pos = (pos + 1) % ht->capacity;
   }

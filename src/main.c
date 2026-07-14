@@ -18,12 +18,12 @@ enum {
 
 s32 main(s32 argc, char **argv)
 {
-  if (!alc_initialize()) {
+  if ALC_UNLIKELY (!alc_initialize()) {
     fprintf(stderr, "Failed to initialize ALC.\n");
     return -1;
   }
 
-  if (argc < 2) {
+  if ALC_UNLIKELY (argc < 2) {
     ALC_TODO("Print usage");
     return -2;
   }

@@ -145,7 +145,7 @@ void *alc_hashtable_get(Alc_Hashtable *ht, const char *key)
   return nullptr;
 }
 
-void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn, void *restrict user_data)
+void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn, void *user_data)
 {
   ALC_ASSERT(ht != nullptr);
   ALC_ASSERT(foreach_fn != nullptr);

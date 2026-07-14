@@ -19,7 +19,7 @@ typedef struct {
     struct {
       Alc_Token_Type expected_token_type;
     } UNEXPECTED_WHITESPACE;
-  } data;
+  };
   usize pos;
   usize len;
   enum {

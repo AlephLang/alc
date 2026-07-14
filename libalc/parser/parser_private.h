@@ -64,7 +64,6 @@ static inline void add_error(Alc_Parser *p, Alc_Parser_Error error)
 static inline void add_error_unexpected_eof(Alc_Parser *p, usize pos)
 {
   add_error(p, (Alc_Parser_Error){
-                 .data = { { 0 } },
                  .pos = pos,
                  .len = 1,
                  .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_EOF,
@@ -75,17 +74,15 @@ static inline void add_error_unexpected_token(Alc_Parser *p, usize pos, Alc_Toke
 {
   ALC_ASSUME(p != nullptr);
   Alc_Parser_Error error = {
-    .data = {
-      .UNEXPECTED_TOKEN = {
-        .expected_token_types = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Token_Type)),
-        .expected_token_types_num = 1,
-      },
+    .UNEXPECTED_TOKEN = {
+      .expected_token_types = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Token_Type)),
+      .expected_token_types_num = 1,
     },
     .pos = pos,
     .len = 1,
     .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_TOKEN,
   };
-  error.data.UNEXPECTED_TOKEN.expected_token_types[0] = expected;
+  error.UNEXPECTED_TOKEN.expected_token_types[0] = expected;
   add_error(p, error);
   p->pos++;
 }
@@ -95,14 +92,13 @@ static inline void add_error_unexpected_token_v(Alc_Parser *p, usize pos,
 {
   ALC_ASSUME(p != nullptr);
   Alc_Parser_Error error = {
-    .data = { { 0 } },
     .pos = pos,
     .len = 1,
     .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_TOKEN,
   };
   if ALC_LIKELY (expected_v != nullptr) {
-    error.data.UNEXPECTED_TOKEN.expected_token_types =
-      alc_vector_to_array(expected_v, &error.data.UNEXPECTED_TOKEN.expected_token_types_num);
+    error.UNEXPECTED_TOKEN.expected_token_types =
+      alc_vector_to_array(expected_v, &error.UNEXPECTED_TOKEN.expected_token_types_num);
     alc_vector_destroy(expected_v);
   }
   add_error(p, error);
@@ -113,17 +109,15 @@ static inline void add_error_unexpected_value(Alc_Parser *p, usize pos, const ch
 {
   ALC_ASSUME(p != nullptr);
   Alc_Parser_Error error = {
-    .data = {
-      .UNEXPECTED_VALUE = {
-        .expected_values = alloc_arena_allocate(&ctx()->arena, sizeof(const char *)),
-        .expected_values_num = 1,
-      },
+    .UNEXPECTED_VALUE = {
+      .expected_values = alloc_arena_allocate(&ctx()->arena, sizeof(const char *)),
+      .expected_values_num = 1,
     },
     .pos = pos,
     .len = 1,
     .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_VALUE,
   };
-  error.data.UNEXPECTED_VALUE.expected_values[0] = expected;
+  error.UNEXPECTED_VALUE.expected_values[0] = expected;
   add_error(p, error);
   p->pos++;
 }
@@ -132,14 +126,13 @@ static inline void add_error_unexpected_value_v(Alc_Parser *p, usize pos, const 
 {
   ALC_ASSUME(p != nullptr);
   Alc_Parser_Error error = {
-    .data = { { 0 } },
     .pos = pos,
     .len = 1,
     .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_VALUE,
   };
   if ALC_LIKELY (expected_v != nullptr) {
-    error.data.UNEXPECTED_VALUE.expected_values =
-      alc_vector_to_array(expected_v, &error.data.UNEXPECTED_VALUE.expected_values_num);
+    error.UNEXPECTED_VALUE.expected_values =
+      alc_vector_to_array(expected_v, &error.UNEXPECTED_VALUE.expected_values_num);
     alc_vector_destroy(expected_v);
   }
   add_error(p, error);
@@ -150,7 +143,7 @@ static inline void add_error_unexpected_whitespace(Alc_Parser *p, usize pos,
                                                    Alc_Token_Type expected_after)
 {
   add_error(p, (Alc_Parser_Error){
-                 .data = { .UNEXPECTED_WHITESPACE = { .expected_token_type = expected_after } },
+                 .UNEXPECTED_WHITESPACE = { .expected_token_type = expected_after },
                  .pos = pos,
                  .len = 1,
                  .type = ALC_PARSER_ERROR_TYPE_UNEXPECTED_WHITESPACE,

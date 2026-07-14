@@ -163,12 +163,11 @@ void error_handler_handle_parser_errors(Error_Handler *handler, Alc_Vector(Alc_P
       char msg_after[2048] = { 0 };
       char *p_msg_after = msg_after;
       usize written = 0;
-      for (usize j = 0; j < error->data.UNEXPECTED_TOKEN.expected_token_types_num && written < 2048;
+      for (usize j = 0; j < error->UNEXPECTED_TOKEN.expected_token_types_num && written < 2048;
            j++) {
         const char *fmt = j > 0 ? ", %s" : " %s";
-        written +=
-          snprintf(p_msg_after, 2048 - written, fmt,
-                   token_type_to_string(error->data.UNEXPECTED_TOKEN.expected_token_types[j]));
+        written += snprintf(p_msg_after, 2048 - written, fmt,
+                            token_type_to_string(error->UNEXPECTED_TOKEN.expected_token_types[j]));
         p_msg_after = msg_after + strlen(msg_after);
       }
 
@@ -184,11 +183,10 @@ void error_handler_handle_parser_errors(Error_Handler *handler, Alc_Vector(Alc_P
       char msg_after[2048] = { 0 };
       char *p_msg_after = msg_after;
       usize written = 0;
-      for (usize j = 0; j < error->data.UNEXPECTED_VALUE.expected_values_num && written < 2048;
-           j++) {
+      for (usize j = 0; j < error->UNEXPECTED_VALUE.expected_values_num && written < 2048; j++) {
         const char *fmt = j > 0 ? ", \"%s\"" : " \"%s\"";
-        written += snprintf(p_msg_after, 2048 - written, fmt,
-                            error->data.UNEXPECTED_VALUE.expected_values[j]);
+        written +=
+          snprintf(p_msg_after, 2048 - written, fmt, error->UNEXPECTED_VALUE.expected_values[j]);
         p_msg_after = msg_after + strlen(msg_after);
       }
 
@@ -198,9 +196,9 @@ void error_handler_handle_parser_errors(Error_Handler *handler, Alc_Vector(Alc_P
 
     case ALC_PARSER_ERROR_TYPE_UNEXPECTED_WHITESPACE: {
       char msg_after[2048] = { 0 };
-      if (error->data.UNEXPECTED_WHITESPACE.expected_token_type != ALC_TOKEN_TYPE_ERROR)
+      if (error->UNEXPECTED_WHITESPACE.expected_token_type != ALC_TOKEN_TYPE_ERROR)
         snprintf(msg_after, 2048, " %s",
-                 token_type_to_string(error->data.UNEXPECTED_WHITESPACE.expected_token_type));
+                 token_type_to_string(error->UNEXPECTED_WHITESPACE.expected_token_type));
 
       highlight_after_token(handler, highlight, 4096, error->pos,
                             ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD, msg_after);

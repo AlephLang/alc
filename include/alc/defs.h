@@ -45,7 +45,7 @@ typedef uintptr_t uptr;
 #if defined(__cplusplus)
 #define ALC_LIKELY(_expr) ((_expr)) [[likely]]
 #define ALC_UNLIKELY(_expr) ((_expr)) [[unlikely]]
-#elif defined(__clang__) && __STDC_VERSION__ >= 202000
+#elif defined(__clang__)
 #define ALC_LIKELY(_expr) ((_expr)) [[clang::likely]]
 #define ALC_UNLIKELY(_expr) ((_expr)) [[clang::unlikely]]
 #elif defined(__GNUC__)

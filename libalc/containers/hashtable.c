@@ -25,6 +25,8 @@ typedef u8 Alc_Hash_2;
 static Alc_Hash fnv_1a(const char *str);
 static void grow_and_rehash(Alc_Hashtable *ht);
 
+static inline void *get_slot(void *value_block, usize stride, usize index);
+
 Alc_Hashtable alc_hashtable_create(usize stride, b8 is_pointer)
 {
   ALC_ASSERT(stride > 0 || is_pointer);
@@ -84,7 +86,7 @@ void *alc_hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
       ht->key_block[pos] = malloc(sizeof(char) * key_size);
       memcpy(ht->key_block[pos], key, sizeof(char) * key_size);
 
-      void *slot = ht->value_block + (ht->stride * pos);
+      void *slot = get_slot(ht->value_block, ht->stride, pos);
       if (ht->is_pointer)
         *(void **)slot = (void *)value;
       else
@@ -103,7 +105,7 @@ void *alc_hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
 
       return should_resize ? alc_hashtable_get(ht, key) : slot;
     } else if (control == h2 && strcmp(key, ht->key_block[pos]) == 0) {
-      void *slot = ht->value_block + (ht->stride * pos);
+      void *slot = get_slot(ht->value_block, ht->stride, pos);
       if (ht->is_pointer) {
         *(void **)slot = (void *)value;
         break;
@@ -137,7 +139,7 @@ void *alc_hashtable_get(Alc_Hashtable *ht, const char *key)
     if (control == CONTROL_EMPTY)
       break;
     else if (control == h2 && strcmp(ht->key_block[pos], key) == 0)
-      return ht->value_block + (ht->stride * pos);
+      return get_slot(ht->value_block, ht->stride, pos);
 
     pos = (pos + 1) % ht->capacity;
   }
@@ -156,7 +158,7 @@ void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn, void *u
   for (usize i = 0; i < ht->capacity; i++) {
     Alc_Control control = ht->control_block[i];
     if (control != CONTROL_EMPTY)
-      foreach_fn(i, ht->value_block + (ht->stride * i), user_data);
+      foreach_fn(i, get_slot(ht->value_block, ht->stride, i), user_data);
   }
 }
 
@@ -202,8 +204,8 @@ static void grow_and_rehash(Alc_Hashtable *ht)
         ht->key_block[pos] = key;
         ht->control_block[pos] = h2;
 
-        void *slot_dst = ht->value_block + (ht->stride * pos);
-        void *slot_src = old_value_block + (ht->stride * i);
+        void *slot_dst = get_slot(ht->value_block, ht->stride, pos);
+        void *slot_src = get_slot(old_value_block, ht->stride, i);
         if (ht->is_pointer)
           *(void **)slot_dst = *(void **)slot_src;
         else
@@ -217,4 +219,9 @@ static void grow_and_rehash(Alc_Hashtable *ht)
   }
 
   free(old_control_block);
+}
+
+static inline void *get_slot(void *value_block, usize stride, usize index)
+{
+  return value_block + stride * index;
 }

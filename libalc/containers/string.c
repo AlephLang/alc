@@ -30,7 +30,7 @@ Alc_String alc_string_create_from_char(char c)
 void alc_string_destroy(Alc_String *str)
 {
   ALC_ASSUME(str != nullptr);
-  ALC_ASSUME(str->c_str != nullptr);
+
   free(str->c_str);
   memset(str, 0, sizeof(Alc_String));
 }
@@ -38,9 +38,7 @@ void alc_string_destroy(Alc_String *str)
 void alc_string_append(Alc_String *dst, const Alc_String *src)
 {
   ALC_ASSUME(dst != nullptr);
-  ALC_ASSUME(dst->c_str != nullptr);
   ALC_ASSUME(src != nullptr);
-  ALC_ASSUME(src->c_str != nullptr);
 
   if ALC_UNLIKELY (src->len == 0)
     return;
@@ -68,7 +66,6 @@ void alc_string_append(Alc_String *dst, const Alc_String *src)
 void alc_string_append_cstr(Alc_String *dst, const char *src)
 {
   ALC_ASSUME(dst != nullptr);
-  ALC_ASSUME(dst->c_str != nullptr);
   ALC_ASSUME(src != nullptr);
 
   usize src_len = strlen(src);
@@ -98,7 +95,6 @@ void alc_string_append_cstr(Alc_String *dst, const char *src)
 void alc_string_append_char(Alc_String *dst, char c)
 {
   ALC_ASSUME(dst != nullptr);
-  ALC_ASSUME(dst->c_str != nullptr);
 
   if ALC_UNLIKELY (dst->len == 0) {
     char *new_data = malloc(sizeof(char) * 2);

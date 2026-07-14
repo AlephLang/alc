@@ -20,6 +20,10 @@ void alc_shutdown(void)
 {
   ALC_ASSERT(initialized);
 
+#ifdef _DEBUG_ARENA_ALLOC
+  alloc_arena_print_blocks(&_ctx.arena, false);
+#endif
+
   alloc_arena_destroy(&_ctx.arena);
 
   initialized = false;

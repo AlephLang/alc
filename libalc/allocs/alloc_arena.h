@@ -32,4 +32,8 @@ static inline void *alloc_arena_allocate(Alloc_Arena *alloc, usize size)
 
 void alloc_arena_drop(Alloc_Arena *alloc);
 
+#ifdef _DEBUG_ARENA_ALLOC
+void alloc_arena_print_blocks(const Alloc_Arena *alloc, b8 show_content);
+#endif
+
 #endif // __ALC_ALLOC_ARENA_H__

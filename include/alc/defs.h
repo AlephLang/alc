@@ -34,6 +34,10 @@ typedef uintptr_t uptr;
 #define ALC_MIN(_a, _b) ((_a) < (_b) ? (_a) : (_b))
 #define ALC_MAX(_a, _b) ((_a) > (_b) ? (_a) : (_b))
 
+#define ALC_KIB(_x) ((u64)(_x) << 10)
+#define ALC_MIB(_x) ((u64)(_x) << 20)
+#define ALC_GIB(_x) ((u64)(_x) << 30)
+
 #ifdef __cplusplus
 #define __ALC_CPP_GUARD_TOP() extern "C" {
 #define __ALC_CPP_GUARD_BOTTOM() }

@@ -32,8 +32,7 @@ void alc_string_destroy(Alc_String *str)
   ALC_ASSUME(str != nullptr);
   ALC_ASSUME(str->c_str != nullptr);
   free(str->c_str);
-  str->c_str = nullptr;
-  str->len = 0;
+  memset(str, 0, sizeof(Alc_String));
 }
 
 void alc_string_append(Alc_String *dst, const Alc_String *src)

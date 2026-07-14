@@ -30,7 +30,7 @@
   ALC_TOKEN_TYPE_X(PIPE, "|")                   \
   ALC_TOKEN_TYPE_X(CIRCUMFLEX, "^")             \
   ALC_TOKEN_TYPE_X(TILDE, "~")                  \
-  ALC_TOKEN_TYPE_X(EXCLMARK, "~")               \
+  ALC_TOKEN_TYPE_X(EXCLMARK, "!")               \
   ALC_TOKEN_TYPE_X(PLUS, "+")                   \
   ALC_TOKEN_TYPE_X(MINUS, "-")                  \
   ALC_TOKEN_TYPE_X(ASTERISK, "*")               \

@@ -411,12 +411,12 @@ typedef struct __Alc_Ast {
     } GENERIC_STRUCT;
     struct {
       char *name;
-      Alc_Ast_Function_Kind kind;
       struct __Alc_Ast *generic_placeholder_type_list;
       struct __Alc_Ast *argument_list;
       struct __Alc_Ast *return_type;
       struct __Alc_Ast *body;
       struct __Alc_Ast *attribute_list;
+      Alc_Ast_Function_Kind kind;
     } GENERIC_FUNC;
     struct {
       struct __Alc_Ast **generic_placeholder_types;

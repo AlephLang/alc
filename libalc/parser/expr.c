@@ -662,10 +662,10 @@ static Alc_Ast *parse_post(Alc_Parser *p, Alc_Ast *ast)
       p->pos++;
 
       Alc_Ast *access_member_tuple = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-      access_member_tuple->EXPR_OPERAND_ACCESS_MEMBER_TUPLE.index = index_number;
-      access_member_tuple->EXPR_OPERAND_ACCESS_MEMBER_TUPLE.tuple = ast;
+      access_member_tuple->EXPR_OPERAND_ACCESS_FIELD_TUPLE.index = index_number;
+      access_member_tuple->EXPR_OPERAND_ACCESS_FIELD_TUPLE.tuple = ast;
       access_member_tuple->pos = ast->pos;
-      access_member_tuple->kind = ALC_AST_KIND_EXPR_OPERAND_ACCESS_MEMBER_TUPLE;
+      access_member_tuple->kind = ALC_AST_KIND_EXPR_OPERAND_ACCESS_FIELD_TUPLE;
       return access_member_tuple;
     }
 

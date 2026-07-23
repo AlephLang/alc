@@ -60,11 +60,11 @@ struct TestStruct2 {
   field2_s32 := 123s;
   field3_f32: f32 = 123.0f;
 
-  method1 :: () -> s32 $ 0;
-  method2 :: () -> bool $ field1_s32 > 5;
+  method1 :: () -> s32 = 0;
+  method2 :: () -> bool = field1_s32 > 5;
 
-  func function1 :: (x: s32) $ x * 14;
-  func function2 :: (x: s32, ...) $ x * 14;
+  func function1 :: (x: s32) = x * 14;
+  func function2 :: (x: s32, ...) = x * 14;
 }
 struct TestStruct3 [alignas(16)] {
   field1_s32: s32;
@@ -84,36 +84,36 @@ union TestUnion3 [packed] {}
 
 // Ast.Func
 func_1 :: () {}
-func_2 :: () $ 0;
+func_2 :: () = 0;
 func_3 :: () -> s32 { return 0; }
-func_4 :: () -> s32 $ 0;
+func_4 :: () -> s32 = 0;
 func_5 :: (arg1: s32) { return arg1; }
-func_6 :: (arg1: s32) $ arg1;
+func_6 :: (arg1: s32) = arg1;
 func_7 :: (arg1: s32) -> s32 { return arg1; }
-func_8 :: (arg1: s32) -> s32 $ arg1;
+func_8 :: (arg1: s32) -> s32 = arg1;
 func_9 :: (arg1: s32, arg2: f32 = 123.0f) { return arg1 + cast(s32)arg2; }
-func_10 :: (arg1: s32, arg2: f32 = 123.0f) $ arg1 + cast(s32)arg2;
+func_10 :: (arg1: s32, arg2: f32 = 123.0f) = arg1 + cast(s32)arg2;
 func_11 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 { return arg1 + cast(s32)arg2; }
-func_12 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 $ arg1 + cast(s32)arg2;
+func_12 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 = arg1 + cast(s32)arg2;
 
 // Ast.Func (Ast.FunctionTypeExplicit)
 func explicit_func_1 :: () {}
-func explicit_func_2 :: () $ 0;
+func explicit_func_2 :: () = 0;
 func explicit_func_3 :: () -> s32 { return 0; }
-func explicit_func_4 :: () -> s32 $ 0;
+func explicit_func_4 :: () -> s32 = 0;
 func explicit_func_5 :: (arg1: s32) { return arg1; }
-func explicit_func_6 :: (arg1: s32) $ arg1;
+func explicit_func_6 :: (arg1: s32) = arg1;
 func explicit_func_7 :: (arg1: s32) -> s32 { return arg1; }
-func explicit_func_8 :: (arg1: s32) -> s32 $ arg1;
+func explicit_func_8 :: (arg1: s32) -> s32 = arg1;
 func explicit_func_9 :: (arg1: s32, arg2: f32 = 123.0f) { return arg1 + cast(s32)arg2; }
-func explicit_func_10 :: (arg1: s32, arg2: f32 = 123.0f) $ arg1 + cast(s32)arg2;
+func explicit_func_10 :: (arg1: s32, arg2: f32 = 123.0f) = arg1 + cast(s32)arg2;
 func explicit_func_11 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 { return arg1 + cast(s32)arg2; }
-func explicit_func_12 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 $ arg1 + cast(s32)arg2;
+func explicit_func_12 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 = arg1 + cast(s32)arg2;
 
 // Ast.Func (Ast.FunctionTypeExported)
 export exported_func_1 :: () {}
 export exported_func_2 :: (x: s32) -> s32 {}
-export exported_func_3 :: (x: s32) $ x << 1;
+export exported_func_3 :: (x: s32) = x << 1;
 
 // Ast.VarDecl
 var_vardecl_1: s32;
@@ -140,7 +140,7 @@ _ :: () -> s32 {
 
   // Functions inside functions can access scope of its parent.
   func_in_func :: () { x = 15; }
-  func explicit_func_in_func :: () $ 42;
+  func explicit_func_in_func :: () = 42;
   // NOTE: You cannot have exported functions inside other functions,
   // they can only be at top-level.
 

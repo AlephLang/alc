@@ -52,6 +52,7 @@
   ALC_AST_KIND_X(TYPE_POINTER, "pointer type")                                         \
   ALC_AST_KIND_X(TYPE_ARRAY, "array type")                                             \
   ALC_AST_KIND_X(TYPE_FUNCTION_POINTER, "function pointer type")                       \
+  ALC_AST_KIND_X(TYPE_TUPLE, "tuple")                                                  \
   ALC_AST_KIND_X(TYPE_TYPE_OF, "type of")                                              \
   ALC_AST_KIND_X(VAR_DECL, "variable declaration")                                     \
   ALC_AST_KIND_X(VAR_DEF, "variable definition")                                       \
@@ -319,6 +320,10 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *argument_list;
       struct __Alc_Ast *return_type;
     } TYPE_FUNCTION_POINTER;
+    struct {
+      struct __Alc_Ast **types;
+      usize types_num;
+    } TYPE_TUPLE;
     struct {
       struct __Alc_Ast *expression;
     } TYPE_TYPE_OF;

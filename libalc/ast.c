@@ -514,6 +514,15 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(alc_string_create_from("TYPE_FUNCTION_POINTER"), children_vs_v);
   }
 
+  case ALC_AST_KIND_TYPE_TUPLE: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = safe_reserve(Alc_Vector(Alc_String), ast->TYPE_TUPLE.types_num);
+    for (usize i = 0; i < ast->TYPE_TUPLE.types_num; i++) {
+      alc_vector_push(children_vs_v, to_string(ast->TYPE_TUPLE.types[i]));
+    }
+    return build_tree(alc_string_create_from("TYPE_TUPLE"), children_vs_v);
+  }
+
   case ALC_AST_KIND_TYPE_TYPE_OF: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);

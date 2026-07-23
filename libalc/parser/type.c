@@ -2,12 +2,14 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
+#include "alc/vector.h"
 #include "allocs/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
 
 static Alc_Ast *parse_function_pointer(Alc_Parser *p);
+static Alc_Ast *parse_tuple(Alc_Parser *p);
 static Alc_Ast *parse_typeof(Alc_Parser *p);
 static Alc_Ast *parse_generic_type_or_namespace(Alc_Parser *p);
 static Alc_Ast *parse_namespace(Alc_Parser *p);
@@ -19,7 +21,16 @@ Alc_Ast *parse_type_raw(Alc_Parser *p)
 
   _VERIFY_POS(p, p->pos);
 
-  return p->tokens[p->pos].type == ALC_TOKEN_TYPE_LPAREN ? parse_function_pointer(p) : parse_id(p);
+  switch (p->tokens[p->pos].type) {
+  case ALC_TOKEN_TYPE_LPAREN:
+    return parse_function_pointer(p);
+
+  case ALC_TOKEN_TYPE_LBRACK:
+    return parse_tuple(p);
+
+  default:
+    return parse_id(p);
+  }
 }
 
 static Alc_Ast *parse_id(Alc_Parser *p)
@@ -137,6 +148,42 @@ static Alc_Ast *parse_function_pointer(Alc_Parser *p)
   function_pointer_ast->pos = pos;
   function_pointer_ast->kind = ALC_AST_KIND_TYPE_FUNCTION_POINTER;
   return function_pointer_ast;
+}
+
+static Alc_Ast *parse_tuple(Alc_Parser *p)
+{
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LBRACK);
+
+  usize pos = p->pos++;
+  Alc_Vector(Alc_Ast *) types_v = alc_vector_create(Alc_Ast *);
+
+  b8 first = true;
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
+    if ALC_LIKELY (!first) {
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA);
+      p->pos++;
+      _VERIFY_POS(p, p->pos);
+    }
+
+    Alc_Ast *type_ast = parse_type(p);
+    _VERIFY_AST(type_ast);
+
+    alc_vector_push(types_v, type_ast);
+
+    first = false;
+  }
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK);
+  p->pos++;
+
+  Alc_Ast *tuple_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  tuple_ast->TYPE_TUPLE.types = alc_vector_to_array(types_v, &tuple_ast->TYPE_TUPLE.types_num);
+  tuple_ast->pos = pos;
+  tuple_ast->kind = ALC_AST_KIND_TYPE_TUPLE;
+  alc_vector_destroy(types_v);
+  return tuple_ast;
 }
 
 static Alc_Ast *parse_typeof(Alc_Parser *p)

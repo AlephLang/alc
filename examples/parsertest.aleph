@@ -7,6 +7,7 @@ using int32_t = s32;
 using vec_s32_t = Vec!<s32>;
 using funny_vec<T> = Vec!<T>;
 using [packed] s32_arr16 = s32[16];
+using int_float_tuple = [s32, f32];
 
 // Ast.None
 ;
@@ -261,3 +262,5 @@ enum flags EnumFlags {
   FLAG_3,
   FLAG_ALL = FLAG_1 | FLAG_2 | FLAG_3,
 }
+
+x: [s32, f32] = {0};

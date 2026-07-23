@@ -661,6 +661,16 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(alc_string_create_from("EXPR_OPERAND_ACCESS_MEMBER"), children_vs_v);
   }
 
+  case ALC_AST_KIND_EXPR_OPERAND_ACCESS_MEMBER_TUPLE: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    alc_vector_push(children_vs_v, to_string(ast->EXPR_OPERAND_ACCESS_MEMBER_TUPLE.tuple));
+    char buf[1024] = { 0 };
+    snprintf(buf, 1024, "EXPR_OPERAND_ACCESS_MEMBER_TUPLE { index: %" PRIu64 " }",
+             ast->EXPR_OPERAND_ACCESS_MEMBER_TUPLE.index);
+    return build_tree(alc_string_create_from(buf), children_vs_v);
+  }
+
   case ALC_AST_KIND_EXPR_OPERAND_SIZE_OF: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);

@@ -66,6 +66,7 @@
   ALC_AST_KIND_X(EXPR_OPERAND_STRING, "string operand")                                \
   ALC_AST_KIND_X(EXPR_OPERAND_SYMBOL, "symbol operand")                                \
   ALC_AST_KIND_X(EXPR_OPERAND_ACCESS_MEMBER, "access member operand")                  \
+  ALC_AST_KIND_X(EXPR_OPERAND_ACCESS_MEMBER_TUPLE, "access member in tuple operand")   \
   ALC_AST_KIND_X(EXPR_OPERAND_SIZE_OF, "size of operand")                              \
   ALC_AST_KIND_X(EXPR_OPERAND_ALIGN_OF, "align of operand")                            \
   ALC_AST_KIND_X(EXPR_OPERAND_OFFSET_OF, "offset of field in structure")               \
@@ -380,6 +381,10 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *from;
       struct __Alc_Ast *what;
     } EXPR_OPERAND_ACCESS_MEMBER;
+    struct {
+      u64 index;
+      struct __Alc_Ast *tuple;
+    } EXPR_OPERAND_ACCESS_MEMBER_TUPLE;
     struct {
       struct __Alc_Ast *type;
     } EXPR_OPERAND_SIZE_OF;

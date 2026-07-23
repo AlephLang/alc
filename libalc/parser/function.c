@@ -63,8 +63,10 @@ Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function
   Alc_Ast *body;
   if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_EQ) {
     p->pos++;
+    _VERIFY_POS(p, p->pos);
 
-    body = parse_expr(p, false);
+    body = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
+                                                              parse_expr(p, false);
     _VERIFY_AST(body);
 
     _VERIFY_POS(p, p->pos);

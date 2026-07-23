@@ -656,6 +656,19 @@ static Alc_Ast *parse_post(Alc_Parser *p, Alc_Ast *ast)
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD) {
     p->pos++;
 
+    _VERIFY_POS(p, p->pos);
+    if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_NUMBER) {
+      u64 index_number = str_dec_to_num(p->tokens[p->pos].value);
+      p->pos++;
+
+      Alc_Ast *access_member_tuple = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+      access_member_tuple->EXPR_OPERAND_ACCESS_MEMBER_TUPLE.index = index_number;
+      access_member_tuple->EXPR_OPERAND_ACCESS_MEMBER_TUPLE.tuple = ast;
+      access_member_tuple->pos = ast->pos;
+      access_member_tuple->kind = ALC_AST_KIND_EXPR_OPERAND_ACCESS_MEMBER_TUPLE;
+      return access_member_tuple;
+    }
+
     Alc_Ast *member = parse_only_operands(p);
     _VERIFY_AST(member);
 

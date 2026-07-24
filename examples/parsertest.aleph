@@ -6,8 +6,8 @@ import std::io;
 using int32_t = s32;
 using vec_s32_t = Vec!<s32>;
 using funny_vec<T> = Vec!<T>;
-using [packed] s32_arr16 = s32[16];
-using int_float_tuple = [s32, f32];
+using [packed] s32_arr16 = [16]s32;
+using int_float_tuple = {s32, f32};
 
 // Ast.None
 ;
@@ -23,9 +23,9 @@ extern extern_func_2 :: (x: s32, y: s32 = 4, ...) -> f32;
 extern extern_var_1: s32;
 extern extern_var_2: *s32;
 extern extern_var_3: **s32;
-extern extern_var_4: **s32[16];
-extern extern_var_5: ***s32[16][32];
-extern extern_var_6: ***s32[16][32][];
+extern extern_var_4: [16]**s32;
+extern extern_var_5: [16][32]***s32;
+extern extern_var_6: [16][32][]***s32;
 
 // Ast.Qualifier
 local_var: s32;
@@ -235,7 +235,7 @@ _ :: () -> s32 {
   else if [unlikely] (false) {}
   else defer return 0;
 
-  tuple: [u32, f32] = { 123u, 123.0f };
+  tuple: {u32, f32} = { 123u, 123.0f };
   x := 123 + 3.14f + 123u + 3.1415lf * (false / true) + "string" + "string with a typespec"l
      + access.member + namespace::subobject + namespace::call() + generic_namespace!<s32>::x
      + call() + generic_call!<s32, f32>(123, 3.14f) + 'a' + some_array[14] + cast(s32)3.14f + 'x'l
@@ -253,7 +253,7 @@ _ :: () -> s32 {
     false
   };
 
-  array: s32[12] = { [0] = 123 };
+  array: [12]s32 = { [0] = 123 };
 }
 
 enum flags EnumFlags {

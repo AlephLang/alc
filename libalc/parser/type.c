@@ -25,7 +25,7 @@ Alc_Ast *parse_type_raw(Alc_Parser *p)
   case ALC_TOKEN_TYPE_LPAREN:
     return parse_function_pointer(p);
 
-  case ALC_TOKEN_TYPE_LBRACK:
+  case ALC_TOKEN_TYPE_LCBRACK:
     return parse_tuple(p);
 
   default:
@@ -68,7 +68,33 @@ Alc_Ast *parse_type(Alc_Parser *p)
 
   _VERIFY_POS(p, p->pos);
 
-  usize start_pos = p->pos;
+  struct Array_Ast_And_Pos {
+    Alc_Ast *size_expression;
+    usize pos;
+  };
+  Alc_Vector(struct Array_Ast_And_Pos) arrays_v = alc_vector_create(struct Array_Ast_And_Pos);
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
+    usize pos = p->pos++;
+
+    Alc_Ast *size_expression = nullptr;
+    if (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
+      size_expression = parse_expr(p, false);
+      _VERIFY_AST(size_expression, { alc_vector_destroy(arrays_v); });
+    }
+
+    _VERIFY_POS(p, p->pos, { alc_vector_destroy(arrays_v); });
+    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK, { alc_vector_destroy(arrays_v); });
+
+    p->pos++;
+
+    struct Array_Ast_And_Pos array = {
+      .size_expression = size_expression,
+      .pos = pos,
+    };
+    alc_vector_push(arrays_v, array);
+  }
+
+  usize ptr_start_pos = p->pos;
 
   usize ptr_num = 0;
   for (; p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_ASTERISK;
@@ -76,42 +102,30 @@ Alc_Ast *parse_type(Alc_Parser *p)
     ;
 
   Alc_Ast *type_raw = parse_type_raw(p);
-  if ALC_UNLIKELY (type_raw == nullptr)
-    return nullptr;
+  _VERIFY_AST(type_raw, { alc_vector_destroy(arrays_v); });
 
   Alc_Ast *cur_type = type_raw;
 
   for (; ptr_num; ptr_num--) {
     Alc_Ast *ptr_type = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
     ptr_type->TYPE_POINTER.type = cur_type;
-    ptr_type->pos = start_pos + ptr_num - 1;
+    ptr_type->pos = ptr_start_pos + ptr_num - 1;
     ptr_type->kind = ALC_AST_KIND_TYPE_POINTER;
     cur_type = ptr_type;
   }
 
-  while (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
-    usize array_pos = p->pos++;
+  for (usize i = 0, arrays_v_len = alc_vector_get_length(arrays_v); i < arrays_v_len; i++) {
+    struct Array_Ast_And_Pos *array = &arrays_v[arrays_v_len - i - 1];
 
-    _VERIFY_POS(p, p->pos);
-
-    Alc_Ast *size_expression = nullptr;
-    if (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
-      size_expression = parse_expr(p, false);
-      _VERIFY_AST(size_expression);
-      _VERIFY_POS(p, p->pos);
-    }
-
-    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK);
-
-    p->pos++;
-
-    Alc_Ast *array_type_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-    array_type_ast->TYPE_ARRAY.type = cur_type;
-    array_type_ast->TYPE_ARRAY.size_expression = size_expression;
-    array_type_ast->pos = array_pos;
-    array_type_ast->kind = ALC_AST_KIND_TYPE_ARRAY;
-    cur_type = array_type_ast;
+    Alc_Ast *array_type = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+    array_type->TYPE_ARRAY.type = cur_type;
+    array_type->TYPE_ARRAY.size_expression = array->size_expression;
+    array_type->pos = array->pos;
+    array_type->kind = ALC_AST_KIND_TYPE_ARRAY;
+    cur_type = array_type;
   }
+
+  alc_vector_destroy(arrays_v);
 
   return cur_type;
 }
@@ -153,29 +167,30 @@ static Alc_Ast *parse_function_pointer(Alc_Parser *p)
 static Alc_Ast *parse_tuple(Alc_Parser *p)
 {
   _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LBRACK);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LCBRACK);
 
   usize pos = p->pos++;
   Alc_Vector(Alc_Ast *) types_v = alc_vector_create(Alc_Ast *);
 
   b8 first = true;
-  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RCBRACK) {
     if ALC_LIKELY (!first) {
-      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA);
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { alc_vector_destroy(types_v); });
+
       p->pos++;
-      _VERIFY_POS(p, p->pos);
+      _VERIFY_POS(p, p->pos, { alc_vector_destroy(types_v); });
     }
 
     Alc_Ast *type_ast = parse_type(p);
-    _VERIFY_AST(type_ast);
+    _VERIFY_AST(type_ast, { alc_vector_destroy(types_v); });
 
     alc_vector_push(types_v, type_ast);
 
     first = false;
   }
 
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK);
+  _VERIFY_POS(p, p->pos, { alc_vector_destroy(types_v); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RCBRACK, { alc_vector_destroy(types_v); });
   p->pos++;
 
   Alc_Ast *tuple_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));

@@ -7,7 +7,7 @@ using int32_t = s32;
 using vec_s32_t = Vec!<s32>;
 using funny_vec<T> = Vec!<T>;
 using [packed] s32_arr16 = [16]s32;
-using int_float_tuple = {s32, f32};
+using int_float_tuple = |s32, f32|;
 
 // Ast.None
 ;
@@ -235,7 +235,7 @@ _ :: () -> s32 {
   else if [unlikely] (false) {}
   else defer return 0;
 
-  tuple: {u32, f32} = { 123u, 123.0f };
+  tuple: |u32, f32| = { 123u, 123.0f };
   x := 123 + 3.14f + 123u + 3.1415lf * (false / true) + "string" + "string with a typespec"l
      + access.member + namespace::subobject + namespace::call() + generic_namespace!<s32>::x
      + call() + generic_call!<s32, f32>(123, 3.14f) + 'a' + some_array[14] + cast(s32)3.14f + 'x'l

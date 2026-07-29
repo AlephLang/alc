@@ -1,3 +1,5 @@
+#include <alc/analyzer.h>
+#include <alc/context.h>
 #include <alc/vector.h>
 #include <alc/defs.h>
 #include <alc/ast.h>
@@ -8,13 +10,6 @@
 #include <alc/alc.h>
 #include <stdlib.h>
 #include "error_handler.h"
-
-enum {
-  EXIT_FLAG_SUCCESS = 0,
-  EXIT_FLAG_FAILED_TO_OPEN = (1 << 0),
-  EXIT_FLAG_FAILED_TO_TOKENIZE = (1 << 1),
-  EXIT_FLAG_FAILED_TO_PARSE = (1 << 2),
-};
 
 s32 main(s32 argc, char **argv)
 {
@@ -28,14 +23,11 @@ s32 main(s32 argc, char **argv)
     return -2;
   }
 
-  s32 result = 0;
-
   for (s32 i = 1; i < argc; i++) {
     const char *file_name = argv[i];
     FILE *f = fopen(file_name, "r");
     if ALC_UNLIKELY (f == nullptr) {
       ALC_TODO("Report failed to open file.");
-      result |= EXIT_FLAG_FAILED_TO_OPEN;
       continue;
     }
 
@@ -57,7 +49,6 @@ s32 main(s32 argc, char **argv)
     usize n_tokens;
     if ALC_UNLIKELY (!alc_lexer_tokenize(&lexer, &tokens, &n_tokens)) {
       error_handler_handle_lexer_errors(&error_handler, tokens, n_tokens);
-      result |= EXIT_FLAG_FAILED_TO_TOKENIZE;
       continue;
     }
 
@@ -77,12 +68,24 @@ s32 main(s32 argc, char **argv)
     if ALC_UNLIKELY (alc_vector_get_length(parser_errors) > 0) {
       error_handler_handle_parser_errors(&error_handler, parser_errors);
 
-      result |= EXIT_FLAG_FAILED_TO_PARSE;
       alc_parser_destroy(parser);
       continue;
     }
 
     alc_parser_destroy(parser);
+
+    Alc_Context context = alc_context_create();
+    Alc_Analyzer analyzer = alc_analyzer_create(&context);
+    if ALC_UNLIKELY (!alc_analyzer_analyse(&analyzer, root)) {
+      // TODO: handle semantic errors.
+      fprintf(stderr, "Analysis failed.\n");
+
+      alc_analyzer_destroy(&analyzer);
+      alc_context_destroy(&context);
+      continue;
+    }
+    alc_analyzer_destroy(&analyzer);
+    alc_context_destroy(&context);
 
     error_handler_destroy(&error_handler);
 
@@ -90,5 +93,5 @@ s32 main(s32 argc, char **argv)
   }
 
   alc_shutdown();
-  return result;
+  return 0;
 }

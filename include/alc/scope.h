@@ -17,7 +17,7 @@ typedef enum {
 } Alc_Scope_Kind;
 
 typedef struct __Alc_Scope {
-  Alc_Hashtable named_scopes;
+  Alc_Hashtable(struct __Alc_Scope) named_scopes;
   Alc_Vector(struct __Alc_Scope) nameless_scopes;
 
   const char *name;

@@ -23,11 +23,11 @@ typedef u64 Alc_Hash_1;
 typedef u8 Alc_Hash_2;
 
 static Alc_Hash fnv_1a(const char *str);
-static void grow_and_rehash(Alc_Hashtable *ht);
+static void grow_and_rehash(Alc_Hashtable_Base *ht);
 
 static inline void *get_slot(void *value_block, usize stride, usize index);
 
-Alc_Hashtable alc_hashtable_create(usize stride, b8 is_pointer)
+Alc_Hashtable_Base alc_hashtable_create(usize stride, b8 is_pointer)
 {
   ALC_ASSERT(stride > 0 || is_pointer);
 
@@ -37,7 +37,7 @@ Alc_Hashtable alc_hashtable_create(usize stride, b8 is_pointer)
   void *block = malloc(block_size);
   memset(block, 0, block_size);
 
-  Alc_Hashtable ht = {
+  Alc_Hashtable_Base ht = {
     .control_block = block,
     .key_block = block + (sizeof(Alc_Control) * INITIAL_CAPACITY),
     .value_block = block + ((sizeof(Alc_Control) + sizeof(char *)) * INITIAL_CAPACITY),
@@ -52,7 +52,7 @@ Alc_Hashtable alc_hashtable_create(usize stride, b8 is_pointer)
   return ht;
 }
 
-void alc_hashtable_destroy(Alc_Hashtable *ht)
+void alc_hashtable_destroy(Alc_Hashtable_Base *ht)
 {
   ALC_ASSUME(ht != nullptr);
 
@@ -64,10 +64,10 @@ void alc_hashtable_destroy(Alc_Hashtable *ht)
     }
   }
   free(ht->control_block);
-  memset(ht, 0, sizeof(Alc_Hashtable));
+  memset(ht, 0, sizeof(Alc_Hashtable_Base));
 }
 
-void *alc_hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
+void *alc_hashtable_put(Alc_Hashtable_Base *ht, const char *key, const void *value)
 {
   ALC_ASSUME(ht != nullptr);
   ALC_ASSUME(key != nullptr);
@@ -122,7 +122,7 @@ void *alc_hashtable_put(Alc_Hashtable *ht, const char *key, const void *value)
   return nullptr;
 }
 
-void *alc_hashtable_get(Alc_Hashtable *ht, const char *key)
+void *alc_hashtable_get(Alc_Hashtable_Base *ht, const char *key)
 {
   ALC_ASSUME(ht != nullptr);
   ALC_ASSUME(key != nullptr);
@@ -149,7 +149,7 @@ void *alc_hashtable_get(Alc_Hashtable *ht, const char *key)
   return nullptr;
 }
 
-void alc_hashtable_foreach(Alc_Hashtable *ht, Alc_Foreach_Fn foreach_fn, void *user_data)
+void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn, void *user_data)
 {
   ALC_ASSUME(ht != nullptr);
   ALC_ASSUME(foreach_fn != nullptr);
@@ -174,7 +174,7 @@ static Alc_Hash fnv_1a(const char *str)
   return hash;
 }
 
-static void grow_and_rehash(Alc_Hashtable *ht)
+static void grow_and_rehash(Alc_Hashtable_Base *ht)
 {
   usize old_capacity = ht->capacity;
   Alc_Control *old_control_block = ht->control_block;

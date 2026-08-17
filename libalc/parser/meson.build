@@ -9,6 +9,7 @@ libalc_src += [
   'libalc/parser/import.c',
   'libalc/parser/initlist.c',
   'libalc/parser/label.c',
+  'libalc/parser/lambda.c',
   'libalc/parser/module.c',
   'libalc/parser/parser.c',
   'libalc/parser/scope.c',

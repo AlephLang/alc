@@ -116,8 +116,20 @@ Alc_Ast *parse_decldef_var(Alc_Parser *p, Alc_Ast *attribute_list)
 
 __vardef:
     _VERIFY_POS(p, p->pos);
-    Alc_Ast *expr = p->tokens[p->pos].type == ALC_TOKEN_TYPE_LCBRACK ? parse_initlist(p) :
-                                                                       parse_expr(p, false);
+    Alc_Ast *expr;
+    switch (p->tokens[p->pos].type) {
+    case ALC_TOKEN_TYPE_LCBRACK: {
+      expr = parse_initlist(p);
+    } break;
+
+    case ALC_TOKEN_TYPE_LBRACK: {
+      expr = parse_lambda(p);
+    } break;
+
+    default: {
+      expr = parse_expr(p, false);
+    } break;
+    }
     _VERIFY_AST(expr);
 
     Alc_Ast *vardef_ast =

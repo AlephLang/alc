@@ -923,13 +923,29 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
 
   case ALC_AST_KIND_INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT: {
     Alc_Vector(Alc_Vector(Alc_String)) children_vs_v = alc_vector_reserve(
-      Alc_String *, ast->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions_num + 1);
+      Alc_Vector(Alc_String), ast->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions_num + 1);
     array_to_strings(children_vs_v, ast->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions,
                      ast->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions_num);
     alc_vector_push(children_vs_v,
                     to_string(ast->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.expression));
     return build_tree(alc_string_create_from("INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT"),
                       children_vs_v);
+  }
+
+  case ALC_AST_KIND_CLOSURE: {
+    Alc_Vector(Alc_Vector(Alc_String)) children_vs_v = alc_vector_reserve(
+      Alc_Vector(Alc_String), 2 + ast->CLOSURE.captured_num + ast->CLOSURE.arguments_num);
+    array_to_strings(children_vs_v, ast->CLOSURE.captured, ast->CLOSURE.captured_num);
+    array_to_strings(children_vs_v, ast->CLOSURE.arguments, ast->CLOSURE.arguments_num);
+    add_to_strings_opt(children_vs_v, ast->CLOSURE.return_type);
+    alc_vector_push(children_vs_v, to_string(ast->CLOSURE.body));
+    return build_tree(alc_string_create_from("CLOSURE"), children_vs_v);
+  }
+
+  case ALC_AST_KIND_CLOSURE_CAPTURE_FULL: {
+    Alc_Vector(Alc_String) out = alc_vector_reserve(Alc_String, 1);
+    alc_vector_push(out, alc_string_create_from("CLOSURE_CAPTURE_FULL"));
+    return out;
   }
 
   case ALC_AST_KIND_GENERIC_STRUCT: {

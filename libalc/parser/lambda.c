@@ -5,7 +5,6 @@
 #include "allocs/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
-#include <stdio.h>
 #include <string.h>
 
 static inline Alc_Ast *parse_capture_object(Alc_Parser *p);

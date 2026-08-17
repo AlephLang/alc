@@ -35,6 +35,7 @@ Alc_Ast *parse_union(Alc_Parser *p);
 Alc_Ast *parse_enum(Alc_Parser *p);
 Alc_Ast *parse_scope(Alc_Parser *p);
 Alc_Ast *parse_label(Alc_Parser *p);
+Alc_Ast *parse_lambda(Alc_Parser *p);
 Alc_Ast *parse_stmt(Alc_Parser *p);
 Alc_Ast *parse_stmt_block(Alc_Parser *p);
 Alc_Ast *parse_stmt_return(Alc_Parser *p);

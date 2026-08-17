@@ -254,6 +254,13 @@ _ :: () -> s32 {
   };
 
   array: [12]s32 = { [0] = 123 };
+
+  lambda_func := [&](num: s32) -> bool {
+    array[4] = num;
+    return num < 5;
+  };
+
+  is_magic_number := lambda_func(6);
 }
 
 enum flags EnumFlags {

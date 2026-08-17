@@ -109,8 +109,9 @@
   ALC_AST_KIND_X(INITLIST_ENTRY_EXPLICIT, "initialization list explicit entry")        \
   ALC_AST_KIND_X(INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT,                                \
                  "initialization list explicit array element entry")                   \
-  ALC_AST_KIND_X(CLOSURE, "closure")                                                   \
-  ALC_AST_KIND_X(CLOSURE_CAPTURE_FULL, "full scope capture")                           \
+  ALC_AST_KIND_X(LAMBDA, "lambda function")                                            \
+  ALC_AST_KIND_X(LAMBDA_CAPTURE_OBJECT, "captured object")                             \
+  ALC_AST_KIND_X(LAMBDA_CAPTURE_FULL, "full scope capture")                            \
   ALC_AST_KIND_X(GENERIC_STRUCT, "generic structure definition")                       \
   ALC_AST_KIND_X(GENERIC_FUNC, "generic function definition")                          \
   ALC_AST_KIND_X(GENERIC_PLACEHOLDER_TYPE_LIST, "generic placeholder type list")       \
@@ -414,13 +415,15 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *expression;
     } INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT;
     struct {
-      struct __Alc_Ast **captured;
+      struct __Alc_Ast **captured_objects;
       usize captured_num;
-      struct __Alc_Ast **arguments;
-      usize arguments_num;
+      struct __Alc_Ast *argument_list;
       struct __Alc_Ast *return_type;
       struct __Alc_Ast *body;
-    } CLOSURE;
+    } LAMBDA;
+    struct {
+      char *name;
+    } LAMBDA_CAPTURE_OBJECT;
     struct {
       char *name;
       struct __Alc_Ast *generic_placeholder_type_list;

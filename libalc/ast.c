@@ -932,19 +932,28 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
                       children_vs_v);
   }
 
-  case ALC_AST_KIND_CLOSURE: {
-    Alc_Vector(Alc_Vector(Alc_String)) children_vs_v = alc_vector_reserve(
-      Alc_Vector(Alc_String), 2 + ast->CLOSURE.captured_num + ast->CLOSURE.arguments_num);
-    array_to_strings(children_vs_v, ast->CLOSURE.captured, ast->CLOSURE.captured_num);
-    array_to_strings(children_vs_v, ast->CLOSURE.arguments, ast->CLOSURE.arguments_num);
-    add_to_strings_opt(children_vs_v, ast->CLOSURE.return_type);
-    alc_vector_push(children_vs_v, to_string(ast->CLOSURE.body));
-    return build_tree(alc_string_create_from("CLOSURE"), children_vs_v);
+  case ALC_AST_KIND_LAMBDA: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 3 + ast->LAMBDA.captured_num);
+    array_to_strings(children_vs_v, ast->LAMBDA.captured_objects, ast->LAMBDA.captured_num);
+    alc_vector_push(children_vs_v, to_string(ast->LAMBDA.argument_list));
+    add_to_strings_opt(children_vs_v, ast->LAMBDA.return_type);
+    alc_vector_push(children_vs_v, to_string(ast->LAMBDA.body));
+    return build_tree(alc_string_create_from("LAMBDA"), children_vs_v);
   }
 
-  case ALC_AST_KIND_CLOSURE_CAPTURE_FULL: {
+  case ALC_AST_KIND_LAMBDA_CAPTURE_OBJECT: {
+    Alc_String str = alc_string_create_from("LAMBDA_CAPTURE_OBJECT { name: \"");
+    alc_string_append_cstr(&str, ast->LAMBDA_CAPTURE_OBJECT.name);
+    alc_string_append_cstr(&str, "\" }");
     Alc_Vector(Alc_String) out = alc_vector_reserve(Alc_String, 1);
-    alc_vector_push(out, alc_string_create_from("CLOSURE_CAPTURE_FULL"));
+    alc_vector_push(out, str);
+    return out;
+  }
+
+  case ALC_AST_KIND_LAMBDA_CAPTURE_FULL: {
+    Alc_Vector(Alc_String) out = alc_vector_reserve(Alc_String, 1);
+    alc_vector_push(out, alc_string_create_from("LAMBDA_CAPTURE_FULL"));
     return out;
   }
 

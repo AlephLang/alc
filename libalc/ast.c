@@ -15,8 +15,6 @@ static const char *func_kind_to_string(Alc_Ast_Function_Kind kind)
   switch (kind) {
   case ALC_AST_FUNCTION_KIND_DEFAULT:
     return "DEFAULT";
-  case ALC_AST_FUNCTION_KIND_EXPLICIT:
-    return "EXPLICIT";
   case ALC_AST_FUNCTION_KIND_EXPORTED:
     return "EXPORTED";
   }

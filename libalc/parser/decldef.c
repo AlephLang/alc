@@ -48,9 +48,6 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
     alc_vector_destroy(names);
 
     return qualifier_ast;
-  } else if (strcmp(p->tokens[p->pos].value, "func") == 0) {
-    p->pos++;
-    return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_EXPLICIT);
   }
 
   Alc_Token *tok2 = peek(p, 1);

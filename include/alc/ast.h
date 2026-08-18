@@ -130,7 +130,6 @@ typedef enum {
 
 typedef enum {
   ALC_AST_FUNCTION_KIND_DEFAULT,
-  ALC_AST_FUNCTION_KIND_EXPLICIT,
   ALC_AST_FUNCTION_KIND_EXPORTED,
 } Alc_Ast_Function_Kind;
 

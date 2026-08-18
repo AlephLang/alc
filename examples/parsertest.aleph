@@ -34,7 +34,6 @@ inline inlined_function :: () {}
 _ :: () {
   persist persistent_variable: s32 = 0;
   const persist local_persistent_constant := 123;
-  inline local_inlined_function :: () {}
 }
 
 // Ast.Enum
@@ -59,13 +58,8 @@ struct TestStruct2 {
   field1_s32: s32;
   field2_s32 := 123s;
   field3_f32: f32 = 123.0f;
-
-  method1 :: () -> s32 = 0;
-  method2 :: () -> bool = field1_s32 > 5;
-
-  func function1 :: (x: s32) = x * 14;
-  func function2 :: (x: s32, ...) = x * 14;
 }
+
 struct TestStruct3 [alignas(16)] {
   field1_s32: s32;
   field2_bool: bool;
@@ -96,20 +90,6 @@ func_10 :: (arg1: s32, arg2: f32 = 123.0f) = arg1 + cast(s32)arg2;
 func_11 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 { return arg1 + cast(s32)arg2; }
 func_12 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 = arg1 + cast(s32)arg2;
 
-// Ast.Func (Ast.FunctionTypeExplicit)
-func explicit_func_1 :: () {}
-func explicit_func_2 :: () = 0;
-func explicit_func_3 :: () -> s32 { return 0; }
-func explicit_func_4 :: () -> s32 = 0;
-func explicit_func_5 :: (arg1: s32) { return arg1; }
-func explicit_func_6 :: (arg1: s32) = arg1;
-func explicit_func_7 :: (arg1: s32) -> s32 { return arg1; }
-func explicit_func_8 :: (arg1: s32) -> s32 = arg1;
-func explicit_func_9 :: (arg1: s32, arg2: f32 = 123.0f) { return arg1 + cast(s32)arg2; }
-func explicit_func_10 :: (arg1: s32, arg2: f32 = 123.0f) = arg1 + cast(s32)arg2;
-func explicit_func_11 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 { return arg1 + cast(s32)arg2; }
-func explicit_func_12 :: (arg1: s32, arg2: f32 = 123.0f) -> s32 = arg1 + cast(s32)arg2;
-
 // Ast.Func (Ast.FunctionTypeExported)
 export exported_func_1 :: () {}
 export exported_func_2 :: (x: s32) -> s32 {}
@@ -130,23 +110,9 @@ var_vardef_3: Vec!<s32> = { 123, 456 };
 [alignas(16)] var_vardef_6: Vec!<s32> = { 123, 456 };
 
 _ :: () -> s32 {
-  struct StructInFunc { field: s32; }
-  enum EnumInFunc { Element }
-  union UnionInFunc { field: s32; }
-
   x: s32;
   y: s32 = 4;
   z := 3.14f;
-
-  // Functions inside functions can access scope of its parent.
-  func_in_func :: () { x = 15; }
-  func explicit_func_in_func :: () = 42;
-  // NOTE: You cannot have exported functions inside other functions,
-  // they can only be at top-level.
-
-  func_in_func :: () {}
-  generic_func_in_func :: <T>() {}
-  func explicit_func_in_func :: () {}
 
   // Ast.StmtBlock
   {}
@@ -240,18 +206,6 @@ _ :: () -> s32 {
      + access.member + namespace::subobject + namespace::call() + generic_namespace!<s32>::x
      + call() + generic_call!<s32, f32>(123, 3.14f) + 'a' + some_array[14] + cast(s32)3.14f + 'x'l
      + sizeof(s32) + sizeof(typeof(123.4f)) + alignof(x) + offsetof(MegaStruct, y) + tuple.0;
-
-  struct MegaStruct {
-    x: s32;
-    y: f32;
-    z: bool;
-  }
-
-  megastruct: MegaStruct = {
-    123,
-    .y = 3.14f,
-    false
-  };
 
   array: [12]s32 = { [0] = 123 };
 

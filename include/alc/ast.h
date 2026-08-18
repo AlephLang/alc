@@ -134,11 +134,6 @@ typedef enum {
   ALC_AST_FUNCTION_KIND_EXPORTED,
 } Alc_Ast_Function_Kind;
 
-typedef enum {
-  ALC_AST_STRUCT_KIND_DEFAULT,
-  ALC_AST_STRUCT_KIND_PARTIAL,
-} Alc_Ast_Struct_Kind;
-
 typedef struct __Alc_Ast {
   union {
     struct {
@@ -185,7 +180,6 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast **children;
       usize children_num;
       struct __Alc_Ast *attribute_list;
-      Alc_Ast_Struct_Kind kind;
     } STRUCT;
     struct {
       char *name;
@@ -430,7 +424,6 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast **children;
       usize children_num;
       struct __Alc_Ast *attribute_list;
-      Alc_Ast_Struct_Kind kind;
     } GENERIC_STRUCT;
     struct {
       char *name;

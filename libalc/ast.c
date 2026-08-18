@@ -24,18 +24,6 @@ static const char *func_kind_to_string(Alc_Ast_Function_Kind kind)
   ALC_NOREACH();
 }
 
-static const char *struct_kind_to_string(Alc_Ast_Struct_Kind kind)
-{
-  switch (kind) {
-  case ALC_AST_STRUCT_KIND_DEFAULT:
-    return "DEFAULT";
-  case ALC_AST_STRUCT_KIND_PARTIAL:
-    return "PARTIAL";
-  }
-
-  ALC_NOREACH();
-}
-
 static Alc_Vector(Alc_String)
   build_tree(Alc_String header, Alc_Vector(Alc_Vector(Alc_String)) children_vs_v)
 {
@@ -201,9 +189,7 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     array_to_strings(children_vs_v, ast->STRUCT.children, ast->STRUCT.children_num);
     Alc_String header = alc_string_create_from("STRUCT { name: \"");
     alc_string_append_cstr(&header, ast->STRUCT.name);
-    alc_string_append_cstr(&header, "\", kind: ");
-    alc_string_append_cstr(&header, struct_kind_to_string(ast->STRUCT.kind));
-    alc_string_append_cstr(&header, " }");
+    alc_string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);
   }
 
@@ -965,9 +951,7 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     array_to_strings(children_vs_v, ast->GENERIC_STRUCT.children, ast->GENERIC_STRUCT.children_num);
     Alc_String header = alc_string_create_from("GENERIC_STRUCT { name: \"");
     alc_string_append_cstr(&header, ast->GENERIC_STRUCT.name);
-    alc_string_append_cstr(&header, "\", kind: ");
-    alc_string_append_cstr(&header, struct_kind_to_string(ast->GENERIC_STRUCT.kind));
-    alc_string_append_cstr(&header, " }");
+    alc_string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);
   }
 

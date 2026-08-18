@@ -50,6 +50,8 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
     return qualifier_ast;
   }
 
+  // TODO: rewrite this, it looks awful
+
   Alc_Token *tok2 = peek(p, 1);
   if ALC_UNLIKELY (tok2 == nullptr) {
     p->pos++;

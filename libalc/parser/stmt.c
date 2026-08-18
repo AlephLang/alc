@@ -72,6 +72,11 @@ Alc_Ast *parse_stmt(Alc_Parser *p)
     if (is_qualifier(p->tokens[p->pos].value))
       return parse_decldef(p, nullptr);
 
+    if (p->pos + 2 < p->tokens_num && p->tokens[p->pos + 1].type == ALC_TOKEN_TYPE_EQ &&
+        !p->tokens[p->pos + 1].has_whitespace_after &&
+        p->tokens[p->pos + 2].type == ALC_TOKEN_TYPE_RARROW)
+      return parse_function_alias(p, nullptr);
+
     if (p->pos + 1 < p->tokens_num && p->tokens[p->pos + 1].type == ALC_TOKEN_TYPE_COLON) {
       if (p->pos + 2 < p->tokens_num && p->tokens[p->pos + 2].type == ALC_TOKEN_TYPE_COLON) {
         if ((p->pos + 3 < p->tokens_num && p->tokens[p->pos + 3].type == ALC_TOKEN_TYPE_LPAREN) ||

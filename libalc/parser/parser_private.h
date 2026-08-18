@@ -19,6 +19,7 @@ Alc_Ast *parse_typedef(Alc_Parser *p);
 Alc_Ast *parse_type_raw(Alc_Parser *p);
 Alc_Ast *parse_type(Alc_Parser *p);
 Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function_Kind kind);
+Alc_Ast *parse_function_alias(Alc_Parser *p, Alc_Ast *attribute_list);
 Alc_Ast *parse_extern(Alc_Parser *p);
 Alc_Ast *parse_function_arguments(Alc_Parser *p);
 Alc_Ast *parse_generic_placeholder_type_list(Alc_Parser *p);

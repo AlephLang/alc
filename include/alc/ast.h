@@ -21,6 +21,7 @@
   ALC_AST_KIND_X(ENUM, "enum definition")                                              \
   ALC_AST_KIND_X(ENUM_ELEMENT, "enum element")                                         \
   ALC_AST_KIND_X(FUNC, "function definition")                                          \
+  ALC_AST_KIND_X(FUNC_ALIAS, "function alias")                                         \
   ALC_AST_KIND_X(ARGUMENT_LIST, "argument list")                                       \
   ALC_AST_KIND_X(NAMESPACE, "namespace")                                               \
   ALC_AST_KIND_X(SCOPE, "scope")                                                       \
@@ -205,6 +206,11 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *attribute_list;
       Alc_Ast_Function_Kind kind;
     } FUNC;
+    struct {
+      char *name;
+      char *aliased_function_name;
+      struct __Alc_Ast *attribute_list;
+    } FUNC_ALIAS;
     struct {
       struct __Alc_Ast **arguments;
       usize arguments_num;

@@ -112,6 +112,56 @@ Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function
   }
 }
 
+Alc_Ast *parse_function_alias(Alc_Parser *p, Alc_Ast *attribute_list)
+{
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
+
+  const char *name = p->tokens[p->pos].value;
+  usize pos = p->pos++;
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_EQ);
+  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_RARROW);
+
+  p->pos++;
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RARROW);
+
+  p->pos++;
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
+
+  const char *aliased_function_name = p->tokens[p->pos].value;
+
+  p->pos++;
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_SEMICOLON);
+
+  p->pos++;
+
+  usize name_len = strlen(name) + 1;
+  usize aliased_function_name_len = strlen(aliased_function_name) + 1;
+
+  Alc_Ast *function_alias_ast = alloc_arena_allocate(
+    &ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * (name_len + aliased_function_name_len));
+  function_alias_ast->FUNC_ALIAS.name = (char *)function_alias_ast + sizeof(Alc_Ast);
+  function_alias_ast->FUNC_ALIAS.aliased_function_name =
+    (char *)function_alias_ast->FUNC_ALIAS.name + sizeof(char) * name_len;
+  function_alias_ast->FUNC_ALIAS.attribute_list = attribute_list;
+  function_alias_ast->pos = pos;
+  function_alias_ast->kind = ALC_AST_KIND_FUNC_ALIAS;
+
+  memcpy(function_alias_ast->FUNC_ALIAS.name, name, sizeof(char) * name_len);
+  memcpy(function_alias_ast->FUNC_ALIAS.aliased_function_name, aliased_function_name,
+         sizeof(char) * aliased_function_name_len);
+
+  return function_alias_ast;
+}
+
 Alc_Ast *parse_function_arguments(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);

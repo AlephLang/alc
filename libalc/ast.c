@@ -239,6 +239,18 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(header, children_vs_v);
   }
 
+  case ALC_AST_KIND_FUNC_ALIAS: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    add_to_strings_opt(children_vs_v, ast->FUNC_ALIAS.attribute_list);
+    Alc_String header = alc_string_create_from("FUNC_ALIAS { name: \"");
+    alc_string_append_cstr(&header, ast->FUNC_ALIAS.name);
+    alc_string_append_cstr(&header, "\", aliased_function_name: \"");
+    alc_string_append_cstr(&header, ast->FUNC_ALIAS.aliased_function_name);
+    alc_string_append_cstr(&header, "\" }");
+    return build_tree(header, children_vs_v);
+  }
+
   case ALC_AST_KIND_ARGUMENT_LIST: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = safe_reserve(Alc_Vector(Alc_String), ast->ARGUMENT_LIST.arguments_num);

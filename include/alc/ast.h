@@ -21,6 +21,7 @@
   ALC_AST_KIND_X(ENUM, "enum definition")                                              \
   ALC_AST_KIND_X(ENUM_ELEMENT, "enum element")                                         \
   ALC_AST_KIND_X(FUNC, "function definition")                                          \
+  ALC_AST_KIND_X(FUNC_ALIAS, "function alias")                                         \
   ALC_AST_KIND_X(ARGUMENT_LIST, "argument list")                                       \
   ALC_AST_KIND_X(NAMESPACE, "namespace")                                               \
   ALC_AST_KIND_X(SCOPE, "scope")                                                       \
@@ -130,14 +131,8 @@ typedef enum {
 
 typedef enum {
   ALC_AST_FUNCTION_KIND_DEFAULT,
-  ALC_AST_FUNCTION_KIND_EXPLICIT,
   ALC_AST_FUNCTION_KIND_EXPORTED,
 } Alc_Ast_Function_Kind;
-
-typedef enum {
-  ALC_AST_STRUCT_KIND_DEFAULT,
-  ALC_AST_STRUCT_KIND_PARTIAL,
-} Alc_Ast_Struct_Kind;
 
 typedef struct __Alc_Ast {
   union {
@@ -185,7 +180,6 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast **children;
       usize children_num;
       struct __Alc_Ast *attribute_list;
-      Alc_Ast_Struct_Kind kind;
     } STRUCT;
     struct {
       char *name;
@@ -212,6 +206,11 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *attribute_list;
       Alc_Ast_Function_Kind kind;
     } FUNC;
+    struct {
+      char *name;
+      char *aliased_function_name;
+      struct __Alc_Ast *attribute_list;
+    } FUNC_ALIAS;
     struct {
       struct __Alc_Ast **arguments;
       usize arguments_num;
@@ -430,7 +429,6 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast **children;
       usize children_num;
       struct __Alc_Ast *attribute_list;
-      Alc_Ast_Struct_Kind kind;
     } GENERIC_STRUCT;
     struct {
       char *name;

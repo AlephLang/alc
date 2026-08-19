@@ -48,16 +48,21 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
     alc_vector_destroy(names);
 
     return qualifier_ast;
-  } else if (strcmp(p->tokens[p->pos].value, "func") == 0) {
-    p->pos++;
-    return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_EXPLICIT);
   }
+
+  // TODO: rewrite this, it looks awful
 
   Alc_Token *tok2 = peek(p, 1);
   if ALC_UNLIKELY (tok2 == nullptr) {
     p->pos++;
     add_error_unexpected_eof(p, p->pos);
     return nullptr;
+  }
+
+  if (tok2->type == ALC_TOKEN_TYPE_EQ && !tok2->has_whitespace_after) {
+    Alc_Token *tok3 = peek(p, 2);
+    if (tok3 != nullptr && tok3->type == ALC_TOKEN_TYPE_RARROW)
+      return parse_function_alias(p, attribute_list);
   }
 
   if ALC_UNLIKELY (tok2->type != ALC_TOKEN_TYPE_COLON) {

@@ -6,7 +6,7 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
+Alc_Ast *parse_struct(Alc_Parser *p)
 {
   p->pos++;
 
@@ -85,7 +85,6 @@ Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
     generic_struct_ast->GENERIC_STRUCT.attribute_list = attribute_list;
     generic_struct_ast->GENERIC_STRUCT.children =
       alc_vector_to_array(children, &generic_struct_ast->GENERIC_STRUCT.children_num);
-    generic_struct_ast->GENERIC_STRUCT.kind = kind;
     generic_struct_ast->pos = pos;
     generic_struct_ast->kind = ALC_AST_KIND_GENERIC_STRUCT;
     memcpy(generic_struct_ast->GENERIC_STRUCT.name, name, name_len);
@@ -97,24 +96,10 @@ Alc_Ast *parse_struct(Alc_Parser *p, Alc_Ast_Struct_Kind kind)
     struct_ast->STRUCT.name = (char *)struct_ast + sizeof(Alc_Ast);
     struct_ast->STRUCT.attribute_list = attribute_list;
     struct_ast->STRUCT.children = alc_vector_to_array(children, &struct_ast->STRUCT.children_num);
-    struct_ast->STRUCT.kind = kind;
     struct_ast->pos = pos;
     struct_ast->kind = ALC_AST_KIND_STRUCT;
     memcpy(struct_ast->STRUCT.name, name, name_len);
     alc_vector_destroy(children);
     return struct_ast;
   }
-}
-
-Alc_Ast *parse_partial_struct(Alc_Parser *p)
-{
-  ALC_ASSUME(p != nullptr);
-
-  p->pos++;
-
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
-  _VERIFY_VALUE(p, p->pos, "struct");
-
-  return parse_struct(p, ALC_AST_STRUCT_KIND_PARTIAL);
 }

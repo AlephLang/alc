@@ -15,22 +15,8 @@ static const char *func_kind_to_string(Alc_Ast_Function_Kind kind)
   switch (kind) {
   case ALC_AST_FUNCTION_KIND_DEFAULT:
     return "DEFAULT";
-  case ALC_AST_FUNCTION_KIND_EXPLICIT:
-    return "EXPLICIT";
   case ALC_AST_FUNCTION_KIND_EXPORTED:
     return "EXPORTED";
-  }
-
-  ALC_NOREACH();
-}
-
-static const char *struct_kind_to_string(Alc_Ast_Struct_Kind kind)
-{
-  switch (kind) {
-  case ALC_AST_STRUCT_KIND_DEFAULT:
-    return "DEFAULT";
-  case ALC_AST_STRUCT_KIND_PARTIAL:
-    return "PARTIAL";
   }
 
   ALC_NOREACH();
@@ -201,9 +187,7 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     array_to_strings(children_vs_v, ast->STRUCT.children, ast->STRUCT.children_num);
     Alc_String header = alc_string_create_from("STRUCT { name: \"");
     alc_string_append_cstr(&header, ast->STRUCT.name);
-    alc_string_append_cstr(&header, "\", kind: ");
-    alc_string_append_cstr(&header, struct_kind_to_string(ast->STRUCT.kind));
-    alc_string_append_cstr(&header, " }");
+    alc_string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);
   }
 
@@ -252,6 +236,18 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     alc_string_append_cstr(&header, "\", kind: ");
     alc_string_append_cstr(&header, func_kind_to_string(ast->FUNC.kind));
     alc_string_append_cstr(&header, " }");
+    return build_tree(header, children_vs_v);
+  }
+
+  case ALC_AST_KIND_FUNC_ALIAS: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    add_to_strings_opt(children_vs_v, ast->FUNC_ALIAS.attribute_list);
+    Alc_String header = alc_string_create_from("FUNC_ALIAS { name: \"");
+    alc_string_append_cstr(&header, ast->FUNC_ALIAS.name);
+    alc_string_append_cstr(&header, "\", aliased_function_name: \"");
+    alc_string_append_cstr(&header, ast->FUNC_ALIAS.aliased_function_name);
+    alc_string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);
   }
 
@@ -965,9 +961,7 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     array_to_strings(children_vs_v, ast->GENERIC_STRUCT.children, ast->GENERIC_STRUCT.children_num);
     Alc_String header = alc_string_create_from("GENERIC_STRUCT { name: \"");
     alc_string_append_cstr(&header, ast->GENERIC_STRUCT.name);
-    alc_string_append_cstr(&header, "\", kind: ");
-    alc_string_append_cstr(&header, struct_kind_to_string(ast->GENERIC_STRUCT.kind));
-    alc_string_append_cstr(&header, " }");
+    alc_string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);
   }
 

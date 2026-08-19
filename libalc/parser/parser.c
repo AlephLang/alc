@@ -60,9 +60,7 @@ Alc_Ast *parse_ids(Alc_Parser *p)
   ALC_ASSUME(p != nullptr);
 
   if (strcmp(p->tokens[p->pos].value, "struct") == 0)
-    return parse_struct(p, ALC_AST_STRUCT_KIND_DEFAULT);
-  else if (strcmp(p->tokens[p->pos].value, "partial") == 0)
-    return parse_partial_struct(p);
+    return parse_struct(p);
   else if (strcmp(p->tokens[p->pos].value, "enum") == 0)
     return parse_enum(p);
   else if (strcmp(p->tokens[p->pos].value, "union") == 0)

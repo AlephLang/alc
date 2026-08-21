@@ -110,8 +110,8 @@ void alc_string_append_char(Alc_String *dst, char c)
 
   char *new_data = malloc(sizeof(char) * (dst->len + 2));
   memcpy(new_data, dst->c_str, dst->len);
-  new_data[dst->len - 1] = 0;
-  new_data[dst->len - 2] = c;
+  new_data[dst->len + 1] = 0;
+  new_data[dst->len] = c;
 
   free(dst->c_str);
   dst->c_str = new_data;

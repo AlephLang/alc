@@ -58,7 +58,6 @@ void *__alc_vector_push_impl(void *vec, const void *item)
 void __alc_vector_pop_impl(void *vec, void *out_item)
 {
   ALC_ASSUME(vec != nullptr);
-  ALC_ASSUME(out_item != nullptr);
 
   __header_t *h = get_header(vec);
   ALC_ASSERT(h->length > 0);

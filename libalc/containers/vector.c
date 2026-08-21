@@ -61,7 +61,7 @@ void __alc_vector_pop_impl(void *vec, void *out_item)
   ALC_ASSUME(out_item != nullptr);
 
   __header_t *h = get_header(vec);
-  ALC_ASSUME(h->length > 0);
+  ALC_ASSERT(h->length > 0);
 
   h->length--;
   void *addr = (void *)vec + (h->length * h->stride);

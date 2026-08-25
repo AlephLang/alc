@@ -166,10 +166,8 @@ void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn, vo
     Alc_Control control = ht->control_block[i];
     if (control != CONTROL_EMPTY) {
       void *slot = get_slot(ht->value_block, ht->stride, i);
-      if (ht->is_pointer) {
+      if (ht->is_pointer)
         slot = *(void **)slot;
-        printf(">>>> SLOT: %p\n", slot);
-      }
       foreach_fn(i, slot, user_data);
     }
   }

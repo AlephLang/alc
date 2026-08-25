@@ -149,6 +149,11 @@ void *alc_hashtable_get(Alc_Hashtable_Base *ht, const char *key)
   return nullptr;
 }
 
+b8 alc_hashtable_is_empty(Alc_Hashtable_Base *ht)
+{
+  return ht->occupied == 0;
+}
+
 void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn, void *user_data)
 {
   ALC_ASSUME(ht != nullptr);
@@ -159,8 +164,14 @@ void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn, vo
 
   for (usize i = 0; i < ht->capacity; i++) {
     Alc_Control control = ht->control_block[i];
-    if (control != CONTROL_EMPTY)
-      foreach_fn(i, get_slot(ht->value_block, ht->stride, i), user_data);
+    if (control != CONTROL_EMPTY) {
+      void *slot = get_slot(ht->value_block, ht->stride, i);
+      if (ht->is_pointer) {
+        slot = *(void **)slot;
+        printf(">>>> SLOT: %p\n", slot);
+      }
+      foreach_fn(i, slot, user_data);
+    }
   }
 }
 

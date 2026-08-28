@@ -1,20 +1,18 @@
+#include <alc/filesystem.h>
+#include <alc/program.h>
 #include <alc/vector.h>
 #include <alc/defs.h>
 #include <alc/ast.h>
 #include <alc/parser.h>
 #include <alc/token.h>
 #include <alc/lexer.h>
+#include <assert.h>
 #include <stdio.h>
 #include <alc/alc.h>
-#include <stdlib.h>
+#include <alc/sourcefile.h>
+#include <alc/module.h>
 #include "error_handler.h"
-
-enum {
-  EXIT_FLAG_SUCCESS = 0,
-  EXIT_FLAG_FAILED_TO_OPEN = (1 << 0),
-  EXIT_FLAG_FAILED_TO_TOKENIZE = (1 << 1),
-  EXIT_FLAG_FAILED_TO_PARSE = (1 << 2),
-};
+#include <string.h>
 
 s32 main(s32 argc, char **argv)
 {
@@ -23,72 +21,51 @@ s32 main(s32 argc, char **argv)
     return -1;
   }
 
-  if ALC_UNLIKELY (argc < 2) {
-    ALC_TODO("Print usage");
-    return -2;
+  char *path;
+  if (argc >= 2) {
+    path = argv[1]; // TODO: make it more robust
+
+    if ALC_UNLIKELY (!alc_filesystem_directory_exists(path)) {
+      Alc_Error e = { .kind = ALC_ERROR_KIND_DIRECTORY };
+      memcpy(e.DIRECTORY.path, path,
+             sizeof(char) * ALC_MIN(sizeof(e.DIRECTORY.path), strlen(path) + 1));
+      handle_error(&e);
+      alc_shutdown();
+      return -2;
+    }
+  } else {
+    path = nullptr;
   }
 
-  s32 result = 0;
+  Alc_Program *program_context = alc_program_create(path);
 
-  for (s32 i = 1; i < argc; i++) {
-    const char *file_name = argv[i];
-    FILE *f = fopen(file_name, "r");
-    if ALC_UNLIKELY (f == nullptr) {
-      ALC_TODO("Report failed to open file.");
-      result |= EXIT_FLAG_FAILED_TO_OPEN;
-      continue;
-    }
+  printf("program relative path: %s\n", program_context->path);
+  printf("program absolute path: %s\n", program_context->absolute_path);
 
-    fseek(f, 0, SEEK_END);
-    s32 size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    if (size == 0)
-      continue;
+  if ALC_UNLIKELY (!alc_program_build_module_tree(program_context)) {
+    Alc_Vector(Alc_Error) module_errors = alc_program_get_errors(program_context);
+    for (usize i = 0, module_errors_len = alc_vector_get_length(module_errors);
+         i < module_errors_len; i++)
+      handle_error(&module_errors[i]);
 
-    char *data = malloc(sizeof(char) * (size + 1));
-    fread(data, sizeof(char), size, f);
-    data[size] = 0;
-    fclose(f);
-
-    Error_Handler error_handler = error_handler_create(file_name, data);
-
-    Alc_Lexer lexer = alc_lexer_create(data);
-    Alc_Token *tokens = nullptr;
-    usize n_tokens;
-    if ALC_UNLIKELY (!alc_lexer_tokenize(&lexer, &tokens, &n_tokens)) {
-      error_handler_handle_lexer_errors(&error_handler, tokens, n_tokens);
-      result |= EXIT_FLAG_FAILED_TO_TOKENIZE;
-      continue;
-    }
-
-    for (usize i = 0; i < n_tokens; i++) {
-      char buf[1024] = { 0 };
-      alc_token_to_string(&tokens[i], buf, 1024);
-      printf("(%zu) %s\n", i, buf);
-    }
-
-    error_handler_set_tokens(&error_handler, tokens, n_tokens);
-
-    Alc_Parser *parser = alc_parser_create(tokens, n_tokens);
-    Alc_Ast *root = alc_parser_parse(parser);
-    alc_ast_print(root);
-
-    Alc_Vector(Alc_Parser_Error) parser_errors = alc_parser_get_errors(parser);
-    if ALC_UNLIKELY (alc_vector_get_length(parser_errors) > 0) {
-      error_handler_handle_parser_errors(&error_handler, parser_errors);
-
-      result |= EXIT_FLAG_FAILED_TO_PARSE;
-      alc_parser_destroy(parser);
-      continue;
-    }
-
-    alc_parser_destroy(parser);
-
-    error_handler_destroy(&error_handler);
-
-    free(data);
+    alc_program_destroy(program_context);
+    alc_shutdown();
+    return -3;
   }
+
+  if ALC_UNLIKELY (!alc_program_parse_modules(program_context)) {
+    Alc_Vector(Alc_Error) parse_errors = alc_program_get_errors(program_context);
+    for (usize i = 0, parse_errors_len = alc_vector_get_length(parse_errors); i < parse_errors_len;
+         i++)
+      handle_error(&parse_errors[i]);
+
+    alc_program_destroy(program_context);
+    alc_shutdown();
+    return -4;
+  }
+
+  alc_program_destroy(program_context);
 
   alc_shutdown();
-  return result;
+  return 0;
 }

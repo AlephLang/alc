@@ -1,0 +1,3 @@
+submodule_function :: (x: s32) -> s32 {
+  return 1 << x;
+}

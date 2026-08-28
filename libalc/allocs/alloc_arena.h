@@ -4,9 +4,6 @@
 #include "alc/defs.h"
 #include "alc/vector.h"
 
-// NOTE: To debug arena, uncomment this define:
-// #define _DEBUG_ARENA_ALLOC
-
 typedef struct {
   void *memory;
   uptr cursor;
@@ -16,9 +13,6 @@ typedef struct {
 typedef struct {
   Alc_Vector(Alloc_Arena_Block) blocks;
   usize blocks_num;
-#ifdef _DEBUG_ARENA_ALLOC
-  usize allocations;
-#endif
 } Alloc_Arena;
 
 Alloc_Arena alloc_arena_create(void);
@@ -31,9 +25,5 @@ static inline void *alloc_arena_allocate(Alloc_Arena *alloc, usize size)
 }
 
 void alloc_arena_drop(Alloc_Arena *alloc);
-
-#ifdef _DEBUG_ARENA_ALLOC
-void alloc_arena_print_blocks(const Alloc_Arena *alloc, b8 show_content);
-#endif
 
 #endif // __ALC_ALLOC_ARENA_H__

@@ -3,7 +3,7 @@ project('alc', 'c')
 cc = meson.get_compiler('c')
 
 flags = [
-  '-std=c99', '-Wall', '-Wextra', '-Werror=all', '-fvisibility=hidden',
+  '-std=c11', '-Wall', '-Wextra', '-Werror=all', '-fvisibility=hidden',
 ]
 
 libalc_src = []
@@ -24,7 +24,7 @@ system = host_machine.system()
 if system == 'windows'
   flags += '-D_CRT_SECURE_NO_WARNINGS'
   libalc_name = 'libalc'
-elif system == 'linux'
+else
   libalc_deps += cc.find_library('m')
 endif
 

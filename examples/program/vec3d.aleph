@@ -1,0 +1,11 @@
+struct Vec3D {
+  x: f32;
+  y: f32;
+  z: f32;
+
+  length => vec3d_get_length;
+}
+
+vec3d_get_length :: (self: *Vec3D) -> f32 {
+  return math::sqrt(self.x * self.x + self.y * self.y + self.z * self.z);
+}

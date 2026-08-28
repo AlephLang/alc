@@ -1,277 +1,504 @@
 #include "error_handler.h"
-#include <alc/vector.h>
-#include <alc/ast.h>
-#include <alc/parser.h>
+#include "alc/defs.h"
+#include "alc/parser.h"
+#include "alc/sourcefile.h"
+#include "alc/token.h"
 #include "ansi.h"
-#include <alc/token.h>
-#include <alc/defs.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-static char s_buf[4096] = { 0 };
-static inline void clear_s_buf(void)
-{
-  memset(s_buf, 0, sizeof(s_buf));
-}
+#define ALC_COMPILER_NAME "alc"
 
-static inline Source_Line *src_to_source_lines(const char *src,
-                                               usize *out_n); // Return value must be freed
-static inline usize number_size(usize a);
+typedef struct {
+  const char *src;
+  Alc_Token *tokens;
+  usize tokens_len;
+} Highlight_Data;
+
+static void error_directory(Alc_Error *error);
+static void error_file(Alc_Error *error);
+static void error_lexer(Alc_Error *error);
+static void error_parser(Alc_Error *error);
+
+static void internal_message(char *buf, usize n, const char *message, const char *text,
+                             Ansi_Mode ansi_mode);
+static void file_message(char *buf, usize n, const char *file_path, const char *message,
+                         const char *text, Ansi_Mode ansi_mode);
+static void highlight_token(char *dst, usize n, Highlight_Data *data, usize index,
+                            Ansi_Mode ansi_mode, const char *message);
+static void highlight_token_span(char *dst, usize n, Highlight_Data *data, usize index, usize len,
+                                 Ansi_Mode ansi_mode, const char *message);
+static void highlight_eof(char *dst, usize n, const char *src, Ansi_Mode ansi_mode,
+                          const char *message);
 static const char *token_to_string(Alc_Token *token);
 static const char *token_type_to_string(Alc_Token_Type type);
-static void insert_at(char *dst, const char *src, usize pos);
-static void get_message_start(char *dst, usize n, const char *filename, usize line, usize start,
-                              const char *message, Ansi_Mode ansi_mode);
-static void highlight_token(Error_Handler *handler, char *dst, usize n, usize token_index,
-                            Ansi_Mode ansi_mode, const char *message_after);
-static void highlight_token_range(Error_Handler *handler, char *dst, usize n, usize start_index,
-                                  usize end_index, Ansi_Mode ansi_mode, const char *message_after);
-static void highlight_token_by_pointer(Error_Handler *handler, char *dst, usize n, Alc_Token *token,
-                                       Ansi_Mode ansi_mode, const char *message_after);
-static void highlight_after_token(Error_Handler *handler, char *dst, usize n, usize token_index,
-                                  Ansi_Mode ansi_mode, const char *message_after);
 
-Error_Handler error_handler_create(const char *filename, const char *src)
+void handle_error(Alc_Error *error)
 {
-  ALC_ASSUME(filename != nullptr);
-  ALC_ASSUME(src != nullptr);
+  switch (error->kind) {
+  case ALC_ERROR_KIND_DIRECTORY: {
+    error_directory(error);
+  } break;
 
-  Error_Handler handler = { 0 };
-  handler.filename = filename;
-  handler.source_lines = src_to_source_lines(src, &handler.source_lines_num);
-  handler.lnoffset = number_size(handler.source_lines_num);
+  case ALC_ERROR_KIND_FILE: {
+    error_file(error);
+  } break;
 
-  clear_s_buf();
+  case ALC_ERROR_KIND_LEXER: {
+    error_lexer(error);
+  } break;
 
-  return handler;
-}
-
-void error_handler_destroy(Error_Handler *handler)
-{
-  ALC_ASSUME(handler != nullptr);
-
-  if (handler->source_lines != nullptr)
-    free(handler->source_lines);
-
-  handler->source_lines = nullptr;
-  handler->source_lines_num = 0;
-}
-
-void error_handler_set_tokens(Error_Handler *handler, Alc_Token *tokens, usize tokens_num)
-{
-  ALC_ASSUME(handler != nullptr);
-
-  handler->tokens = tokens;
-  handler->tokens_num = tokens_num;
-}
-
-void error_handler_handle_lexer_errors(Error_Handler *handler, Alc_Token *invalid_tokens,
-                                       usize invalid_tokens_num)
-{
-  ALC_ASSUME(handler != nullptr);
-  ALC_ASSUME(invalid_tokens != nullptr);
-  ALC_ASSUME(invalid_tokens_num > 0);
-
-  for (usize i = 0; i < invalid_tokens_num; i++) {
-    Alc_Token *token = &invalid_tokens[i];
-
-    char message_start[4096] = { 0 };
-    get_message_start(message_start, 4096, handler->filename, token->line, token->pos, "error",
-                      ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD);
-
-    char message[4096] = { 0 };
-    snprintf(message, 4096, "unrecognized token '%s%s%s'", ansi_graphics(ANSI_GRAPHICS_BOLD),
-             token->value, ansi_reset());
-
-    char token_line[4096] = { 0 };
-    highlight_token_by_pointer(handler, token_line, 4096, token,
-                               ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD, "");
-
-    printf("%s%s\n%s", message_start, message, token_line);
+  case ALC_ERROR_KIND_PARSER: {
+    error_parser(error);
+  } break;
   }
 }
 
-void error_handler_handle_parser_errors(Error_Handler *handler, Alc_Vector(Alc_Parser_Error) errors)
+static void error_directory(Alc_Error *error)
 {
-  ALC_ASSUME(handler != nullptr);
-  ALC_ASSUME(errors != nullptr);
+  const char *path = error->DIRECTORY.path;
+#define _REQUIRED_SIZE (sizeof(error->DIRECTORY.path) + 64)
 
-  usize errors_num = alc_vector_get_length(errors);
-  for (usize i = 0; i < errors_num; i++) {
-    Alc_Parser_Error *error = &errors[i];
+  char text[_REQUIRED_SIZE];
+  snprintf(text, _REQUIRED_SIZE, "%s: Failed to open directory", path);
 
-    char message_start[4096] = { 0 };
-    switch (error->type) {
+  char error_message[_REQUIRED_SIZE];
+  internal_message(error_message, _REQUIRED_SIZE, "error", text,
+                   ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
+
+  fprintf(stderr, "%s\n", error_message);
+
+#undef _REQUIRED_SIZE
+}
+
+static void error_file(Alc_Error *error)
+{
+  const char *path = error->FILE.path;
+#define _REQUIRED_SIZE (sizeof(error->FILE.path) + 64)
+
+  char text[_REQUIRED_SIZE];
+  snprintf(text, _REQUIRED_SIZE, "%s: Failed to open file", path);
+
+  char error_message[_REQUIRED_SIZE];
+  internal_message(error_message, _REQUIRED_SIZE, "error", text,
+                   ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
+
+  fprintf(stderr, "%s\n", error_message);
+
+#undef _REQUIRED_SIZE
+}
+
+static void error_lexer(Alc_Error *error)
+{
+  for (usize i = 0; i < error->LEXER.error_tokens_num; i++) {
+    Alc_Token *error_token = &error->LEXER.error_tokens[i];
+
+    char file_path[MAX_PATH_SIZE];
+    alc_source_file_get_path(error->LEXER.sourcefile, file_path, MAX_PATH_SIZE);
+
+    char message_text[512];
+    snprintf(message_text, 512, "unrecognized token '%s%s%s'", ansi_graphics(ANSI_GRAPHICS_BOLD),
+             error_token->value, ansi_reset());
+
+    char message[512];
+    file_message(message, 512, file_path, "error", message_text,
+                 ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
+
+    char hl[4096];
+    Highlight_Data data = {
+      .src = error->LEXER.sourcefile->data,
+      .tokens = error->LEXER.error_tokens,
+      .tokens_len = error->LEXER.error_tokens_num,
+    };
+    highlight_token(hl, 4096, &data, i, ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED, "");
+
+    fprintf(stderr, "%s\n%s\n", message, hl);
+  }
+}
+
+static void error_parser(Alc_Error *error)
+{
+  // FIXME: There's a ton of copypasta, need to shrink it down.
+
+  for (usize i = 0; i < error->PARSER.parser_errors_num; i++) {
+    Alc_Parser_Error *parser_error = &error->PARSER.parser_errors[i];
+
+    char file_path[MAX_PATH_SIZE];
+    alc_source_file_get_path(error->PARSER.sourcefile, file_path, MAX_PATH_SIZE);
+
+    char message_text[512];
+
+    switch (parser_error->type) {
     case ALC_PARSER_ERROR_TYPE_UNEXPECTED_EOF: {
-      get_message_start(message_start, 4096, handler->filename, handler->source_lines_num,
-                        handler->tokens[handler->tokens_num - 1].pos +
-                          handler->tokens[handler->tokens_num - 1].len,
-                        "error", ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD);
-    } break;
+      char message[512];
+      file_message(message, 512, file_path, "error", "unexpected eof",
+                   ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
 
-    case ALC_PARSER_ERROR_TYPE_UNEXPECTED_TOKEN:
-    case ALC_PARSER_ERROR_TYPE_UNEXPECTED_VALUE:
-    case ALC_PARSER_ERROR_TYPE_UNEXPECTED_WHITESPACE:
-    case ALC_PARSER_ERROR_TYPE_ASSIGN_OPERATOR_IN_NON_TOPLEVEL_EXPRESSION:
-    case ALC_PARSER_ERROR_TYPE_TWO_ASSIGN_OPERATORS_IN_EXPRESSION: {
-      get_message_start(message_start, 4096, handler->filename, handler->tokens[error->pos].line,
-                        handler->tokens[error->pos].pos, "error",
-                        ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD);
-    } break;
-    }
+      char hl[4096];
+      highlight_eof(hl, 4096, error->PARSER.sourcefile->data, ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED,
+                    "");
 
-    char reason[4096] = { 0 };
-    switch (error->type) {
-    case ALC_PARSER_ERROR_TYPE_UNEXPECTED_EOF: {
-      snprintf(reason, 4096, "unexpected end of file");
+      fprintf(stderr, "%s\n%s\n", message, hl);
     } break;
 
     case ALC_PARSER_ERROR_TYPE_UNEXPECTED_TOKEN: {
-      snprintf(reason, 4096, "unexpected token '%s%s%s'", ansi_graphics(ANSI_GRAPHICS_BOLD),
-               token_to_string(&handler->tokens[error->pos]), ansi_reset());
-    } break;
+      Alc_Token *token = &error->PARSER.tokens[parser_error->pos];
+      snprintf(message_text, 512, "unexpected token '%s%s%s'", ansi_graphics(ANSI_GRAPHICS_BOLD),
+               token_to_string(token), ansi_reset());
 
-    case ALC_PARSER_ERROR_TYPE_UNEXPECTED_VALUE: {
-      snprintf(reason, 4096, "unexpected value '%s%s%s'", ansi_graphics(ANSI_GRAPHICS_BOLD),
-               handler->tokens[error->pos].value, ansi_reset());
-    } break;
+      char message[512];
+      file_message(message, 512, file_path, "error", message_text,
+                   ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
 
-    case ALC_PARSER_ERROR_TYPE_UNEXPECTED_WHITESPACE: {
-      snprintf(reason, 4096, "unexpected whitespace after '%s%s%s'",
-               ansi_graphics(ANSI_GRAPHICS_BOLD), token_to_string(&handler->tokens[error->pos]),
-               ansi_reset());
-    } break;
+      char hl[4096];
+      Highlight_Data data = {
+        .src = error->PARSER.sourcefile->data,
+        .tokens = error->PARSER.tokens,
+        .tokens_len = error->PARSER.tokens_num,
+      };
 
-    case ALC_PARSER_ERROR_TYPE_ASSIGN_OPERATOR_IN_NON_TOPLEVEL_EXPRESSION: {
-      snprintf(reason, 4096, "assign operator in non-toplevel expression");
-    } break;
-
-    case ALC_PARSER_ERROR_TYPE_TWO_ASSIGN_OPERATORS_IN_EXPRESSION: {
-      snprintf(reason, 4096, "two assign operators in one expression");
-    } break;
-    }
-
-    char highlight[4096] = { 0 };
-    switch (error->type) {
-    case ALC_PARSER_ERROR_TYPE_UNEXPECTED_EOF: {
-      highlight_after_token(handler, highlight, 4096, handler->tokens_num - 1,
-                            ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD, "");
-    } break;
-
-    case ALC_PARSER_ERROR_TYPE_UNEXPECTED_TOKEN: {
-      char msg_after[2048] = { 0 };
-      char *p_msg_after = msg_after;
-      usize written = 0;
-      for (usize j = 0; j < error->UNEXPECTED_TOKEN.expected_token_types_num && written < 2048;
+      char expected[512];
+      char *ep = expected;
+      for (usize k = 512, j = 0; j < parser_error->UNEXPECTED_TOKEN.expected_token_types_num && k;
            j++) {
-        const char *fmt = j > 0 ? ", %s" : " %s";
-        written += snprintf(p_msg_after, 2048 - written, fmt,
-                            token_type_to_string(error->UNEXPECTED_TOKEN.expected_token_types[j]));
-        p_msg_after = msg_after + strlen(msg_after);
+        usize written =
+          snprintf(ep, k, j > 0 ? ", %s" : " %s",
+                   token_type_to_string(parser_error->UNEXPECTED_TOKEN.expected_token_types[j]));
+        ep += written;
+        k -= written;
       }
 
-      if (error->len == 1)
-        highlight_token(handler, highlight, 4096, error->pos, ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD,
-                        msg_after);
-      else
-        highlight_token_range(handler, highlight, 4096, error->pos, error->pos + error->len - 1,
-                              ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD, msg_after);
+      highlight_token_span(hl, 4096, &data, parser_error->pos, parser_error->len,
+                           ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED, expected);
+
+      fprintf(stderr, "%s\n%s\n", message, hl);
     } break;
 
     case ALC_PARSER_ERROR_TYPE_UNEXPECTED_VALUE: {
-      char msg_after[2048] = { 0 };
-      char *p_msg_after = msg_after;
-      usize written = 0;
-      for (usize j = 0; j < error->UNEXPECTED_VALUE.expected_values_num && written < 2048; j++) {
-        const char *fmt = j > 0 ? ", \"%s\"" : " \"%s\"";
-        written +=
-          snprintf(p_msg_after, 2048 - written, fmt, error->UNEXPECTED_VALUE.expected_values[j]);
-        p_msg_after = msg_after + strlen(msg_after);
+      Alc_Token *token = &error->PARSER.tokens[parser_error->pos];
+      snprintf(message_text, 512, "unexpected value '%s%s%s'", ansi_graphics(ANSI_GRAPHICS_BOLD),
+               token->value, ansi_reset());
+
+      char message[512];
+      file_message(message, 512, file_path, "error", message_text,
+                   ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
+
+      char hl[4096];
+      Highlight_Data data = {
+        .src = error->PARSER.sourcefile->data,
+        .tokens = error->PARSER.tokens,
+        .tokens_len = error->PARSER.tokens_num,
+      };
+
+      char expected[512];
+      char *ep = expected;
+      for (usize k = 512, j = 0; j < parser_error->UNEXPECTED_VALUE.expected_values_num && k; j++) {
+        usize written = snprintf(ep, k, j > 0 ? ", %s" : " %s",
+                                 parser_error->UNEXPECTED_VALUE.expected_values[j]);
+        ep += written;
+        k -= written;
       }
 
-      highlight_token_range(handler, highlight, 4096, error->pos, error->pos + error->len - 1,
-                            ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD, msg_after);
+      highlight_token_span(hl, 4096, &data, parser_error->pos, parser_error->len,
+                           ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED, expected);
+
+      fprintf(stderr, "%s\n%s\n", message, hl);
     } break;
 
     case ALC_PARSER_ERROR_TYPE_UNEXPECTED_WHITESPACE: {
-      char msg_after[2048] = { 0 };
-      if (error->UNEXPECTED_WHITESPACE.expected_token_type != ALC_TOKEN_TYPE_ERROR)
-        snprintf(msg_after, 2048, " %s",
-                 token_type_to_string(error->UNEXPECTED_WHITESPACE.expected_token_type));
+      Alc_Token *token = &error->PARSER.tokens[parser_error->pos];
 
-      highlight_after_token(handler, highlight, 4096, error->pos,
-                            ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD, msg_after);
+      const char *expected_token =
+        token_type_to_string(parser_error->UNEXPECTED_WHITESPACE.expected_token_type);
+
+      snprintf(message_text, 512,
+               "unexpected whitespace after '%s%s%s', '%s%s%s' was expected after",
+               ansi_graphics(ANSI_GRAPHICS_BOLD), token_to_string(token), ansi_reset(),
+               ansi_graphics(ANSI_GRAPHICS_BOLD), expected_token, ansi_reset());
+
+      char message[512];
+      file_message(message, 512, file_path, "error", message_text,
+                   ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
+
+      char hl[4096];
+      Highlight_Data data = {
+        .src = error->PARSER.sourcefile->data,
+        .tokens = error->PARSER.tokens,
+        .tokens_len = error->PARSER.tokens_num,
+      };
+
+      char expected[512];
+      snprintf(expected, 512, " %s expected after", expected_token);
+
+      highlight_token_span(hl, 4096, &data, parser_error->pos, parser_error->len,
+                           ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED, expected);
+
+      fprintf(stderr, "%s\n%s\n", message, hl);
     } break;
 
     case ALC_PARSER_ERROR_TYPE_ASSIGN_OPERATOR_IN_NON_TOPLEVEL_EXPRESSION: {
-      highlight_token_range(handler, highlight, 4096, error->pos, error->pos + error->len - 1,
-                            ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD, "");
+      char operator[256], *op = operator;
+      usize k = 256;
+      for (usize j = 0; j < parser_error->len && k; j++) {
+        usize written =
+          snprintf(op, k, "%s", token_to_string(&error->PARSER.tokens[parser_error->pos + j]));
+        op += written;
+        k -= written;
+      }
+
+      snprintf(message_text, 512, "assign operator '%s%s%s' in non-toplevel expression",
+               ansi_graphics(ANSI_GRAPHICS_BOLD), operator, ansi_reset());
+
+      char message[512];
+      file_message(message, 512, file_path, "error", message_text,
+                   ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
+
+      char hl[4096];
+      Highlight_Data data = {
+        .src = error->PARSER.sourcefile->data,
+        .tokens = error->PARSER.tokens,
+        .tokens_len = error->PARSER.tokens_num,
+      };
+
+      highlight_token_span(hl, 4096, &data, parser_error->pos, parser_error->len,
+                           ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED, "");
+
+      fprintf(stderr, "%s\n%s\n", message, hl);
     } break;
 
     case ALC_PARSER_ERROR_TYPE_TWO_ASSIGN_OPERATORS_IN_EXPRESSION: {
-      highlight_token_range(handler, highlight, 4096, error->pos, error->pos + error->len - 1,
-                            ANSI_COLOR_RED | ANSI_GRAPHICS_BOLD, "");
+      snprintf(message_text, 512, "two or more assign operators in one expression");
+
+      char message[512];
+      file_message(message, 512, file_path, "error", message_text,
+                   ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
+
+      char hl[4096];
+      Highlight_Data data = {
+        .src = error->PARSER.sourcefile->data,
+        .tokens = error->PARSER.tokens,
+        .tokens_len = error->PARSER.tokens_num,
+      };
+
+      highlight_token_span(hl, 4096, &data, parser_error->pos, parser_error->len,
+                           ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED, "");
+
+      fprintf(stderr, "%s\n%s\n", message, hl);
     } break;
     }
-
-    printf("%s%s\n%s", message_start, reason, highlight);
   }
 }
 
-static inline Source_Line *src_to_source_lines(const char *src, usize *out_n)
+static void internal_message(char *buf, usize n, const char *message, const char *text,
+                             Ansi_Mode ansi_mode)
 {
-  const char *s;
+  snprintf(buf, n, "%s" ALC_COMPILER_NAME ": %s%s%s: %s%s", ansi_graphics(ANSI_GRAPHICS_BOLD),
+           ansi_graphics(ansi_mode), ansi_color(ansi_mode), message, ansi_reset(), text);
+}
 
-  usize src_len = strlen(src);
-  if (src_len == 0) {
-    *out_n = 0;
-    return nullptr;
+static void file_message(char *buf, usize n, const char *file_path, const char *message,
+                         const char *text, Ansi_Mode ansi_mode)
+{
+  snprintf(buf, n, "%s%s: %s%s%s: %s%s", ansi_graphics(ANSI_GRAPHICS_BOLD), file_path,
+           ansi_color(ansi_mode), ansi_graphics(ansi_mode), message, ansi_reset(), text);
+}
+
+static void highlight_token(char *dst, usize n, Highlight_Data *data, usize index,
+                            Ansi_Mode ansi_mode, const char *message)
+{
+  highlight_token_span(dst, n, data, index, 1, ansi_mode, message);
+}
+
+static void highlight_token_span(char *dst, usize n, Highlight_Data *data, usize index, usize len,
+                                 Ansi_Mode ansi_mode, const char *message)
+{
+  ALC_ASSUME(index < data->tokens_len);
+  ALC_ASSUME(len > 0);
+  ALC_ASSUME(index + len - 1 < data->tokens_len);
+
+  b8 continue_after = data->tokens[index].line != data->tokens[index + len - 1].line;
+
+  Alc_Token *start_token = &data->tokens[index];
+  Alc_Token *end_token;
+  do
+    end_token = &data->tokens[index + --len];
+  while (start_token->line != end_token->line);
+
+  usize line_num = start_token->line;
+  const char *line_start = data->src;
+  for (usize l = line_num; *line_start && l; line_start++)
+    if (*line_start == '\n')
+      l--;
+
+  const char *line_end = line_start;
+  for (; *line_end && *line_end != '\n'; line_end++)
+    ;
+
+  usize line_len = line_end - line_start;
+
+  char line[2048], *lp = line;
+  char mark[2048], *mp = mark;
+  usize k = 2048;
+
+  usize written = snprintf(lp, k, "  %zu | ", line_num + 1);
+  k -= written;
+  lp += written;
+  memset(mp, ' ', sizeof(char) * (written - 2));
+  mp[written - 2] = '|';
+  mp[written - 1] = ' ';
+  mp += written;
+
+  usize span_start = start_token->pos;
+  usize span_end = end_token->pos + end_token->len;
+  usize span_len = span_end - span_start;
+
+  // Pre-span copy
+  usize pre_span_copy_len = ALC_MIN(k - 1, span_start);
+  if ALC_LIKELY (pre_span_copy_len > 0) {
+    memcpy(lp, line_start, sizeof(char) * pre_span_copy_len);
+    memset(mp, ' ', sizeof(char) * pre_span_copy_len);
+
+    lp += pre_span_copy_len;
+    mp += pre_span_copy_len;
+    k -= pre_span_copy_len;
   }
 
-  usize lines_n = 0;
-  for (s = src; *s; s++)
-    if (*s == '\n' || *s == '\r')
-      lines_n++;
+  // ANSI color and graphics mode
+  const char *c = ansi_color(ansi_mode);
+  const char *g = ansi_graphics(ansi_mode);
+  for (; *c && k; k--, c++, lp++, mp++) {
+    *lp = *c;
+    *mp = *c;
+  }
+  for (; *g && k; k--, g++, lp++, mp++) {
+    *lp = *g;
+    *mp = *g;
+  }
 
-  *out_n = lines_n;
+  // Span copy
+  usize span_copy_len = ALC_MIN(k - 1, span_len);
+  if ALC_LIKELY (span_copy_len > 0) {
+    memcpy(lp, line_start + span_start, sizeof(char) * span_copy_len);
+    memset(mp, '~', sizeof(char) * span_copy_len);
+    *mp = '^';
+    lp += span_copy_len;
+    mp += span_copy_len;
+    k -= span_copy_len;
 
-  Source_Line *source_lines = malloc(sizeof(Source_Line) * lines_n);
+    if ALC_UNLIKELY (continue_after) { // " ..." copy
+      static const char c_str[] = " ...";
+      usize c_len = ALC_MIN(k - 1, sizeof(c_str) - 1);
 
-  s = src;
-  for (usize i = 0; i < lines_n; i++) {
-    const char *start = s;
-    const char *end = start;
-    while (*s) {
-      char c = *s;
-      end = s++;
-      if (c == '\n' || c == '\r')
-        break;
+      memcpy(lp, c_str, c_len);
+      memset(mp, '~', c_len);
+      lp += c_len;
+      mp += c_len;
+      k -= c_len;
     }
-    source_lines[i].start_ptr = start;
-    source_lines[i].length = (usize)(end - start);
   }
 
-  return source_lines;
+  usize mk = k;
+
+  // Message copy
+  usize message_copy_len = ALC_MIN(mk - 1, strlen(message));
+  if ALC_LIKELY (message_copy_len > 0) {
+    memcpy(mp, message, sizeof(char) * message_copy_len);
+    mp += message_copy_len;
+    mk -= message_copy_len;
+  }
+
+  // ANSI reset
+  {
+    const char *reset = ansi_reset();
+    for (const char *r = reset; *r && k; k--, r++, lp++)
+      *lp = *r;
+
+    // Separate reset for mark, because it may be longer than the line buffer.
+    for (const char *r = reset; *r && mk; mk--, r++, mp++)
+      *mp = *r;
+  }
+
+  *mp = 0; // Mark ends here
+
+  // Post-span copy
+  usize post_span_copy_len = ALC_MIN(k - 1, line_len - span_end);
+  if ALC_LIKELY (post_span_copy_len > 0) {
+    memcpy(lp, line_start + line_len - (line_len - span_end), sizeof(char) * post_span_copy_len);
+    lp += post_span_copy_len;
+    k -= post_span_copy_len;
+  }
+  *lp = 0;
+
+  snprintf(dst, n, "%s\n%s", line, mark);
 }
 
-static inline usize number_size(usize a)
+static void highlight_eof(char *dst, usize n, const char *src, Ansi_Mode ansi_mode,
+                          const char *message)
 {
-  if ALC_UNLIKELY (a == 0)
-    return 1;
+  usize line_num = 1;
+  for (const char *s = src; *s; s++)
+    if (*s == '\n')
+      line_num++;
 
-  usize len = 0;
-  while (a > 0) {
-    a /= 10;
-    len++;
+  const char *line_end = src + strlen(src);
+  const char *line_start = line_end;
+  usize line_length = (usize)(line_end - line_start);
+  for (; line_start >= src && *line_start != '\n'; line_start--)
+    ;
+  if (*line_start == '\n')
+    line_start++;
+
+  char line[2048], *lp = line;
+  char mark[2048], *mp = mark;
+  usize k = 2048;
+
+  usize written = snprintf(lp, k, "  %zu | ", line_num);
+  memset(mp, ' ', sizeof(char) * written - 2);
+  mp[written - 2] = '|';
+  mp[written - 1] = ' ';
+  lp += written;
+  mp += written;
+  k -= written;
+
+  usize line_copy_len = ALC_MIN(k - 1, line_length);
+  if (line_copy_len > 0) {
+    memcpy(lp, line_start, sizeof(char) * line_copy_len);
+    memset(mp, ' ', sizeof(char) * line_copy_len);
+    lp += line_copy_len;
+    mp += line_copy_len;
+    k -= line_copy_len;
   }
 
-  return len;
+  *lp = 0;
+
+  for (const char *c = ansi_color(ansi_mode); *c && k; k--, c++, mp++)
+    *mp = *c;
+  for (const char *g = ansi_graphics(ansi_mode); *g && k; k--, g++, mp++)
+    *mp = *g;
+
+  const char *marker = " ^";
+  for (; *marker && k; marker++, mp++, k--)
+    *mp = *marker;
+
+  usize message_copy_len = ALC_MIN(k - 1, strlen(message));
+  if (message_copy_len > 0) {
+    memcpy(mp, message, message_copy_len);
+    mp += message_copy_len;
+    k -= message_copy_len;
+  }
+
+  for (const char *r = ansi_reset(); *r && k; k--, r++, mp++)
+    *mp = *r;
+
+  *mp = 0;
+
+  snprintf(dst, n, "%s\n%s", line, mark);
 }
 
 static const char *token_to_string(Alc_Token *token)
 {
   switch (token->type) {
+  case ALC_TOKEN_TYPE_ERROR:
   case ALC_TOKEN_TYPE_ID:
   case ALC_TOKEN_TYPE_NUMBER:
   case ALC_TOKEN_TYPE_NUMBER_HEX:
@@ -283,8 +510,10 @@ static const char *token_to_string(Alc_Token *token)
     return token->value;
 
   default:
-    return token_type_to_string(token->type);
+    break;
   }
+
+  return token_type_to_string(token->type);
 }
 
 static const char *token_type_to_string(Alc_Token_Type type)
@@ -292,133 +521,10 @@ static const char *token_type_to_string(Alc_Token_Type type)
   switch (type) {
 #define ALC_TOKEN_TYPE_X(_name, _str_value) \
   case ALC_TOKEN_TYPE_FULL_NAME(_name):     \
-    return (_str_value);
+    return _str_value;
     ALC_TOKEN_TYPES
 #undef ALC_TOKEN_TYPE_X
+  default:
+    ALC_NOREACH();
   }
-  ALC_NOREACH();
-}
-
-static void insert_at(char *dst, const char *src, usize pos)
-{
-  if (src == nullptr)
-    return;
-
-  usize src_len = strlen(src);
-  if (src_len == 0)
-    return;
-
-  usize dst_2_len = strlen(&dst[pos]);
-  memmove(&dst[pos + src_len], &dst[pos], sizeof(char) * dst_2_len);
-  memcpy(&dst[pos], src, sizeof(char) * src_len);
-}
-
-static void get_message_start(char *dst, usize n, const char *filename, usize line, usize start,
-                              const char *message, Ansi_Mode ansi_mode)
-{
-  const char *color = ansi_color(ansi_mode);
-  const char *graphics = ansi_graphics(ansi_mode);
-  snprintf(dst, n, "%s%s:%zu:%zu: %s%s%s: %s", ansi_graphics(ANSI_GRAPHICS_BOLD), filename,
-           line + 1, start, color, graphics, message, ansi_reset());
-}
-
-static void highlight_token(Error_Handler *handler, char *dst, usize n, usize token_index,
-                            Ansi_Mode ansi_mode, const char *message_after)
-{
-  Alc_Token *token = &handler->tokens[token_index];
-  highlight_token_by_pointer(handler, dst, n, token, ansi_mode, message_after);
-}
-
-static void highlight_token_by_pointer(Error_Handler *handler, char *dst, usize n, Alc_Token *token,
-                                       Ansi_Mode ansi_mode, const char *message_after)
-{
-  Source_Line *source_line = &handler->source_lines[token->line];
-  usize line_num = token->line + 1;
-  usize line_num_len = number_size(line_num);
-  char formatted_line[4096] = { 0 };
-  memcpy(formatted_line, source_line->start_ptr, sizeof(char) * ALC_MIN(source_line->length, 3000));
-
-  insert_at(formatted_line, ansi_reset(), token->pos + token->len);
-
-  const char *color = ansi_color(ansi_mode);
-  const char *graphics = ansi_graphics(ansi_mode);
-  insert_at(formatted_line, graphics, token->pos);
-  insert_at(formatted_line, color, token->pos);
-
-  char mark[2048] = { 0 };
-  memset(mark, ' ', sizeof(char) * ALC_MIN(2047, token->pos));
-  memset(mark + token->pos, '~', sizeof(char) * ALC_MIN(2047 - token->pos, token->len));
-  mark[token->pos] = '^';
-
-  char fmt[4096];
-  snprintf(fmt, n, " %zu | %s\n %%+%zus | %s%s%s%s\033[0m\n", line_num, formatted_line,
-           line_num_len, color, graphics, mark, message_after);
-  snprintf(dst, n, fmt, " ");
-}
-
-static void highlight_token_range(Error_Handler *handler, char *dst, usize n, usize start_index,
-                                  usize end_index, Ansi_Mode ansi_mode, const char *message_after)
-{
-  b8 continue_after = handler->tokens[start_index].line != handler->tokens[end_index].line;
-
-  Alc_Token *start_token = &handler->tokens[start_index];
-  Alc_Token *end_token;
-  do {
-    end_token = &handler->tokens[end_index--];
-  } while (start_token->line != end_token->line);
-
-  if (start_token == end_token) {
-    highlight_token(handler, dst, n, start_index, ansi_mode, message_after);
-    return;
-  }
-
-  Source_Line *source_line = &handler->source_lines[start_token->line];
-  usize line_num = start_token->line + 1;
-  usize line_num_len = number_size(line_num);
-  char formatted_line[4096] = { 0 };
-  memcpy(formatted_line, source_line->start_ptr, sizeof(char) * ALC_MIN(source_line->length, 3000));
-
-  insert_at(formatted_line, ansi_reset(), end_token->pos + end_token->len);
-
-  const char *color = ansi_color(ansi_mode);
-  const char *graphics = ansi_graphics(ansi_mode);
-  insert_at(formatted_line, color, start_token->pos);
-  insert_at(formatted_line, graphics, start_token->pos);
-
-  usize range_length = end_token->pos - start_token->pos + end_token->len;
-
-  char mark[2048] = { 0 };
-  memset(mark, '~', sizeof(char) * ALC_MIN(2047, range_length + (continue_after ? 4 : 0)));
-  mark[0] = '^';
-  mark[2047] = 0;
-
-  char fmt[4096];
-
-  snprintf(fmt, n, " %zu | %s%s\n %%+%zus | %s%s %%+%zus%s\033[0m\n", line_num, formatted_line,
-           continue_after ? " ..." : "", line_num_len, color, graphics,
-           start_token->pos + range_length - 1 + (continue_after ? 4 : 0), message_after);
-  snprintf(dst, n, fmt, " ", mark);
-}
-
-static void highlight_after_token(Error_Handler *handler, char *dst, usize n, usize token_index,
-                                  Ansi_Mode ansi_mode, const char *message_after)
-{
-  Alc_Token *token = token_index >= handler->tokens_num ?
-                       &handler->tokens[handler->tokens_num - 1] :
-                       &handler->tokens[token_index];
-
-  Source_Line *source_line = &handler->source_lines[token->line];
-  usize line_num = token->line + 1;
-  usize line_num_len = number_size(line_num);
-  char src_line[4096] = { 0 };
-  memcpy(src_line, source_line->start_ptr, sizeof(char) * source_line->length);
-
-  const char *color = ansi_color(ansi_mode);
-  const char *graphics = ansi_graphics(ansi_mode);
-
-  const char *mark = "^";
-  char fmt[4096];
-  snprintf(fmt, n, " %zu | %s\n %%+%zus | %s%s %%+%zus%s\033[0m\n", line_num, src_line,
-           line_num_len, color, graphics, token->pos + token->len, message_after);
-  snprintf(dst, n, fmt, " ", mark);
 }

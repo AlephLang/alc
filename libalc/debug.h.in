@@ -1,0 +1,7 @@
+#ifndef __ALC_DEBUG_H__
+#define __ALC_DEBUG_H__
+
+#mesondefine __ALC_DEBUG_TOKENS__
+#mesondefine __ALC_DEBUG_ASTS__
+
+#endif // __ALC_DEBUG_H__

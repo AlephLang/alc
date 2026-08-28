@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define ALEPH_SOURCE_FILE_EXTENSION "aleph"
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -107,6 +109,19 @@ typedef uintptr_t uptr;
 #define ALC_ASSUME(_expr) __alc_assume((_expr))
 #endif
 
+#ifdef _DEBUG
+#define ALC_DEBUG_ASSUME(_expr)                                                           \
+  {                                                                                       \
+    if ALC_UNLIKELY (!(_expr)) {                                                          \
+      fprintf(stderr, "(%s:%i): Debug assumption \"" #_expr "\" is not met.\n", __FILE__, \
+              __LINE__);                                                                  \
+      __alc_trap();                                                                       \
+    }                                                                                     \
+  }
+#else
+#define ALC_DEBUG_ASSUME(_expr)
+#endif
+
 #define ALC_ASSERT(_expr)                                                                 \
   {                                                                                       \
     if ALC_UNLIKELY (!(_expr)) {                                                          \
@@ -133,5 +148,19 @@ typedef uintptr_t uptr;
 #endif
 
 #define loop while (true)
+
+#if defined(__linux) || defined(__linux__) || defined(__gnu_linux__)
+#include <linux/limits.h>
+#else
+#include <limits.h>
+#endif
+#define MAX_PATH_SIZE PATH_MAX
+#define MAX_PATH_NODE_SIZE 256
+
+#ifndef __cplusplus
+#define _STATIC_SIZE(_name, _size) _name[static _size]
+#else
+#define _STATIC_SIZE(_name, _size) *_name
+#endif
 
 #endif // __ALC_DEFS_H__

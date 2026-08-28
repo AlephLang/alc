@@ -26,7 +26,8 @@ void alc_parser_destroy(Alc_Parser *parser)
   ALC_ASSERT(parser != nullptr);
   ALC_ASSERT(parser->errors != nullptr);
   alc_vector_destroy(parser->errors);
-  parser->errors = nullptr;
+
+  memset(parser, 0, sizeof(Alc_Parser));
 }
 
 Alc_Ast *alc_parser_parse(Alc_Parser *parser)

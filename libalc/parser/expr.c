@@ -789,7 +789,8 @@ static Alc_Ast *parse_namespace(Alc_Parser *p)
   Alc_Ast *subobject = parse_namespaces_and_identifier_operands(p);
   _VERIFY_AST(subobject);
 
-  Alc_Ast *namespace_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *namespace_ast =
+    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   namespace_ast->NAMESPACE.name = (char *)namespace_ast + sizeof(Alc_Ast);
   namespace_ast->NAMESPACE.subobject = subobject;
   namespace_ast->pos = pos;

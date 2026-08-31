@@ -4,9 +4,6 @@
 #include <string.h>
 #include "crypto.h"
 
-#define FNV_PRIME (0x00000100000001b3ULL)
-#define FNV_OFFSET_BASIS (0xcbf29ce484222325ULL)
-
 #define INITIAL_CAPACITY (1 << 10)
 
 #define CONTROL_EMPTY 0x00

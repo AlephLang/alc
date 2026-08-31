@@ -6,7 +6,6 @@
 #define MIN_BLOCK_SIZE (1 << 20)
 
 static inline Alloc_Arena_Block *add_block(Alloc_Arena *alloc, usize size);
-static inline u64 get_aligned(u64 x, u64 alignment);
 static void *try_allocate_from_block(Alloc_Arena_Block *alloc_block, usize size, usize alignment);
 
 Alloc_Arena alloc_arena_create(void)
@@ -47,7 +46,7 @@ void *alloc_arena_allocate_aligned(Alloc_Arena *alloc, usize size, usize alignme
       return out_block;
   }
 
-  void *block = add_block(alloc, get_aligned(size + alignment, MIN_BLOCK_SIZE));
+  void *block = add_block(alloc, alc_get_aligned(size + alignment, MIN_BLOCK_SIZE));
   return try_allocate_from_block(block, size, alignment);
 }
 
@@ -79,7 +78,7 @@ static void *try_allocate_from_block(Alloc_Arena_Block *alloc_block, usize size,
   uptr block;
 
   uptr base = alloc_block->cursor;
-  uptr aligned_block = get_aligned(base, alignment);
+  uptr aligned_block = alc_get_aligned(base, alignment);
   uptr aligned_block_end = aligned_block + size;
   if (aligned_block > (uptr)alloc_block->memory + alloc_block->size)
     return nullptr;
@@ -88,9 +87,4 @@ static void *try_allocate_from_block(Alloc_Arena_Block *alloc_block, usize size,
   alloc_block->cursor = aligned_block_end;
 
   return (void *)block;
-}
-
-static inline u64 get_aligned(u64 x, u64 alignment)
-{
-  return x + (-x & (alignment - 1));
 }

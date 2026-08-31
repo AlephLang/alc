@@ -163,4 +163,9 @@ typedef uintptr_t uptr;
 #define _STATIC_SIZE(_name, _size) *_name
 #endif
 
+static inline u64 alc_get_aligned(u64 x, u64 alignment)
+{
+  return x + (-x & (alignment - 1));
+}
+
 #endif // __ALC_DEFS_H__

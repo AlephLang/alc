@@ -2,6 +2,7 @@
 #include "alc/defs.h"
 #include <stdlib.h>
 #include <string.h>
+#include "crypto.h"
 
 #define FNV_PRIME (0x00000100000001b3ULL)
 #define FNV_OFFSET_BASIS (0xcbf29ce484222325ULL)
@@ -22,7 +23,6 @@
 typedef u64 Alc_Hash_1;
 typedef u8 Alc_Hash_2;
 
-static Alc_Hash fnv_1a(const char *str);
 static void grow_and_rehash(Alc_Hashtable_Base *ht);
 
 static inline void *get_slot(void *value_block, usize stride, usize index);
@@ -73,7 +73,7 @@ void *alc_hashtable_put(Alc_Hashtable_Base *ht, const char *key, const void *val
   ALC_ASSUME(key != nullptr);
   ALC_ASSUME(value != nullptr);
 
-  Alc_Hash hash = fnv_1a(key);
+  Alc_Hash hash = alc_fnv_1a_str(key);
   Alc_Hash_1 h1 = ALC_HASH_1(hash);
   Alc_Hash_2 h2 = ALC_HASH_2(hash);
 
@@ -127,7 +127,7 @@ void *alc_hashtable_get(Alc_Hashtable_Base *ht, const char *key)
   ALC_ASSUME(ht != nullptr);
   ALC_ASSUME(key != nullptr);
 
-  Alc_Hash hash = fnv_1a(key);
+  Alc_Hash hash = alc_fnv_1a_str(key);
   Alc_Hash_1 h1 = ALC_HASH_1(hash);
   Alc_Hash_2 h2 = ALC_HASH_2(hash);
 
@@ -173,16 +173,6 @@ void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn, vo
   }
 }
 
-static Alc_Hash fnv_1a(const char *str)
-{
-  Alc_Hash hash = FNV_OFFSET_BASIS;
-  for (; *str; str++) {
-    hash ^= *str;
-    hash *= FNV_PRIME;
-  }
-  return hash;
-}
-
 static void grow_and_rehash(Alc_Hashtable_Base *ht)
 {
   usize old_capacity = ht->capacity;
@@ -204,7 +194,7 @@ static void grow_and_rehash(Alc_Hashtable_Base *ht)
       continue;
 
     char *key = old_key_block[i];
-    Alc_Hash hash = fnv_1a(key);
+    Alc_Hash hash = alc_fnv_1a_str(key);
     Alc_Hash_1 h1 = ALC_HASH_1(hash);
     Alc_Hash_2 h2 = ALC_HASH_2(hash);
     usize pos = h1 % ht->capacity;

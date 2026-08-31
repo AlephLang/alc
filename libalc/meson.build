@@ -6,6 +6,7 @@ subdir('platform')
 libalc_src += [
   'libalc/alc.c',
   'libalc/ast.c',
+  'libalc/crypto.c',
   'libalc/lexer.c',
   'libalc/module.c',
   'libalc/program.c',

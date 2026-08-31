@@ -4,7 +4,6 @@
 #include <alc/defs.h>
 
 typedef u8 Alc_Control;
-typedef u64 Alc_Hash;
 
 typedef struct {
   Alc_Control *control_block;

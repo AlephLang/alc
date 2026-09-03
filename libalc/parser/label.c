@@ -2,7 +2,7 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -26,7 +26,7 @@ Alc_Ast *parse_label(Alc_Parser *p)
   usize pos = p->pos++;
 
   Alc_Ast *label_ast =
-    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   label_ast->LABEL.name = (char *)label_ast + sizeof(Alc_Ast);
   label_ast->pos = pos;
   label_ast->kind = ALC_AST_KIND_LABEL;

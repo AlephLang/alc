@@ -3,7 +3,7 @@
 #include "alc/parser.h"
 #include "alc/token.h"
 #include "alc/vector.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -37,7 +37,7 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
     for (sptr i = alc_vector_get_length(names) - 1; i >= 0; i--) {
       usize name_len = strlen(names[i]) + 1;
       qualifier_ast =
-        alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+        alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
       qualifier_ast->QUALIFIER.name = (char *)qualifier_ast + sizeof(Alc_Ast);
       qualifier_ast->QUALIFIER.qualified = qualified;
       qualifier_ast->pos = --last_pos;
@@ -138,7 +138,7 @@ __vardef:
     _VERIFY_AST(expr);
 
     Alc_Ast *vardef_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+      alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
     vardef_ast->VAR_DEF.name = (char *)vardef_ast + sizeof(Alc_Ast);
     vardef_ast->VAR_DEF.type = type;
     vardef_ast->VAR_DEF.expression = expr;
@@ -150,7 +150,7 @@ __vardef:
   }
 
   Alc_Ast *vardecl_ast =
-    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   vardecl_ast->VAR_DECL.name = (char *)vardecl_ast + sizeof(Alc_Ast);
   vardecl_ast->VAR_DECL.type = type;
   vardecl_ast->VAR_DECL.attribute_list = attribute_list;

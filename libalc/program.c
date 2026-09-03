@@ -3,13 +3,13 @@
 #include "alc/filesystem.h"
 #include "alc/module.h"
 #include "alc/vector.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include <string.h>
 
 Alc_Program *alc_program_create(const char *path)
 {
-  Alc_Program *program = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Program));
+  Alc_Program *program = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Program));
   alc_filesystem_path_absolute(path, program->absolute_path);
 
   if (path != nullptr)

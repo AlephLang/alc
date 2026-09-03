@@ -5,7 +5,7 @@
 #include "alc/sourcefile.h"
 #include "alc/program.h"
 #include "alc/vector.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +22,7 @@ Alc_Module *alc_module_create(Alc_Program *program, const char *name, Alc_Module
 
   Alc_Module *out = malloc(sizeof(Alc_Module));
   out->name = name != nullptr ?
-                alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * name_len, 1) :
+                alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * name_len, 1) :
                 nullptr;
   out->source_files = alc_vector_create(Alc_Source_File);
   out->submodules = alc_hashtable_create(sizeof(Alc_Module *), true);

@@ -1,22 +1,23 @@
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "alc/defs.h"
 #include "alc/vector.h"
 #include <stdlib.h>
 
 #define MIN_BLOCK_SIZE (1 << 20)
 
-static inline Alloc_Arena_Block *add_block(Alloc_Arena *alloc, usize size);
-static void *try_allocate_from_block(Alloc_Arena_Block *alloc_block, usize size, usize alignment);
+static inline Alc_Alloc_Arena_Block *add_block(Alc_Alloc_Arena *alloc, usize size);
+static void *try_allocate_from_block(Alc_Alloc_Arena_Block *alc_alloc_block, usize size,
+                                     usize alignment);
 
-Alloc_Arena alloc_arena_create(void)
+Alc_Alloc_Arena alc_alloc_arena_create(void)
 {
-  return (Alloc_Arena){
-    .blocks = alc_vector_create(Alloc_Arena_Block),
+  return (Alc_Alloc_Arena){
+    .blocks = alc_vector_create(Alc_Alloc_Arena_Block),
     .blocks_num = 0,
   };
 }
 
-void alloc_arena_destroy(Alloc_Arena *alloc)
+void alc_alloc_arena_destroy(Alc_Alloc_Arena *alloc)
 {
   ALC_ASSUME(alloc != nullptr);
 
@@ -30,7 +31,7 @@ void alloc_arena_destroy(Alloc_Arena *alloc)
   alloc->blocks_num = 0;
 }
 
-void *alloc_arena_allocate_aligned(Alloc_Arena *alloc, usize size, usize alignment)
+void *alc_alloc_arena_allocate_aligned(Alc_Alloc_Arena *alloc, usize size, usize alignment)
 {
   ALC_ASSUME(alloc != nullptr);
   ALC_ASSUME(size > 0);
@@ -38,7 +39,7 @@ void *alloc_arena_allocate_aligned(Alloc_Arena *alloc, usize size, usize alignme
   ALC_ASSUME(size + alignment < (4llu << 30llu));
 
   for (s64 i = alloc->blocks_num - 1; i >= 0; i--) {
-    Alloc_Arena_Block *cur_block = &alloc->blocks[i];
+    Alc_Alloc_Arena_Block *cur_block = &alloc->blocks[i];
     void *out_block;
     out_block = try_allocate_from_block(cur_block, size, alignment);
 
@@ -50,7 +51,7 @@ void *alloc_arena_allocate_aligned(Alloc_Arena *alloc, usize size, usize alignme
   return try_allocate_from_block(block, size, alignment);
 }
 
-void alloc_arena_drop(Alloc_Arena *alloc)
+void alc_alloc_arena_drop(Alc_Alloc_Arena *alloc)
 {
   ALC_ASSUME(alloc != nullptr);
 
@@ -58,12 +59,12 @@ void alloc_arena_drop(Alloc_Arena *alloc)
     alloc->blocks[i].cursor = (uptr)alloc->blocks[i].memory;
 }
 
-static inline Alloc_Arena_Block *add_block(Alloc_Arena *alloc, usize size)
+static inline Alc_Alloc_Arena_Block *add_block(Alc_Alloc_Arena *alloc, usize size)
 {
   void *memory = malloc(size);
   uptr cursor = (uptr)memory;
 
-  Alloc_Arena_Block block = {
+  Alc_Alloc_Arena_Block block = {
     .memory = memory,
     .cursor = cursor,
     .size = size,
@@ -73,18 +74,19 @@ static inline Alloc_Arena_Block *add_block(Alloc_Arena *alloc, usize size)
   return &alloc->blocks[alloc->blocks_num++];
 }
 
-static void *try_allocate_from_block(Alloc_Arena_Block *alloc_block, usize size, usize alignment)
+static void *try_allocate_from_block(Alc_Alloc_Arena_Block *alc_alloc_block, usize size,
+                                     usize alignment)
 {
   uptr block;
 
-  uptr base = alloc_block->cursor;
+  uptr base = alc_alloc_block->cursor;
   uptr aligned_block = alc_get_aligned(base, alignment);
   uptr aligned_block_end = aligned_block + size;
-  if (aligned_block > (uptr)alloc_block->memory + alloc_block->size)
+  if (aligned_block > (uptr)alc_alloc_block->memory + alc_alloc_block->size)
     return nullptr;
 
   block = aligned_block;
-  alloc_block->cursor = aligned_block_end;
+  alc_alloc_block->cursor = aligned_block_end;
 
   return (void *)block;
 }

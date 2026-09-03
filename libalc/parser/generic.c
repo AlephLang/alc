@@ -2,7 +2,7 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
@@ -40,7 +40,8 @@ Alc_Ast *parse_generic_placeholder_type_list(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *generic_placeholder_type_list_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *generic_placeholder_type_list_ast =
+    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   generic_placeholder_type_list_ast->GENERIC_PLACEHOLDER_TYPE_LIST.generic_placeholder_types =
     alc_vector_to_array(placeholder_types,
                         &generic_placeholder_type_list_ast->GENERIC_PLACEHOLDER_TYPE_LIST
@@ -87,7 +88,7 @@ Alc_Ast *parse_generic_type_list(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *generic_type_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *generic_type_list = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   generic_type_list->GENERIC_TYPE_LIST.generic_types = alc_vector_to_array(
     types_in_type_list, &generic_type_list->GENERIC_TYPE_LIST.generic_types_num);
   generic_type_list->pos = pos;
@@ -117,7 +118,7 @@ static Alc_Ast *parse_generic_placeholder_type(Alc_Parser *p)
   }
 
   Alc_Ast *generic_placeholder_type =
-    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
   generic_placeholder_type->GENERIC_PLACEHOLDER_TYPE.name =
     (char *)generic_placeholder_type + sizeof(Alc_Ast);
   generic_placeholder_type->GENERIC_PLACEHOLDER_TYPE.default_type = default_type;

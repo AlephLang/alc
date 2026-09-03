@@ -2,7 +2,7 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
@@ -69,7 +69,7 @@ Alc_Ast *parse_enum(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *enum_ast =
-    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   enum_ast->ENUM.name = (char *)enum_ast + sizeof(Alc_Ast);
   enum_ast->ENUM.elements = alc_vector_to_array(elements, &enum_ast->ENUM.elements_num);
   enum_ast->ENUM.attribute_list = attribute_list;
@@ -99,7 +99,7 @@ static Alc_Ast *parse_enum_element(Alc_Parser *p)
   }
 
   Alc_Ast *enum_element =
-    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   enum_element->ENUM_ELEMENT.name = (char *)enum_element + sizeof(Alc_Ast);
   enum_element->ENUM_ELEMENT.expression = expr;
   enum_element->pos = pos;

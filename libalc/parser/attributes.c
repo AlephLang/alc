@@ -1,7 +1,7 @@
 #include "alc/ast.h"
 #include "alc/parser.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
@@ -43,7 +43,7 @@ Alc_Ast *parse_attribute_list(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *attribute_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *attribute_list = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   attribute_list->ATTRIBUTE_LIST.attributes =
     alc_vector_to_array(attrs, &attribute_list->ATTRIBUTE_LIST.attributes_num);
   attribute_list->pos = pos;
@@ -92,7 +92,7 @@ static Alc_Ast *parse_attribute(Alc_Parser *p)
     p->pos++;
   }
 
-  Alc_Ast *attribute_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  Alc_Ast *attribute_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
   attribute_ast->ATTRIBUTE.name = (char *)attribute_ast + sizeof(Alc_Ast);
   attribute_ast->ATTRIBUTE.arguments =
     alc_vector_to_array(arguments, &attribute_ast->ATTRIBUTE.arguments_num);

@@ -2,7 +2,7 @@
 #include "alc/ast.h"
 #include "alc/defs.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
@@ -13,7 +13,7 @@ Alc_Parser *alc_parser_create(Alc_Token *tokens, usize tokens_num)
 {
   ALC_ASSERT((tokens_num == 0 && tokens == nullptr) || (tokens_num > 0 && tokens != nullptr));
 
-  Alc_Parser *parser = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Parser));
+  Alc_Parser *parser = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Parser));
   parser->tokens = tokens;
   parser->tokens_num = tokens_num;
   parser->errors = alc_vector_create(Alc_Parser_Error);
@@ -44,7 +44,7 @@ Alc_Ast *alc_parser_parse(Alc_Parser *parser)
     alc_vector_push(toplevels, top);
   }
 
-  Alc_Ast *root = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *root = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   root->pos = 0;
   root->kind = ALC_AST_KIND_ROOT;
   root->ROOT.toplevel_statements =

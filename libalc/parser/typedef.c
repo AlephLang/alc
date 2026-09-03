@@ -2,7 +2,7 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -45,7 +45,7 @@ Alc_Ast *parse_typedef(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *typedef_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  Alc_Ast *typedef_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
   typedef_ast->TYPEDEF.name = (char *)typedef_ast + sizeof(Alc_Ast);
   typedef_ast->TYPEDEF.aliased_type = aliased_type;
   typedef_ast->TYPEDEF.generic_placeholder_type_list = generic_placeholder_type_list;

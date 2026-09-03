@@ -1,7 +1,7 @@
 #include "alc/ast.h"
 #include "alc/defs.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -41,7 +41,7 @@ Alc_Ast *parse_stmt_if(Alc_Parser *p)
     _VERIFY_AST(stmt_else);
   }
 
-  Alc_Ast *stmt_if_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *stmt_if_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_if_ast->STMT_IF.condition = cond_expr;
   stmt_if_ast->STMT_IF.body = body;
   stmt_if_ast->STMT_IF.else_statement = stmt_else;

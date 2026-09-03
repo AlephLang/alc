@@ -1,7 +1,7 @@
 #include "alc/ast.h"
 #include "alc/defs.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 
@@ -17,7 +17,7 @@ Alc_Ast *parse_stmt_label(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *stmt_label_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *stmt_label_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_label_ast->STMT_LABEL.label = label;
   stmt_label_ast->pos = label->pos;
   stmt_label_ast->kind = ALC_AST_KIND_STMT_LABEL;

@@ -1,6 +1,6 @@
 #include "alc/ast.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
@@ -59,7 +59,7 @@ Alc_Ast *parse_struct(Alc_Parser *p)
     if (child == nullptr) {
       if ALC_UNLIKELY (p->tokens[p->pos].type == ALC_TOKEN_TYPE_SEMICOLON) {
         p->pos++;
-        child = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+        child = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
         child->pos = pos;
         child->kind = ALC_AST_KIND_NONE;
       } else {
@@ -78,7 +78,7 @@ Alc_Ast *parse_struct(Alc_Parser *p)
 
   if (generic_placeholder_type_list != nullptr) {
     Alc_Ast *generic_struct_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+      alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
     generic_struct_ast->GENERIC_STRUCT.name = (char *)generic_struct_ast + sizeof(Alc_Ast);
     generic_struct_ast->GENERIC_STRUCT.generic_placeholder_type_list =
       generic_placeholder_type_list;
@@ -92,7 +92,7 @@ Alc_Ast *parse_struct(Alc_Parser *p)
     return generic_struct_ast;
   } else {
     Alc_Ast *struct_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+      alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
     struct_ast->STRUCT.name = (char *)struct_ast + sizeof(Alc_Ast);
     struct_ast->STRUCT.attribute_list = attribute_list;
     struct_ast->STRUCT.children = alc_vector_to_array(children, &struct_ast->STRUCT.children_num);

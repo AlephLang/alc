@@ -5,7 +5,7 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include <string.h>
 
@@ -76,7 +76,7 @@ static inline void add_error_unexpected_token(Alc_Parser *p, usize pos, Alc_Toke
   ALC_ASSUME(p != nullptr);
   Alc_Parser_Error error = {
     .UNEXPECTED_TOKEN = {
-      .expected_token_types = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Token_Type)),
+      .expected_token_types = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Token_Type)),
       .expected_token_types_num = 1,
     },
     .pos = pos,
@@ -111,7 +111,7 @@ static inline void add_error_unexpected_value(Alc_Parser *p, usize pos, const ch
   ALC_ASSUME(p != nullptr);
   Alc_Parser_Error error = {
     .UNEXPECTED_VALUE = {
-      .expected_values = alloc_arena_allocate(&ctx()->arena, sizeof(const char *)),
+      .expected_values = alc_alloc_arena_allocate(&ctx()->arena, sizeof(const char *)),
       .expected_values_num = 1,
     },
     .pos = pos,

@@ -2,7 +2,7 @@
 #include "alc/parser.h"
 #include "alc/token.h"
 #include "alc/vector.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -41,7 +41,7 @@ Alc_Ast *parse_initlist(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *initlist_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *initlist_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   initlist_ast->INITLIST.entries =
     alc_vector_to_array(entries, &initlist_ast->INITLIST.entries_num);
   initlist_ast->pos = pos;
@@ -70,7 +70,7 @@ static Alc_Ast *parse_entry_default(Alc_Parser *p)
                                                                      parse_expr(p, false);
   _VERIFY_AST(expr);
 
-  Alc_Ast *entry_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *entry_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   entry_ast->INITLIST_ENTRY.expression = expr;
   entry_ast->pos = expr->pos;
   entry_ast->kind = ALC_AST_KIND_INITLIST_ENTRY;
@@ -104,7 +104,7 @@ static Alc_Ast *parse_entry_explicit(Alc_Parser *p)
   _VERIFY_AST(expr);
 
   Alc_Ast *entry_explicit =
-    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   entry_explicit->INITLIST_ENTRY_EXPLICIT.field_name = (char *)entry_explicit + sizeof(Alc_Ast);
   entry_explicit->INITLIST_ENTRY_EXPLICIT.expression = expr;
   entry_explicit->pos = pos;
@@ -144,7 +144,7 @@ static Alc_Ast *parse_entry_explicit_array_elem(Alc_Parser *p)
                                                                      parse_expr(p, false);
   _VERIFY_AST(expr, { alc_vector_destroy(expr); });
 
-  Alc_Ast *entry_explicit_array_element = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *entry_explicit_array_element = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   entry_explicit_array_element->INITLIST_ENTRY_EXPLICIT_ARRAY_ELEMENT.index_expressions =
     alc_vector_to_array(
       index_expressions,

@@ -3,7 +3,7 @@
 #include "alc/parser.h"
 #include "alc/token.h"
 #include "alc/vector.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -46,7 +46,7 @@ Alc_Ast *parse_stmt_switch(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *stmt_switch_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *stmt_switch_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_switch_ast->STMT_SWITCH.expression = expression;
   stmt_switch_ast->STMT_SWITCH.case_chains =
     alc_vector_to_array(case_chains, &stmt_switch_ast->STMT_SWITCH.case_chains_num);
@@ -87,7 +87,7 @@ static Alc_Ast *parse_case_chain(Alc_Parser *p)
   Alc_Ast *body = parse_stmt_block(p);
   _VERIFY_AST(body, { alc_vector_destroy(cases); });
 
-  Alc_Ast *case_chain_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *case_chain_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   case_chain_ast->CASE_CHAIN.cases =
     alc_vector_to_array(cases, &case_chain_ast->CASE_CHAIN.cases_num);
   case_chain_ast->CASE_CHAIN.body = body;
@@ -109,7 +109,7 @@ static Alc_Ast *parse_case(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *case_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *case_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   case_ast->CASE.expression = expression;
   case_ast->pos = pos;
   case_ast->kind = ALC_AST_KIND_CASE;
@@ -125,7 +125,7 @@ static Alc_Ast *parse_default(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *default_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *default_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   default_ast->pos = pos;
   default_ast->kind = ALC_AST_KIND_DEFAULT;
   return default_ast;

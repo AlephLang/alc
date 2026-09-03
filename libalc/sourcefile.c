@@ -7,7 +7,7 @@
 #include "alc/parser.h"
 #include "alc/token.h"
 #include "alc/vector.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "debug.h"
 #include <stdio.h>
@@ -37,9 +37,9 @@ Alc_Source_File alc_source_file_create(struct __Alc_Module *module, const char *
   usize file_size = alc_filesystem_file_get_size(file) + 1;
 
   Alc_Source_File out = {
-    .name = alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * name_len, 1),
+    .name = alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * name_len, 1),
     .module = module,
-    .data = alloc_arena_allocate_aligned(&ctx()->arena, file_size, 1),
+    .data = alc_alloc_arena_allocate_aligned(&ctx()->arena, file_size, 1),
     .tokens = nullptr,
     .tokens_len = 0,
     .root = nullptr,

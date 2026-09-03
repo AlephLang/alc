@@ -1,7 +1,7 @@
 #include "alc/ast.h"
 #include "alc/token.h"
 #include "alc/vector.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -52,7 +52,7 @@ Alc_Ast *parse_union(Alc_Parser *p)
 
     if (child == nullptr) {
       if ALC_UNLIKELY (p->tokens[p->pos].type == ALC_TOKEN_TYPE_SEMICOLON) {
-        child = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+        child = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
         child->pos = p->pos;
         child->kind = ALC_AST_KIND_NONE;
         p->pos++;
@@ -71,7 +71,7 @@ Alc_Ast *parse_union(Alc_Parser *p)
   p->pos++;
 
   Alc_Ast *union_ast =
-    alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
   union_ast->UNION.name = (char *)union_ast + sizeof(Alc_Ast);
   union_ast->UNION.attribute_list = attribute_list;
   union_ast->UNION.children = alc_vector_to_array(children, &union_ast->UNION.children_num);

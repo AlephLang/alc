@@ -1,7 +1,7 @@
 #include "alc/ast.h"
 #include "alc/defs.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 
@@ -50,7 +50,7 @@ Alc_Ast *parse_stmt_for(Alc_Parser *p)
   Alc_Ast *body = parse_stmt(p);
   _VERIFY_AST(body);
 
-  Alc_Ast *stmt_for_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *stmt_for_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   stmt_for_ast->STMT_FOR.init_statement = init_statement;
   stmt_for_ast->STMT_FOR.condition = condition;
   stmt_for_ast->STMT_FOR.expression = expression;

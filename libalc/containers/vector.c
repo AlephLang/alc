@@ -1,6 +1,6 @@
 #include "alc/vector.h"
 #include "alc/defs.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include <stdlib.h>
 #include <string.h>
@@ -103,7 +103,7 @@ void *__alc_vector_to_array_impl(const void *vec, usize *out_n)
     return nullptr;
   }
 
-  void *out_arr = alloc_arena_allocate(&ctx()->arena, h->stride * h->length);
+  void *out_arr = alc_alloc_arena_allocate(&ctx()->arena, h->stride * h->length);
   memcpy(out_arr, vec, h->stride * h->length);
   *out_n = h->length;
 

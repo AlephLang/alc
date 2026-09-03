@@ -1,7 +1,7 @@
 #include "alc/ast.h"
 #include "alc/defs.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 
@@ -23,7 +23,7 @@ Alc_Ast *parse_stmt_return(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *return_stmt_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *return_stmt_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   return_stmt_ast->STMT_RETURN.expression = expr;
   return_stmt_ast->pos = pos;
   return_stmt_ast->kind = ALC_AST_KIND_STMT_RETURN;

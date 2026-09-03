@@ -1,7 +1,7 @@
 #include "alc/lexer.h"
 #include "alc/defs.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "alc/vector.h"
 #include "global.h"
 #include <ctype.h>
@@ -162,7 +162,7 @@ static Alc_Token gen_token(const char *value, Alc_Token_Type type, usize line, u
   char *value_in_arena = nullptr;
   if (value != nullptr) {
     usize val_len = strlen(value);
-    value_in_arena = alloc_arena_allocate_aligned(&ctx()->arena, val_len + 1, 1);
+    value_in_arena = alc_alloc_arena_allocate_aligned(&ctx()->arena, val_len + 1, 1);
     memcpy(value_in_arena, value, val_len + 1);
   }
 
@@ -184,7 +184,7 @@ static inline Alc_Token process_error(Alc_Lexer *l)
 
   usize len = l->pos - start;
   const char *s_ptr = &l->src[start];
-  char *value = alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * (len + 1), 1);
+  char *value = alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * (len + 1), 1);
   memcpy(value, s_ptr, len * sizeof(char));
   value[len] = 0;
 
@@ -216,7 +216,7 @@ static char *get_string_value(Alc_Lexer *l, char terminator)
   }
 
   usize len = l->pos - start;
-  char *data = alloc_arena_allocate_aligned(&ctx()->arena, len, 1);
+  char *data = alc_alloc_arena_allocate_aligned(&ctx()->arena, len, 1);
   memcpy(data, &l->src[start], len - 1);
   data[len - 1] = 0;
 
@@ -245,7 +245,7 @@ static inline Alc_Token process_id(Alc_Lexer *l)
   for (; l->pos < l->src_len && is_part_of_id(l->src[l->pos]); l->pos++)
     ;
   usize len = l->pos - start;
-  char *value = alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
+  char *value = alc_alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
   memcpy(value, &l->src[start], len);
   value[len] = 0;
 
@@ -281,7 +281,7 @@ static inline Alc_Token process_num(Alc_Lexer *l)
   }
 
   usize len = l->pos - start;
-  char *value = alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
+  char *value = alc_alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
   char *end = memcpy_cond(value, &l->src[start], len, skip_separators);
   *end = 0;
   return gen_token(value, is_float ? ALC_TOKEN_TYPE_NUMBER_FLOAT : ALC_TOKEN_TYPE_NUMBER, l->line,
@@ -297,7 +297,7 @@ static inline Alc_Token process_num_hex(Alc_Lexer *l)
        l->pos++)
     ;
   usize len = l->pos - start;
-  char *value = alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
+  char *value = alc_alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
   char *end = memcpy_cond(value, &l->src[start], len, skip_separators);
   *end = 0;
 
@@ -314,7 +314,7 @@ static inline Alc_Token process_num_bin(Alc_Lexer *l)
        l->pos++)
     ;
   usize len = l->pos - start;
-  char *value = alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
+  char *value = alc_alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
   char *end = memcpy_cond(value, &l->src[start], len, skip_separators);
   *end = 0;
 
@@ -331,7 +331,7 @@ static inline Alc_Token process_num_oct(Alc_Lexer *l)
        l->pos++)
     ;
   usize len = l->pos - start;
-  char *value = alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
+  char *value = alc_alloc_arena_allocate_aligned(&ctx()->arena, len + 1, 1);
   char *end = memcpy_cond(value, &l->src[start], len, skip_separators);
   *end = 0;
 

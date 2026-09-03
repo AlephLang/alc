@@ -1,6 +1,6 @@
 #include "alc/ast.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "global.h"
 #include "parser/parser_private.h"
 #include <string.h>
@@ -33,7 +33,7 @@ Alc_Ast *parse_module(Alc_Parser *p)
     _VERIFY_AST(submodule);
   }
 
-  Alc_Ast *module_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
+  Alc_Ast *module_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
   module_ast->MODULE.name = (char *)module_ast + sizeof(Alc_Ast);
   module_ast->MODULE.submodule = submodule;
   module_ast->pos = pos;

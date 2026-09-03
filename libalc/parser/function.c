@@ -2,7 +2,7 @@
 #include "alc/defs.h"
 #include "alc/parser.h"
 #include "alc/token.h"
-#include "allocs/alloc_arena.h"
+#include "alc/alloc_arena.h"
 #include "alc/vector.h"
 #include "global.h"
 #include "parser/parser_private.h"
@@ -83,7 +83,7 @@ Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function
 
   if (generic_placeholder_type_list == nullptr) {
     Alc_Ast *function_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+      alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
     function_ast->FUNC.name = (char *)function_ast + sizeof(Alc_Ast);
     function_ast->FUNC.argument_list = argument_list;
     function_ast->FUNC.return_type = return_type;
@@ -96,7 +96,7 @@ Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function
     return function_ast;
   } else {
     Alc_Ast *generic_function_ast =
-      alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
+      alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
     generic_function_ast->GENERIC_FUNC.name = (char *)generic_function_ast + sizeof(Alc_Ast);
     generic_function_ast->GENERIC_FUNC.generic_placeholder_type_list =
       generic_placeholder_type_list;
@@ -146,7 +146,7 @@ Alc_Ast *parse_function_alias(Alc_Parser *p, Alc_Ast *attribute_list)
   usize name_len = strlen(name) + 1;
   usize aliased_function_name_len = strlen(aliased_function_name) + 1;
 
-  Alc_Ast *function_alias_ast = alloc_arena_allocate(
+  Alc_Ast *function_alias_ast = alc_alloc_arena_allocate(
     &ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * (name_len + aliased_function_name_len));
   function_alias_ast->FUNC_ALIAS.name = (char *)function_alias_ast + sizeof(Alc_Ast);
   function_alias_ast->FUNC_ALIAS.aliased_function_name =
@@ -193,7 +193,7 @@ Alc_Ast *parse_function_arguments(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *argument_list = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *argument_list = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   argument_list->ARGUMENT_LIST.arguments =
     alc_vector_to_array(args, &argument_list->ARGUMENT_LIST.arguments_num);
   argument_list->pos = pos;
@@ -223,7 +223,7 @@ static Alc_Ast *parse_variadic_args(Alc_Parser *p)
 
   p->pos++;
 
-  Alc_Ast *variadic_arg_ast = alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  Alc_Ast *variadic_arg_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   variadic_arg_ast->pos = pos;
   variadic_arg_ast->kind = ALC_AST_KIND_VARIADIC;
   return variadic_arg_ast;

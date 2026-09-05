@@ -13,6 +13,7 @@
 static inline Alc_Type_Storage_Chunk chunk_create(usize capacity);
 static inline Alc_Type *allocate_type(Alc_Type_Storage *storage);
 static inline Alc_Type *allocate_type_zero_init(Alc_Type_Storage *storage);
+static inline const Alc_Type *unwrap_alias(const Alc_Type *t);
 
 Alc_Type_Storage alc_type_storage_create(usize chunk_capacity)
 {
@@ -194,11 +195,15 @@ b8 alc_type_is_same(const Alc_Type *t1, const Alc_Type *t2)
 
 b8 alc_type_is_integer(const Alc_Type *t)
 {
+  t = unwrap_alias(t);
+
   return alc_type_is_integer_explicit(t) || alc_type_is_pointer(t) || alc_type_is_bool(t);
 }
 
 b8 alc_type_is_integer_explicit(const Alc_Type *t)
 {
+  t = unwrap_alias(t);
+
   switch (t->kind) {
   case ALC_TYPE_KIND_INT_8:
   case ALC_TYPE_KIND_INT_16:
@@ -218,16 +223,22 @@ b8 alc_type_is_integer_explicit(const Alc_Type *t)
 
 b8 alc_type_is_bool(const Alc_Type *t)
 {
+  t = unwrap_alias(t);
+
   return t->kind == ALC_TYPE_KIND_BOOL;
 }
 
 b8 alc_type_is_pointer(const Alc_Type *t)
 {
+  t = unwrap_alias(t);
+
   return t->kind == ALC_TYPE_KIND_POINTER || t->kind == ALC_TYPE_KIND_FUNCTION;
 }
 
 b8 alc_type_is_signed(const Alc_Type *t)
 {
+  t = unwrap_alias(t);
+
   switch (t->kind) {
   case ALC_TYPE_KIND_INT_8:
   case ALC_TYPE_KIND_INT_16:
@@ -247,6 +258,8 @@ b8 alc_type_is_signed(const Alc_Type *t)
 
 b8 alc_type_is_unsigned(const Alc_Type *t)
 {
+  t = unwrap_alias(t);
+
   switch (t->kind) {
   case ALC_TYPE_KIND_UINT_8:
   case ALC_TYPE_KIND_UINT_16:
@@ -264,11 +277,15 @@ b8 alc_type_is_unsigned(const Alc_Type *t)
 
 b8 alc_type_is_enum(const Alc_Type *t)
 {
+  t = unwrap_alias(t);
+
   return t->kind == ALC_TYPE_KIND_ENUM;
 }
 
 b8 alc_type_is_float(const Alc_Type *t)
 {
+  t = unwrap_alias(t);
+
   switch (t->kind) {
   case ALC_TYPE_KIND_FLOAT_32:
   case ALC_TYPE_KIND_FLOAT_64:
@@ -363,8 +380,7 @@ Alc_Type *alc_type_propagate(Alc_Type_Storage *storage, Alc_Type *a, Alc_Type *b
 
 u64 alc_type_get_size(const Alc_Type *t)
 {
-  while (t->kind == ALC_TYPE_KIND_ALIAS)
-    t = t->ALIAS.aliased_type;
+  t = unwrap_alias(t);
 
   switch (t->kind) {
   case ALC_TYPE_KIND_ERROR:
@@ -580,4 +596,12 @@ static inline Alc_Type *allocate_type_zero_init(Alc_Type_Storage *storage)
   Alc_Type *type = allocate_type(storage);
   memset(type, 0, sizeof(Alc_Type));
   return type;
+}
+
+static inline const Alc_Type *unwrap_alias(const Alc_Type *t)
+{
+  while (t->kind == ALC_TYPE_KIND_ALIAS)
+    t = t->ALIAS.aliased_type;
+
+  return t;
 }

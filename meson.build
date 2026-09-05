@@ -4,6 +4,7 @@ cc = meson.get_compiler('c')
 
 flags = [
   '-std=c11', '-Wall', '-Wextra', '-Werror=all', '-fvisibility=hidden',
+  '-Wno-format-truncation',
 ]
 
 libalc_src = []

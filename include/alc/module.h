@@ -27,4 +27,7 @@ ALC_API usize alc_module_get_absolute_path(Alc_Module *module, char *out, usize 
 
 ALC_API b8 alc_module_is_empty(Alc_Module *module);
 
+ALC_API usize alc_module_to_namespace_string(char *buf, usize n, const Alc_Module *module,
+                                             const Alc_Module *relative_module);
+
 #endif // __ALC_MODULE_H__

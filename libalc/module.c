@@ -195,6 +195,23 @@ b8 alc_module_is_empty(Alc_Module *module)
          alc_hashtable_is_empty(&module->submodules);
 }
 
+usize alc_module_to_namespace_string(char *buf, usize n, const Alc_Module *module,
+                                     const Alc_Module *relative_module)
+{
+  // FIXME: Use heap stack instead of recursion
+
+  if (module == relative_module)
+    return 0;
+
+  if (module->parent != nullptr) {
+    usize written = alc_module_to_namespace_string(buf, n, module->parent, relative_module);
+    n -= written;
+    buf += written;
+  }
+
+  return snprintf(buf, n, "%s::", module->name);
+}
+
 static void _submodule_destroy(usize index, void *value, void *user_data)
 {
   ALC_UNUSED_PERMIT(index);

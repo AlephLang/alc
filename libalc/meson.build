@@ -12,6 +12,7 @@ libalc_src += [
   'libalc/program.c',
   'libalc/sourcefile.c',
   'libalc/token.c',
+  'libalc/type.c',
 ]
 
 debug_conf_data = configuration_data()

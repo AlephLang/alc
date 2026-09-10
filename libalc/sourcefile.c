@@ -1,5 +1,7 @@
 #include "alc/sourcefile.h"
+#include "alc/ast.h"
 #include "alc/filesystem.h"
+#include "alc/hashtable.h"
 #include "alc/program.h"
 #include "alc/module.h"
 #include "alc/defs.h"
@@ -10,6 +12,7 @@
 #include "alc/alloc_arena.h"
 #include "global.h"
 #include "debug.h"
+#include "program_private.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -37,6 +40,9 @@ Alc_Source_File alc_source_file_create(struct __Alc_Module *module, const char *
   usize file_size = alc_filesystem_file_get_size(file) + 1;
 
   Alc_Source_File out = {
+    .types = alc_hashtable_create(sizeof(Alc_Type *), true),
+    .globals = alc_hashtable_create(sizeof(s32), false), // TODO: Use proper type
+    .functions = alc_hashtable_create(sizeof(s32), false), // TODO: Use proper type
     .name = alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * name_len, 1),
     .module = module,
     .data = alc_alloc_arena_allocate_aligned(&ctx()->arena, file_size, 1),
@@ -52,6 +58,10 @@ Alc_Source_File alc_source_file_create(struct __Alc_Module *module, const char *
 
 void alc_source_file_destroy(Alc_Source_File *file)
 {
+  alc_hashtable_destroy(&file->types);
+  alc_hashtable_destroy(&file->globals);
+  alc_hashtable_destroy(&file->functions);
+
   memset(file, 0, sizeof(Alc_Source_File));
 }
 
@@ -117,6 +127,130 @@ b8 alc_source_file_parse(Alc_Source_File *file)
   alc_parser_destroy(parser);
 
   return true;
+}
+
+void alc_source_file_generate_entries(Alc_Source_File *file)
+{
+  ALC_ASSERT(file->root != nullptr);
+  ALC_ASSUME(file->root->kind == ALC_AST_KIND_ROOT);
+
+  Alc_Entry_Scope current_entry_scope = ALC_ENTRY_SCOPE_GLOBAL;
+
+  Alc_Program *program = file->module->program;
+
+  for (usize i = 0; i < file->root->ROOT.toplevel_statements_num; i++) {
+    Alc_Ast *toplevel = file->root->ROOT.toplevel_statements[i];
+    switch (toplevel->kind) {
+    case ALC_AST_KIND_IMPORT: {
+      alc_program_add_entry(program->entries_import, (Alc_Entry){
+                                                       .file = file,
+                                                       .ast = toplevel,
+                                                       .scope = current_entry_scope,
+                                                     });
+    } break;
+
+    case ALC_AST_KIND_STRUCT:
+    case ALC_AST_KIND_GENERIC_STRUCT:
+    case ALC_AST_KIND_UNION:
+    case ALC_AST_KIND_ENUM:
+    case ALC_AST_KIND_TYPEDEF: {
+      alc_program_add_entry(program->entries_type, (Alc_Entry){
+                                                     .file = file,
+                                                     .ast = toplevel,
+                                                     .scope = current_entry_scope,
+                                                   });
+    } break;
+
+    case ALC_AST_KIND_NONE: {
+      // TODO: Report a warning if specified by flags
+    } break;
+
+    case ALC_AST_KIND_FUNC:
+    case ALC_AST_KIND_EXTERN_FUNC:
+    case ALC_AST_KIND_GENERIC_FUNC: {
+      alc_program_add_entry(program->entries_function, (Alc_Entry){
+                                                         .file = file,
+                                                         .ast = toplevel,
+                                                         .scope = current_entry_scope,
+                                                       });
+    } break;
+
+    case ALC_AST_KIND_QUALIFIER: {
+      Alc_Ast *qualified = toplevel;
+      while (qualified->kind == ALC_AST_KIND_QUALIFIER)
+        qualified = qualified->QUALIFIER.qualified;
+
+      switch (qualified->kind) {
+      case ALC_AST_KIND_FUNC:
+      case ALC_AST_KIND_GENERIC_FUNC: {
+        alc_program_add_entry(program->entries_function, (Alc_Entry){
+                                                           .file = file,
+                                                           .ast = toplevel,
+                                                           .scope = current_entry_scope,
+                                                         });
+      } break;
+
+      case ALC_AST_KIND_VAR_DECL:
+      case ALC_AST_KIND_VAR_DEF: {
+        alc_program_add_entry(program->entries_global, (Alc_Entry){
+                                                         .file = file,
+                                                         .ast = toplevel,
+                                                         .scope = current_entry_scope,
+                                                       });
+      } break;
+
+      default:
+        ALC_NOREACH();
+      }
+    } break;
+
+    case ALC_AST_KIND_VAR_DECL:
+    case ALC_AST_KIND_VAR_DEF:
+    case ALC_AST_KIND_EXTERN_VARDECL: {
+      alc_program_add_entry(program->entries_global, (Alc_Entry){
+                                                       .file = file,
+                                                       .ast = toplevel,
+                                                       .scope = current_entry_scope,
+                                                     });
+    } break;
+
+    case ALC_AST_KIND_SCOPE: {
+      const char *scope_type = toplevel->SCOPE.type;
+      if (strcmp(scope_type, "global") == 0) {
+        if (current_entry_scope == ALC_ENTRY_SCOPE_GLOBAL) {
+          // TODO: Report a warning if specified by flags
+          break;
+        }
+        current_entry_scope = ALC_ENTRY_SCOPE_GLOBAL;
+        break;
+      } else if (strcmp(scope_type, "module") == 0) {
+        if (current_entry_scope == ALC_ENTRY_SCOPE_LOCAL_MODULE) {
+          // TODO: Report a warning if specified by flags
+          break;
+        }
+        current_entry_scope = ALC_ENTRY_SCOPE_LOCAL_MODULE;
+        break;
+      } else if (strcmp(scope_type, "file") == 0) {
+        if (current_entry_scope == ALC_ENTRY_SCOPE_LOCAL_FILE) {
+          // TODO: Report a warning if specified by flags
+          break;
+        }
+        current_entry_scope = ALC_ENTRY_SCOPE_LOCAL_FILE;
+        break;
+      }
+
+      ALC_TODO("Report error 'scope doesn't exist'");
+    } break;
+
+    default:
+      ALC_TODO("Report error");
+    }
+  }
+}
+
+Alc_Type *alc_source_file_find_type(Alc_Source_File *file, const char *name)
+{
+  return alc_hashtable_get(&file->types, name);
 }
 
 usize alc_source_file_get_path(Alc_Source_File *file, char *out, usize n)

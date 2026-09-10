@@ -11,7 +11,6 @@
 #define RESERVE_CHUNKS_NUM 128
 
 static inline Alc_Type_Storage_Chunk chunk_create(usize capacity);
-static inline Alc_Type *allocate_type(Alc_Type_Storage *storage);
 static inline Alc_Type *allocate_type_zero_init(Alc_Type_Storage *storage);
 static inline const Alc_Type *unwrap_alias(const Alc_Type *t);
 
@@ -91,13 +90,23 @@ void alc_type_storage_destroy(Alc_Type_Storage *storage)
   memset(storage, 0, sizeof(Alc_Type_Storage));
 }
 
+Alc_Type *alc_type_storage_allocate_type(Alc_Type_Storage *storage)
+{
+  Alc_Type_Storage_Chunk *last_chunk = &storage->chunks[storage->chunks_num - 1];
+  if ALC_UNLIKELY (last_chunk->filled >= storage->chunk_capacity) {
+    alc_vector_push(storage->chunks, chunk_create(storage->chunk_capacity));
+    last_chunk = &storage->chunks[storage->chunks_num++];
+  }
+  return &last_chunk->types[last_chunk->filled++];
+}
+
 Alc_Type *alc_type_storage_add_type(Alc_Type_Storage *storage, const Alc_Type *type)
 {
   Alc_Type *out_ptr = alc_type_storage_find_duplicate(storage, type);
   if ALC_LIKELY (out_ptr != nullptr)
     return out_ptr;
 
-  out_ptr = allocate_type(storage);
+  out_ptr = alc_type_storage_allocate_type(storage);
   memcpy(out_ptr, type, sizeof(Alc_Type));
 
   return out_ptr;
@@ -573,6 +582,52 @@ usize __alc_type_to_string_impl(char *buf, usize n, const Alc_Type *t,
   ALC_NOREACH();
 }
 
+Alc_Type *alc_type_get_builtin(Alc_Type_Storage *storage, const char *name)
+{
+  if (strcmp(name, "void") == 0)
+    return storage->builtins.type_void;
+  else if (strcmp(name, "bool") == 0)
+    return storage->builtins.type_bool;
+  else if (strcmp(name, "s8") == 0)
+    return storage->builtins.type_int_8;
+  else if (strcmp(name, "s16") == 0)
+    return storage->builtins.type_int_16;
+  else if (strcmp(name, "s32") == 0)
+    return storage->builtins.type_int_32;
+  else if (strcmp(name, "s64") == 0)
+    return storage->builtins.type_int_64;
+  else if (strcmp(name, "u8") == 0)
+    return storage->builtins.type_uint_8;
+  else if (strcmp(name, "u16") == 0)
+    return storage->builtins.type_uint_16;
+  else if (strcmp(name, "u32") == 0)
+    return storage->builtins.type_uint_32;
+  else if (strcmp(name, "u64") == 0)
+    return storage->builtins.type_uint_64;
+  else if (strcmp(name, "f32") == 0)
+    return storage->builtins.type_float_32;
+  else if (strcmp(name, "f64") == 0)
+    return storage->builtins.type_float_64;
+  else if (strcmp(name, "usize") == 0)
+    return storage->builtins.type_usize;
+  else if (strcmp(name, "ssize") == 0)
+    return storage->builtins.type_ssize;
+  else if (strcmp(name, "uptr") == 0)
+    return storage->builtins.type_uptr;
+  else if (strcmp(name, "sptr") == 0)
+    return storage->builtins.type_sptr;
+  else if (strcmp(name, "off32") == 0)
+    return storage->builtins.type_off_32;
+  else if (strcmp(name, "off64") == 0)
+    return storage->builtins.type_off_64;
+  return nullptr;
+}
+
+b8 alc_type_is_builtin(Alc_Type_Storage *storage, const char *name)
+{
+  return alc_type_get_builtin(storage, name) != nullptr;
+}
+
 static inline Alc_Type_Storage_Chunk chunk_create(usize capacity)
 {
   return (Alc_Type_Storage_Chunk){
@@ -581,19 +636,9 @@ static inline Alc_Type_Storage_Chunk chunk_create(usize capacity)
   };
 }
 
-static inline Alc_Type *allocate_type(Alc_Type_Storage *storage)
-{
-  Alc_Type_Storage_Chunk *last_chunk = &storage->chunks[storage->chunks_num - 1];
-  if ALC_UNLIKELY (last_chunk->filled >= storage->chunk_capacity) {
-    alc_vector_push(storage->chunks, chunk_create(storage->chunk_capacity));
-    last_chunk = &storage->chunks[storage->chunks_num++];
-  }
-  return &last_chunk->types[last_chunk->filled++];
-}
-
 static inline Alc_Type *allocate_type_zero_init(Alc_Type_Storage *storage)
 {
-  Alc_Type *type = allocate_type(storage);
+  Alc_Type *type = alc_type_storage_allocate_type(storage);
   memset(type, 0, sizeof(Alc_Type));
   return type;
 }

@@ -1,4 +1,5 @@
 subdir('allocs')
+subdir('analyzer')
 subdir('containers')
 subdir('parser')
 subdir('platform')

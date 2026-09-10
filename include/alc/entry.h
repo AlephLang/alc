@@ -1,8 +1,10 @@
 #ifndef __ALC_ENTRY_H__
 #define __ALC_ENTRY_H__
 
-#include <alc/sourcefile.h>
 #include <alc/ast.h>
+
+typedef struct __Alc_Source_File Alc_Source_File;
+typedef struct __Alc_Type Alc_Type;
 
 typedef enum {
   ALC_ENTRY_SCOPE_GLOBAL,
@@ -13,6 +15,7 @@ typedef enum {
 typedef struct {
   Alc_Source_File *file;
   Alc_Ast *ast;
+  void *data;
   Alc_Entry_Scope scope;
 } Alc_Entry;
 

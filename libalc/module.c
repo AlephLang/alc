@@ -1,5 +1,6 @@
 #include "alc/module.h"
 #include "alc/defs.h"
+#include "alc/entry.h"
 #include "alc/filesystem.h"
 #include "alc/hashtable.h"
 #include "alc/sourcefile.h"
@@ -13,6 +14,7 @@
 
 static void _submodule_destroy(usize index, void *value, void *user_data);
 static void _submodule_parse(usize index, void *value, void *user_data);
+static void _submodule_generate_entries(usize index, void *value, void *user_data);
 
 Alc_Module *alc_module_create(Alc_Program *program, const char *name, Alc_Module *parent)
 {
@@ -53,8 +55,12 @@ b8 alc_module_populate_tree(Alc_Module *module)
   // We assume that directory does exist
   Alc_Directory *module_dir = alc_filesystem_directory_open(path, false);
   if ALC_UNLIKELY (module_dir == nullptr) {
-    Alc_Error e = { .kind = ALC_ERROR_KIND_DIRECTORY };
-    memcpy(e.DIRECTORY.path, path, sizeof(e.DIRECTORY.path));
+    Alc_Error e = {
+      .kind = ALC_ERROR_KIND_DIRECTORY,
+      .DIRECTORY.path =
+        alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * MAX_PATH_SIZE, 1),
+    };
+    memcpy(e.DIRECTORY.path, path, sizeof(char) * MAX_PATH_SIZE);
     alc_program_add_error(module->program, e);
     return false;
   }
@@ -82,8 +88,12 @@ b8 alc_module_populate_tree(Alc_Module *module)
 
     Alc_File *file = alc_filesystem_file_open(path, ALC_FILE_READ_ONLY);
     if ALC_UNLIKELY (file == nullptr) {
-      Alc_Error e = { .kind = ALC_ERROR_KIND_FILE };
-      memcpy(e.FILE.path, path, sizeof(e.FILE.path));
+      Alc_Error e = {
+        .kind = ALC_ERROR_KIND_FILE,
+        .FILE.path =
+          alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * MAX_PATH_SIZE, 1),
+      };
+      memcpy(e.FILE.path, path, sizeof(char) * MAX_PATH_SIZE);
       alc_program_add_error(module->program, e);
       result = false;
       continue;
@@ -110,8 +120,12 @@ b8 alc_module_populate_tree(Alc_Module *module)
 
     Alc_Directory *dir = alc_filesystem_directory_open(path, false);
     if ALC_UNLIKELY (dir == nullptr) {
-      Alc_Error e = { .kind = ALC_ERROR_KIND_DIRECTORY };
-      memcpy(e.DIRECTORY.path, path, sizeof(e.DIRECTORY.path));
+      Alc_Error e = {
+        .kind = ALC_ERROR_KIND_DIRECTORY,
+        .DIRECTORY.path =
+          alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * MAX_PATH_SIZE, 1),
+      };
+      memcpy(e.DIRECTORY.path, path, sizeof(char) * MAX_PATH_SIZE);
       alc_program_add_error(module->program, e);
       result = false;
       continue;
@@ -151,6 +165,15 @@ b8 alc_module_parse_tree(Alc_Module *module)
   alc_hashtable_foreach(&module->submodules, _submodule_parse, &result);
 
   return result;
+}
+
+void alc_module_generate_entries(Alc_Module *module)
+{
+  for (usize i = 0, source_files_len = alc_vector_get_length(module->source_files);
+       i < source_files_len; i++)
+    alc_source_file_generate_entries(&module->source_files[i]);
+
+  alc_hashtable_foreach(&module->submodules, _submodule_generate_entries, nullptr);
 }
 
 usize alc_module_get_path(Alc_Module *module, char *out, usize n)
@@ -195,6 +218,25 @@ b8 alc_module_is_empty(Alc_Module *module)
          alc_hashtable_is_empty(&module->submodules);
 }
 
+Alc_Type *alc_module_find_type(Alc_Module *module, const char *name)
+{
+  while (module != nullptr) {
+    for (usize i = 0, source_files_len = alc_vector_get_length(module->source_files);
+         i < source_files_len; i++) {
+      Alc_Source_File *source_file = &module->source_files[i];
+
+      Alc_Type *type = alc_source_file_find_type(source_file, name);
+      if (type != nullptr &&
+          (type->scope == ALC_ENTRY_SCOPE_GLOBAL || type->scope == ALC_ENTRY_SCOPE_LOCAL_MODULE))
+        return type;
+    }
+
+    module = module->parent;
+  }
+
+  return nullptr;
+}
+
 usize alc_module_to_namespace_string(char *buf, usize n, const Alc_Module *module,
                                      const Alc_Module *relative_module)
 {
@@ -230,4 +272,14 @@ static void _submodule_parse(usize index, void *value, void *user_data)
   b8 *result = user_data;
 
   *result = *result && alc_module_parse_tree(submodule);
+}
+
+static void _submodule_generate_entries(usize index, void *value, void *user_data)
+{
+  ALC_UNUSED_PERMIT(index);
+  ALC_UNUSED_PERMIT(user_data);
+
+  Alc_Module *submodule = value;
+
+  alc_module_generate_entries(submodule);
 }

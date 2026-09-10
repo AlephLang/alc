@@ -1,11 +1,13 @@
 #ifndef __ALC_TYPE_H__
 #define __ALC_TYPE_H__
 
-#include <alc/entry.h>
-#include <alc/sourcefile.h>
 #include <alc/vector.h>
+#include <alc/entry.h>
 #include <alc/hashtable.h>
 #include <alc/ast.h>
+
+typedef struct __Alc_Module Alc_Module;
+typedef struct __Alc_Source_File Alc_Source_File;
 
 typedef struct {
   char *name;
@@ -47,12 +49,10 @@ typedef struct __Alc_Type {
 
     struct {
       char *name;
-      Alc_Ast *bound_ast;
     } STRUCT;
 
     struct {
       char *name;
-      Alc_Ast *bound_ast;
     } GENERIC_STRUCT;
 
     struct {
@@ -62,12 +62,10 @@ typedef struct __Alc_Type {
 
     struct {
       char *name;
-      Alc_Ast *bound_ast;
     } UNION;
 
     struct {
       char *name;
-      Alc_Ast *bound_ast;
       Alc_Hashtable(Alc_Enum_Element) elements;
       usize required_size;
       b8 is_unsigned;
@@ -105,6 +103,7 @@ typedef struct __Alc_Type {
   };
 
   Alc_Source_File *source_file;
+  Alc_Ast *bound_ast;
 
   Alc_Type_Kind kind;
 
@@ -148,6 +147,7 @@ typedef struct {
 ALC_API Alc_Type_Storage alc_type_storage_create(usize chunk_capacity);
 ALC_API void alc_type_storage_destroy(Alc_Type_Storage *storage);
 
+ALC_API Alc_Type *alc_type_storage_allocate_type(Alc_Type_Storage *storage);
 ALC_API Alc_Type *alc_type_storage_add_type(Alc_Type_Storage *storage, const Alc_Type *type);
 
 ALC_API Alc_Type *alc_type_storage_find_duplicate(Alc_Type_Storage *storage, const Alc_Type *type);
@@ -182,5 +182,8 @@ struct __alc_type_to_string_opts {
   __alc_type_to_string_impl((_buf), (_n), (_t), (struct __alc_type_to_string_opts){ __VA_ARGS__ })
 ALC_API usize __alc_type_to_string_impl(char *buf, usize n, const Alc_Type *t,
                                         struct __alc_type_to_string_opts opts);
+
+ALC_API Alc_Type *alc_type_get_builtin(Alc_Type_Storage *storage, const char *name);
+ALC_API b8 alc_type_is_builtin(Alc_Type_Storage *storage, const char *name);
 
 #endif // __ALC_TYPE_H__

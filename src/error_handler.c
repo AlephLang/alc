@@ -1,8 +1,10 @@
 #include "error_handler.h"
-#include "alc/defs.h"
-#include "alc/parser.h"
-#include "alc/sourcefile.h"
-#include "alc/token.h"
+#include <alc/analyzer.h>
+#include <alc/defs.h>
+#include <alc/entry.h>
+#include <alc/parser.h>
+#include <alc/sourcefile.h>
+#include <alc/token.h>
 #include "ansi.h"
 #include <stdio.h>
 #include <string.h>
@@ -19,6 +21,12 @@ static void error_directory(Alc_Error *error);
 static void error_file(Alc_Error *error);
 static void error_lexer(Alc_Error *error);
 static void error_parser(Alc_Error *error);
+static void error_analysis(Alc_Error *error);
+
+static void error_analysis_unresolvable_import(Alc_Analysis_Error *error);
+static void error_analysis_type_redef(Alc_Analysis_Error *error);
+static void error_analysis_variable_redecl(Alc_Analysis_Error *error);
+static void error_analysis_function_redef(Alc_Analysis_Error *error);
 
 static void internal_message(char *buf, usize n, const char *message, const char *text,
                              Ansi_Mode ansi_mode);
@@ -50,6 +58,10 @@ void handle_error(Alc_Error *error)
 
   case ALC_ERROR_KIND_PARSER: {
     error_parser(error);
+  } break;
+
+  case ALC_ERROR_KIND_ANALYSIS: {
+    error_analysis(error);
   } break;
   }
 }
@@ -287,6 +299,96 @@ static void error_parser(Alc_Error *error)
     } break;
     }
   }
+}
+
+static void error_analysis(Alc_Error *error)
+{
+  switch (error->ANALYSIS.error_data.kind) {
+  case ALC_ANALYSIS_ERROR_UNRESOLVABLE_IMPORT: {
+    error_analysis_unresolvable_import(&error->ANALYSIS.error_data);
+  } break;
+
+  case ALC_ANALYSIS_ERROR_TYPE_REDEF: {
+    error_analysis_type_redef(&error->ANALYSIS.error_data);
+  } break;
+
+  case ALC_ANALYSIS_ERROR_VARIABLE_REDECL: {
+    error_analysis_variable_redecl(&error->ANALYSIS.error_data);
+  } break;
+
+  case ALC_ANALYSIS_ERROR_FUNCTION_REDEF: {
+    error_analysis_function_redef(&error->ANALYSIS.error_data);
+  } break;
+  }
+}
+
+static void error_analysis_unresolvable_import(Alc_Analysis_Error *error)
+{
+  ALC_UNUSED_DEBUG(error);
+  ALC_TODO("Handle UNRESOLVABLE_IMPORT error");
+}
+
+static void error_analysis_type_redef(Alc_Analysis_Error *error)
+{
+  char file_path[MAX_PATH_SIZE];
+  alc_source_file_get_path(error->sourcefile, file_path, MAX_PATH_SIZE);
+
+  char message_text[512];
+  snprintf(message_text, 512, "redefinition of type '%s%s%s'", ansi_graphics(ANSI_GRAPHICS_BOLD),
+           error->TYPE_REDEF.name, ansi_reset());
+
+  char message[512];
+  file_message(message, 512, file_path, "error", message_text, ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED);
+
+  char hl[4096];
+  Highlight_Data hl_data = {
+    .src = error->sourcefile->data,
+    .tokens = error->sourcefile->tokens,
+    .tokens_len = error->sourcefile->tokens_len,
+  };
+  highlight_token(hl, 4096, &hl_data, error->TYPE_REDEF.ast->pos,
+                  ANSI_GRAPHICS_BOLD | ANSI_COLOR_RED, "");
+
+  fprintf(stderr, "%s\n%s\n", message, hl);
+
+  if (error->TYPE_REDEF.where_defined.sourcefile != nullptr) {
+    Alc_Source_File *hint_source_file = error->TYPE_REDEF.where_defined.sourcefile;
+    Alc_Ast *hint_ast = error->TYPE_REDEF.where_defined.ast;
+
+    char hint_file_path[MAX_PATH_SIZE];
+    alc_source_file_get_path(hint_source_file, hint_file_path, MAX_PATH_SIZE);
+
+    char hint_message_text[512];
+    snprintf(hint_message_text, 512, "type '%s%s%s' is already defined in this file",
+             ansi_graphics(ANSI_GRAPHICS_BOLD), error->TYPE_REDEF.name, ansi_reset());
+
+    char hint_message[512];
+    file_message(hint_message, 512, hint_file_path, "note", hint_message_text,
+                 ANSI_GRAPHICS_BOLD | ANSI_COLOR_CYAN);
+
+    char hint_hl[4096];
+    Highlight_Data hint_hl_data = {
+      .src = hint_source_file->data,
+      .tokens = hint_source_file->tokens,
+      .tokens_len = hint_source_file->tokens_len,
+    };
+    highlight_token(hint_hl, 4096, &hint_hl_data, hint_ast->pos,
+                    ANSI_GRAPHICS_BOLD | ANSI_COLOR_CYAN, "");
+
+    fprintf(stderr, "%s\n%s\n", hint_message, hint_hl);
+  }
+}
+
+static void error_analysis_variable_redecl(Alc_Analysis_Error *error)
+{
+  ALC_UNUSED_DEBUG(error);
+  ALC_TODO("Handle VARIABLE_REDECL error");
+}
+
+static void error_analysis_function_redef(Alc_Analysis_Error *error)
+{
+  ALC_UNUSED_DEBUG(error);
+  ALC_TODO("Handle FUNCTION_REDEF error");
 }
 
 static void internal_message(char *buf, usize n, const char *message, const char *text,

@@ -11,7 +11,7 @@ Alc_Ast *parse_typedef(Alc_Parser *p)
 {
   ALC_ASSUME(p != nullptr);
 
-  usize pos = p->pos++;
+  p->pos++;
 
   Alc_Ast *attribute_list = nullptr;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
@@ -24,7 +24,7 @@ Alc_Ast *parse_typedef(Alc_Parser *p)
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
-  p->pos++;
+  usize pos = p->pos++;
 
   Alc_Ast *generic_placeholder_type_list = nullptr;
   if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LARROW) {

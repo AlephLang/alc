@@ -64,6 +64,19 @@ s32 main(s32 argc, char **argv)
     return -4;
   }
 
+  alc_program_generate_entries(program_context);
+
+  if ALC_UNLIKELY (!alc_program_analyze(program_context)) {
+    Alc_Vector(Alc_Error) analysis_errors = alc_program_get_errors(program_context);
+    for (usize i = 0, analysis_errors_len = alc_vector_get_length(analysis_errors);
+         i < analysis_errors_len; i++)
+      handle_error(&analysis_errors[i]);
+
+    alc_program_destroy(program_context);
+    alc_shutdown();
+    return -5;
+  }
+
   alc_program_destroy(program_context);
 
   alc_shutdown();

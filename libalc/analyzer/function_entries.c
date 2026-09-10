@@ -6,5 +6,6 @@ b8 alc_analyzer_validate_and_emplace_function_entries(Alc_Program *program,
 {
   ALC_UNUSED_DEBUG(program);
   ALC_UNUSED_DEBUG(entries);
+  ALC_TODO("Validate and emplace function entries");
   return true;
 }

@@ -29,6 +29,7 @@ ALC_API void alc_stack_destroy(Alc_Stack_Base *stack);
 
 ALC_API void *alc_stack_get(Alc_Stack_Base *stack, usize index);
 ALC_API void *alc_stack_push(Alc_Stack_Base *stack, const void *value);
+ALC_API void *alc_stack_bump(Alc_Stack_Base *stack);
 ALC_API void alc_stack_pop(Alc_Stack_Base *stack, void *out_value);
 ALC_API void *alc_stack_top(Alc_Stack_Base *stack);
 ALC_API void *alc_stack_bottom(Alc_Stack_Base *stack);
@@ -36,7 +37,7 @@ ALC_API usize alc_stack_get_element_size(Alc_Stack_Base *stack);
 ALC_API usize alc_stack_get_length(Alc_Stack_Base *stack);
 ALC_API void alc_stack_drop(Alc_Stack_Base *stack);
 
-typedef void (*Alc_Stack_Foreach_Fn)(usize index, void *value, void *user_data);
+typedef Alc_Foreach_Fn_Result (*Alc_Stack_Foreach_Fn)(usize index, void *value, void *user_data);
 ALC_API void alc_stack_foreach(Alc_Stack_Base *stack, Alc_Stack_Foreach_Fn foreach_fn,
                                void *user_data);
 

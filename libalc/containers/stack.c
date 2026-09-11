@@ -1,4 +1,5 @@
 #include "alc/stack.h"
+#include "alc/defs.h"
 #include "alc/vector.h"
 #include <stdlib.h>
 #include <string.h>
@@ -40,11 +41,20 @@ void *alc_stack_get(Alc_Stack_Base *stack, usize index)
   if ALC_UNLIKELY (index_in_block >= block->filled)
     return nullptr;
 
-  void *slot = (char *)block->memory + (stack->element_size * index_in_block);
+  void *slot = (u8 *)block->memory + (stack->element_size * index_in_block);
   return slot;
 }
 
 void *alc_stack_push(Alc_Stack_Base *stack, const void *value)
+{
+  void *slot = alc_stack_bump(stack);
+
+  memcpy(slot, value, stack->element_size);
+
+  return slot;
+}
+
+void *alc_stack_bump(Alc_Stack_Base *stack)
 {
   if (stack->blocks[stack->cur_block_idx].filled == stack->block_capacity) {
     stack->cur_block_idx++;
@@ -53,10 +63,10 @@ void *alc_stack_push(Alc_Stack_Base *stack, const void *value)
       alc_vector_push(stack->blocks, create_block(stack));
   }
 
-  Alc_Stack_Block *block = &stack->blocks[stack->cur_block_idx];
-  void *slot = (char *)block->memory + (block->filled * stack->element_size);
+  // printf("cur_block_idx: %zu\n", stack->cur_block_idx);
 
-  memcpy(slot, value, stack->element_size);
+  Alc_Stack_Block *block = &stack->blocks[stack->cur_block_idx];
+  void *slot = (u8 *)block->memory + (block->filled * stack->element_size);
 
   block->filled++;
 
@@ -76,7 +86,7 @@ void alc_stack_pop(Alc_Stack_Base *stack, void *out_value)
 
   Alc_Stack_Block *block = &stack->blocks[stack->cur_block_idx];
 
-  void *slot = (char *)block->memory + ((block->filled - 1) * stack->element_size);
+  void *slot = (u8 *)block->memory + ((block->filled - 1) * stack->element_size);
   if (out_value != nullptr)
     memcpy(out_value, slot, stack->element_size);
 }
@@ -92,7 +102,7 @@ void *alc_stack_top(Alc_Stack_Base *stack)
   }
 
   Alc_Stack_Block *block = &stack->blocks[selected_block_idx];
-  void *slot = (char *)block->memory + ((block->filled - 1) * stack->element_size);
+  void *slot = (u8 *)block->memory + ((block->filled - 1) * stack->element_size);
 
   return slot;
 }
@@ -124,7 +134,9 @@ void alc_stack_foreach(Alc_Stack_Base *stack, Alc_Stack_Foreach_Fn foreach_fn, v
     Alc_Stack_Block *block = &stack->blocks[i];
     for (usize j = 0; j < block->filled; j++) {
       void *slot = (char *)block->memory + (j * stack->element_size);
-      foreach_fn((i * stack->block_capacity) + j, slot, user_data);
+      Alc_Foreach_Fn_Result result = foreach_fn((i * stack->block_capacity) + j, slot, user_data);
+      if (result == ALC_FOREACH_FN_RESULT_BREAK)
+        return;
     }
   }
 }
@@ -132,7 +144,7 @@ void alc_stack_foreach(Alc_Stack_Base *stack, Alc_Stack_Foreach_Fn foreach_fn, v
 static inline Alc_Stack_Block create_block(Alc_Stack_Base *stack)
 {
   return (Alc_Stack_Block){
-    .memory = malloc(stack->block_capacity),
+    .memory = malloc(stack->element_size * stack->block_capacity),
     .filled = 0,
   };
 }

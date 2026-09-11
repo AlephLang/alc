@@ -27,6 +27,8 @@ void alc_stack_destroy(Alc_Stack_Base *stack)
   for (usize i = 0, blocks_len = alc_vector_get_length(stack->blocks); i < blocks_len; i++)
     free(stack->blocks[i].memory);
 
+  alc_vector_destroy(stack->blocks);
+
   memset(stack, 0, sizeof(Alc_Stack_Base));
 }
 

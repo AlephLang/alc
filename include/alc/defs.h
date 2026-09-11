@@ -168,4 +168,9 @@ static inline u64 alc_get_aligned(u64 x, u64 alignment)
   return x + (-x & (alignment - 1));
 }
 
+typedef enum {
+  ALC_FOREACH_FN_RESULT_CONTINUE,
+  ALC_FOREACH_FN_RESULT_BREAK,
+} Alc_Foreach_Fn_Result;
+
 #endif // __ALC_DEFS_H__

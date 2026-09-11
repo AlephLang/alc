@@ -12,15 +12,15 @@
 Alc_Program *alc_program_create(const char *path)
 {
   Alc_Program *program = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Program));
+  memset(program, 0, sizeof(Alc_Program));
+
   alc_filesystem_path_absolute(path, program->absolute_path);
 
   if (path != nullptr)
     alc_filesystem_path_simplify(path, program->path);
 
   program->errors = alc_vector_create(Alc_Error);
-
   program->root_module = alc_module_create(program, nullptr, nullptr);
-
   program->type_storage = alc_type_storage_create(1024);
 
   return program;

@@ -26,6 +26,7 @@ typedef struct __Alc_Source_File {
 
 ALC_API Alc_Source_File alc_source_file_create(struct __Alc_Module *module, const char *name,
                                                Alc_File *file);
+ALC_API void alc_source_file_destroy(Alc_Source_File *file);
 
 ALC_API b8 alc_source_file_parse(Alc_Source_File *file);
 

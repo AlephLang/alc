@@ -39,6 +39,9 @@ Alc_Module *alc_module_create(Alc_Program *program, const char *name, Alc_Module
 
 void alc_module_destroy(Alc_Module *module)
 {
+  for (usize i = 0, source_files_len = alc_vector_get_length(module->source_files);
+       i < source_files_len; i++)
+    alc_source_file_destroy(&module->source_files[i]);
   alc_vector_destroy(module->source_files);
 
   alc_hashtable_foreach(&module->submodules, _submodule_destroy, nullptr);

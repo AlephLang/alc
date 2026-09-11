@@ -65,8 +65,6 @@ void *alc_stack_bump(Alc_Stack_Base *stack)
       alc_vector_push(stack->blocks, create_block(stack));
   }
 
-  // printf("cur_block_idx: %zu\n", stack->cur_block_idx);
-
   Alc_Stack_Block *block = &stack->blocks[stack->cur_block_idx];
   void *slot = (u8 *)block->memory + (block->filled * stack->element_size);
 

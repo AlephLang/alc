@@ -1,3 +1,5 @@
 option('debug_tokens', type: 'boolean', value: false)
 option('debug_asts', type: 'boolean', value: false)
 option('debug_arena', type: 'boolean', value: false)
+
+option('debug_arena_display_content', type: 'boolean', value: false)

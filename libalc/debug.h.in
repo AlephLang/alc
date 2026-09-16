@@ -3,5 +3,8 @@
 
 #mesondefine __ALC_DEBUG_TOKENS__
 #mesondefine __ALC_DEBUG_ASTS__
+#mesondefine __ALC_DEBUG_ARENA__
+
+#mesondefine __ALC_DEBUG_ARENA_DISPLAY_CONTENT__
 
 #endif // __ALC_DEBUG_H__

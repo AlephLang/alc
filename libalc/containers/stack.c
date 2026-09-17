@@ -128,14 +128,14 @@ void alc_stack_drop(Alc_Stack_Base *stack)
   stack->cur_block_idx = 0;
 }
 
-void alc_stack_foreach(Alc_Stack_Base *stack, Alc_Stack_Foreach_Fn foreach_fn, void *user_data)
+void alc_stack_foreach(Alc_Stack_Base *stack, Alc_Foreach_Fn foreach_fn, void *user_data)
 {
   for (usize i = 0; i <= stack->cur_block_idx; i++) {
     Alc_Stack_Block *block = &stack->blocks[i];
     for (usize j = 0; j < block->filled; j++) {
       void *slot = (char *)block->memory + (j * stack->element_size);
-      Alc_Foreach_Fn_Result result = foreach_fn((i * stack->block_capacity) + j, slot, user_data);
-      if (result == ALC_FOREACH_FN_RESULT_BREAK)
+      Alc_Foreach_Result result = foreach_fn((i * stack->block_capacity) + j, slot, user_data);
+      if (result == ALC_FOREACH_BREAK)
         return;
     }
   }

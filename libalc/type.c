@@ -1,29 +1,27 @@
 #include "alc/type.h"
 #include "alc/alloc_arena.h"
+#include "alc/ast.h"
+#include "alc/program.h"
 #include "alc/defs.h"
 #include "alc/module.h"
+#include "alc/sourcefile.h"
+#include "alc/stack.h"
 #include "alc/vector.h"
 #include "global.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define RESERVE_CHUNKS_NUM 128
 
-static inline Alc_Type_Storage_Chunk chunk_create(usize capacity);
 static inline Alc_Type *allocate_type_zero_init(Alc_Type_Storage *storage);
 static inline const Alc_Type *unwrap_alias(const Alc_Type *t);
+static Alc_Foreach_Result _find_duplicate_fn(usize index, void *value, void *user_data);
 
-Alc_Type_Storage alc_type_storage_create(usize chunk_capacity)
+Alc_Type_Storage alc_type_storage_create(usize block_capacity)
 {
   Alc_Type_Storage out = {
-    .chunk_capacity = chunk_capacity,
-
-    .chunks = alc_vector_reserve(Alc_Type_Storage_Chunk, RESERVE_CHUNKS_NUM),
-    .chunks_num = 1,
+    .type_stack = alc_stack_create(Alc_Type, .block_capacity = block_capacity),
   };
-
-  alc_vector_push(out.chunks, chunk_create(chunk_capacity));
 
   out.builtins.type_error = allocate_type_zero_init(&out);
   out.builtins.type_void = allocate_type_zero_init(&out);
@@ -82,22 +80,14 @@ Alc_Type_Storage alc_type_storage_create(usize chunk_capacity)
 
 void alc_type_storage_destroy(Alc_Type_Storage *storage)
 {
-  for (usize i = 0; i < storage->chunks_num; i++)
-    free(storage->chunks[i].types);
-
-  alc_vector_destroy(storage->chunks);
+  alc_stack_destroy(&storage->type_stack);
 
   memset(storage, 0, sizeof(Alc_Type_Storage));
 }
 
 Alc_Type *alc_type_storage_allocate_type(Alc_Type_Storage *storage)
 {
-  Alc_Type_Storage_Chunk *last_chunk = &storage->chunks[storage->chunks_num - 1];
-  if ALC_UNLIKELY (last_chunk->filled >= storage->chunk_capacity) {
-    alc_vector_push(storage->chunks, chunk_create(storage->chunk_capacity));
-    last_chunk = &storage->chunks[storage->chunks_num++];
-  }
-  return &last_chunk->types[last_chunk->filled++];
+  return alc_stack_bump(&storage->type_stack);
 }
 
 Alc_Type *alc_type_storage_add_type(Alc_Type_Storage *storage, const Alc_Type *type)
@@ -114,16 +104,13 @@ Alc_Type *alc_type_storage_add_type(Alc_Type_Storage *storage, const Alc_Type *t
 
 Alc_Type *alc_type_storage_find_duplicate(Alc_Type_Storage *storage, const Alc_Type *type)
 {
-  for (usize chunk_i = 0; chunk_i < storage->chunks_num; chunk_i++) {
-    Alc_Type_Storage_Chunk *chunk = &storage->chunks[chunk_i];
-    for (usize i = 0; i < chunk->filled; i++) {
-      Alc_Type *stored_type = &chunk->types[i];
-      if ALC_UNLIKELY (alc_type_is_same(type, stored_type))
-        return stored_type;
-    }
-  }
+  struct {
+    const Alc_Type *type;
+    Alc_Type *result;
+  } data = { .type = type, .result = nullptr };
+  alc_stack_foreach(&storage->type_stack, _find_duplicate_fn, &data);
 
-  return nullptr;
+  return data.result;
 }
 
 b8 alc_type_is_same(const Alc_Type *t1, const Alc_Type *t2)
@@ -303,6 +290,32 @@ b8 alc_type_is_float(const Alc_Type *t)
   default:
     return false;
   }
+}
+
+b8 alc_type_is_complete(const Alc_Type *t)
+{
+  t = unwrap_alias(t);
+
+  // HACK: I don't know if there's a need to make it more sophisticated.
+  switch (t->kind) {
+  case ALC_TYPE_KIND_CARRAY: {
+    return t->CARRAY.length != -1ULL && alc_type_is_complete(t->CARRAY.stored_type);
+  }
+
+  case ALC_TYPE_KIND_SLICE: {
+    return t->SLICE.length != -1ULL && alc_type_is_complete(t->SLICE.stored_type);
+  }
+
+  default:
+    return true;
+  }
+}
+
+b8 alc_type_is_error(const Alc_Type *t)
+{
+  return t->kind == ALC_TYPE_KIND_ERROR ||
+         (t->kind == ALC_TYPE_KIND_GENERIC_STRUCT_INSTANCE &&
+          alc_type_is_error(t->GENERIC_STRUCT_INSTANCE.bound_generic_struct));
 }
 
 Alc_Type *alc_type_propagate(Alc_Type_Storage *storage, Alc_Type *a, Alc_Type *b)
@@ -535,6 +548,7 @@ usize __alc_type_to_string_impl(char *buf, usize n, const Alc_Type *t,
     usize written = snprintf(buf, n, "*");
     buf += written;
     n -= written;
+
     return written + __alc_type_to_string_impl(buf, n, t->POINTER.indirected_type, opts);
   }
 
@@ -628,12 +642,229 @@ b8 alc_type_is_builtin(Alc_Type_Storage *storage, const char *name)
   return alc_type_get_builtin(storage, name) != nullptr;
 }
 
-static inline Alc_Type_Storage_Chunk chunk_create(usize capacity)
+Alc_Type *alc_type_resolve_from_ast(Alc_Program *program, Alc_Source_File *sourcefile, Alc_Ast *ast)
 {
-  return (Alc_Type_Storage_Chunk){
-    .types = malloc(sizeof(Alc_Type) * capacity),
-    .filled = 0,
-  };
+  // TODO: Also resolve namespaces.
+
+  switch (ast->kind) {
+  case ALC_AST_KIND_TYPE_PLAIN: {
+    const char *name = ast->TYPE_PLAIN.name;
+    Alc_Type *type = alc_type_get_builtin(&program->type_storage, name);
+    if (type != nullptr)
+      return type;
+
+    type = alc_source_file_find_type(sourcefile, name);
+    if (type != nullptr)
+      return type;
+
+    type = alc_module_find_type(sourcefile->module, name);
+    if (type != nullptr)
+      return type;
+
+    // TODO: Error: Undefined type.
+
+    return program->type_storage.builtins.type_error;
+  }
+
+  case ALC_AST_KIND_TYPE_POINTER: {
+    Alc_Type *indirected_type =
+      alc_type_resolve_from_ast(program, sourcefile, ast->TYPE_POINTER.type);
+    if ALC_UNLIKELY (alc_type_is_error(indirected_type))
+      return program->type_storage.builtins.type_error;
+
+    Alc_Type pointer_type = {
+      .POINTER.indirected_type = indirected_type,
+      .kind = ALC_TYPE_KIND_POINTER,
+    };
+    Alc_Type *out = alc_type_storage_add_type(&program->type_storage, &pointer_type);
+    return out;
+  }
+
+  case ALC_AST_KIND_TYPE_ARRAY: {
+    Alc_Type *stored_type = alc_type_resolve_from_ast(program, sourcefile, ast->TYPE_ARRAY.type);
+    if ALC_UNLIKELY (alc_type_is_error(stored_type))
+      return program->type_storage.builtins.type_error;
+
+    u64 length = -1ULL;
+    if (ast->TYPE_ARRAY.size_expression != nullptr) {
+      // TODO: Get compile-time value from it and verify that it is a positive
+      // integer.
+    }
+
+    Alc_Type slice_type = {
+      .SLICE = {
+        .length = length,
+        .stored_type = stored_type,
+      },
+      .kind = ALC_TYPE_KIND_SLICE,
+    };
+    Alc_Type *out = alc_type_storage_add_type(&program->type_storage, &slice_type);
+    return out;
+  }
+
+  case ALC_AST_KIND_TYPE_FUNCTION_POINTER: {
+    Alc_Type *return_type;
+    if (ast->TYPE_FUNCTION_POINTER.return_type != nullptr) {
+      return_type =
+        alc_type_resolve_from_ast(program, sourcefile, ast->TYPE_FUNCTION_POINTER.return_type);
+      if ALC_UNLIKELY (alc_type_is_error(return_type))
+        return program->type_storage.builtins.type_error;
+    } else {
+      return_type = program->type_storage.builtins.type_void;
+    }
+
+    Alc_Ast *argument_list = ast->TYPE_FUNCTION_POINTER.argument_list;
+    b8 has_defaults = false;
+    for (usize i = 0; i < argument_list->ARGUMENT_LIST.arguments_num; i++) {
+      Alc_Ast *argument = argument_list->ARGUMENT_LIST.arguments[i];
+      switch (argument->kind) {
+      case ALC_AST_KIND_VAR_DECL: {
+        if ALC_UNLIKELY (has_defaults) {
+          // TODO: Error: Argument without default value that
+          // comes after an argument with default value is not allowed.
+          return program->type_storage.builtins.type_error;
+        }
+        // TODO: Implementation.
+      } break;
+
+      case ALC_AST_KIND_VAR_DEF: {
+        // TODO: Implementation.
+      } break;
+
+      default:
+        ALC_NOREACH();
+      }
+    }
+
+    Alc_Type func_ptr_type = {
+      .FUNCTION = {
+        // TODO: Fill it when the time comes.
+        .is_variadic = argument_list->ARGUMENT_LIST.is_variadic,
+      },
+      .kind = ALC_TYPE_KIND_FUNCTION,
+    };
+    Alc_Type *out = alc_type_storage_add_type(&program->type_storage, &func_ptr_type);
+    return out;
+  }
+
+  case ALC_AST_KIND_TYPE_TUPLE: {
+    Alc_Vector(Alc_Type *) types = alc_vector_reserve(Alc_Type *, ast->TYPE_TUPLE.types_num);
+    for (usize i = 0; i < ast->TYPE_TUPLE.types_num; i++) {
+      Alc_Ast *type_ast = ast->TYPE_TUPLE.types[i];
+      Alc_Type *type = alc_type_resolve_from_ast(program, sourcefile, type_ast);
+      if ALC_UNLIKELY (alc_type_is_error(type)) {
+        alc_vector_destroy(types);
+        return program->type_storage.builtins.type_error;
+      }
+
+      alc_vector_push(types, type);
+    }
+
+    // NOTE: Do not copy vector to the array, as the tuple type may already
+    // exist, and array stored in the arena will stay, and we lose memory.
+    Alc_Type tuple = {
+      .TUPLE = {
+        .types = types,
+        .types_num = alc_vector_get_length(types),
+      },
+      .kind = ALC_TYPE_KIND_TUPLE,
+    };
+    Alc_Type *tuple_duplicate = alc_type_storage_find_duplicate(&program->type_storage, &tuple);
+    if (tuple_duplicate != nullptr)
+      return tuple_duplicate;
+
+    tuple.TUPLE.types = alc_vector_to_array(types, &tuple.TUPLE.types_num);
+    alc_vector_destroy(types);
+
+    Alc_Type *out = alc_type_storage_add_type(&program->type_storage, &tuple);
+    return out;
+  }
+
+  case ALC_AST_KIND_TYPE_TYPE_OF: {
+    ALC_TODO("Resolve 'typeof' type based on provided scope.");
+  }
+
+  case ALC_AST_KIND_GENERIC_TYPE: {
+    // NOTE: This should be used in instantiation context.
+    const char *name = ast->GENERIC_TYPE.name;
+    Alc_Type *bound_generic_struct;
+
+    b8 validate_types = true;
+    Alc_Ast *generic_type_list = ast->GENERIC_TYPE.generic_type_list;
+
+    Alc_Vector(Alc_Type *) types =
+      alc_vector_reserve(Alc_Type *, generic_type_list->GENERIC_TYPE_LIST.generic_types_num);
+
+    bound_generic_struct = alc_type_get_builtin(&program->type_storage, name);
+    if (bound_generic_struct != nullptr)
+      goto __check_bound_generic_struct;
+
+    bound_generic_struct = alc_source_file_find_type(sourcefile, name);
+    if (bound_generic_struct != nullptr)
+      goto __check_bound_generic_struct;
+
+    bound_generic_struct = alc_module_find_type(sourcefile->module, name);
+    if (bound_generic_struct != nullptr)
+      goto __check_bound_generic_struct;
+
+    // TODO: Error: Undefined type.
+
+    bound_generic_struct = program->type_storage.builtins.type_error;
+    goto __after_bound_struct;
+
+__check_bound_generic_struct:
+    if (bound_generic_struct->kind != ALC_TYPE_KIND_GENERIC_STRUCT) {
+      bound_generic_struct = program->type_storage.builtins.type_error;
+      validate_types = false;
+    }
+
+__after_bound_struct:
+    for (usize i = 0; i < generic_type_list->GENERIC_TYPE_LIST.generic_types_num; i++) {
+      Alc_Ast *type_ast = generic_type_list->GENERIC_TYPE_LIST.generic_types[i];
+      Alc_Type *type = alc_type_resolve_from_ast(program, sourcefile, type_ast);
+      if ALC_UNLIKELY (alc_type_is_error(type)) {
+        alc_vector_destroy(types);
+        return program->type_storage.builtins.type_error;
+      }
+
+      if ALC_LIKELY (validate_types) {
+        // TODO: validate types.
+      }
+
+      alc_vector_push(types, type);
+    }
+
+    // NOTE: Do not copy anything for now.
+    Alc_Type generic_struct_instance = {
+      .GENERIC_STRUCT_INSTANCE = {
+        .name = (char*)name,
+        .bound_generic_struct = bound_generic_struct,
+        .types = types,
+        .types_num = alc_vector_get_length(types),
+      },
+      .kind = ALC_TYPE_KIND_GENERIC_STRUCT_INSTANCE,
+    };
+    Alc_Type *duplicate =
+      alc_type_storage_find_duplicate(&program->type_storage, &generic_struct_instance);
+    if (duplicate != nullptr)
+      return duplicate;
+
+    usize name_len = strlen(name) + 1;
+
+    generic_struct_instance.GENERIC_STRUCT_INSTANCE.name =
+      alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * name_len, 1);
+    generic_struct_instance.GENERIC_STRUCT_INSTANCE.types =
+      alc_vector_to_array(types, &generic_struct_instance.GENERIC_STRUCT_INSTANCE.types_num);
+    alc_vector_destroy(types);
+    memcpy(generic_struct_instance.GENERIC_STRUCT_INSTANCE.name, name, sizeof(char) * name_len);
+
+    Alc_Type *out = alc_type_storage_add_type(&program->type_storage, &generic_struct_instance);
+    return out;
+  }
+
+  default:
+    ALC_NOREACH();
+  }
 }
 
 static inline Alc_Type *allocate_type_zero_init(Alc_Type_Storage *storage)
@@ -649,4 +880,23 @@ static inline const Alc_Type *unwrap_alias(const Alc_Type *t)
     t = t->ALIAS.aliased_type;
 
   return t;
+}
+
+static Alc_Foreach_Result _find_duplicate_fn(usize index, void *value, void *user_data)
+{
+  ALC_UNUSED_PERMIT(index);
+
+  struct {
+    const Alc_Type *type;
+    Alc_Type *result;
+  } *data = user_data;
+
+  Alc_Type *type = value;
+
+  if (alc_type_is_same(data->type, type)) {
+    data->result = type;
+    return ALC_FOREACH_BREAK;
+  }
+
+  return ALC_FOREACH_CONTINUE;
 }

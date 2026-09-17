@@ -12,25 +12,31 @@ b8 alc_analyzer_validate_and_emplace_type_entries(Alc_Program *program,
   for (usize i = 0, entries_num = alc_vector_get_length(entries); i < entries_num; i++) {
     Alc_Entry *entry = &entries[i];
     const char *name;
+    Alc_Type_Kind type_kind;
     switch (entry->ast->kind) {
     case ALC_AST_KIND_STRUCT: {
       name = entry->ast->STRUCT.name;
+      type_kind = ALC_TYPE_KIND_STRUCT;
     } break;
 
     case ALC_AST_KIND_GENERIC_STRUCT: {
       name = entry->ast->GENERIC_STRUCT.name;
+      type_kind = ALC_TYPE_KIND_GENERIC_STRUCT;
     } break;
 
     case ALC_AST_KIND_UNION: {
       name = entry->ast->UNION.name;
+      type_kind = ALC_TYPE_KIND_UNION;
     } break;
 
     case ALC_AST_KIND_ENUM: {
       name = entry->ast->ENUM.name;
+      type_kind = ALC_TYPE_KIND_ENUM;
     } break;
 
     case ALC_AST_KIND_TYPEDEF: {
       name = entry->ast->TYPEDEF.name;
+      type_kind = ALC_TYPE_KIND_ALIAS;
     } break;
 
     default:
@@ -76,8 +82,8 @@ b8 alc_analyzer_validate_and_emplace_type_entries(Alc_Program *program,
     allocated_type->scope = entry->scope;
     allocated_type->bound_ast = entry->ast;
     allocated_type->source_file = entry->file;
-
-    alc_hashtable_put(&entry->file->types, name, allocated_type);
+    allocated_type->kind = type_kind;
+    alc_source_file_put_type(entry->file, allocated_type, name);
 
     entry->data = allocated_type;
   }

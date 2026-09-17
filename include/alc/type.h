@@ -1,11 +1,13 @@
 #ifndef __ALC_TYPE_H__
 #define __ALC_TYPE_H__
 
+#include <alc/stack.h>
 #include <alc/vector.h>
 #include <alc/entry.h>
 #include <alc/hashtable.h>
 #include <alc/ast.h>
 
+typedef struct __Alc_Program Alc_Program;
 typedef struct __Alc_Module Alc_Module;
 typedef struct __Alc_Source_File Alc_Source_File;
 
@@ -58,6 +60,8 @@ typedef struct __Alc_Type {
     struct {
       char *name;
       struct __Alc_Type *bound_generic_struct;
+      struct __Alc_Type **types;
+      usize types_num;
     } GENERIC_STRUCT_INSTANCE;
 
     struct {
@@ -87,12 +91,12 @@ typedef struct __Alc_Type {
     } POINTER;
 
     struct {
-      usize length;
+      u64 length;
       struct __Alc_Type *stored_type;
     } CARRAY;
 
     struct {
-      usize length;
+      u64 length;
       struct __Alc_Type *stored_type;
     } SLICE;
 
@@ -111,15 +115,7 @@ typedef struct __Alc_Type {
 } Alc_Type;
 
 typedef struct {
-  Alc_Type *types;
-  usize filled;
-} Alc_Type_Storage_Chunk;
-
-typedef struct {
-  usize chunk_capacity;
-
-  Alc_Vector(Alc_Type_Storage_Chunk) chunks;
-  usize chunks_num;
+  Alc_Stack(Alc_Type) type_stack;
 
   struct {
     Alc_Type *type_error;
@@ -144,7 +140,7 @@ typedef struct {
   } builtins;
 } Alc_Type_Storage;
 
-ALC_API Alc_Type_Storage alc_type_storage_create(usize chunk_capacity);
+ALC_API Alc_Type_Storage alc_type_storage_create(usize block_capacity);
 ALC_API void alc_type_storage_destroy(Alc_Type_Storage *storage);
 
 ALC_API Alc_Type *alc_type_storage_allocate_type(Alc_Type_Storage *storage);
@@ -161,6 +157,8 @@ ALC_API b8 alc_type_is_signed(const Alc_Type *t);
 ALC_API b8 alc_type_is_unsigned(const Alc_Type *t);
 ALC_API b8 alc_type_is_enum(const Alc_Type *t);
 ALC_API b8 alc_type_is_float(const Alc_Type *t);
+ALC_API b8 alc_type_is_complete(const Alc_Type *t);
+ALC_API b8 alc_type_is_error(const Alc_Type *t);
 
 ALC_API Alc_Type *alc_type_propagate(Alc_Type_Storage *storage, Alc_Type *a, Alc_Type *b);
 
@@ -185,5 +183,8 @@ ALC_API usize __alc_type_to_string_impl(char *buf, usize n, const Alc_Type *t,
 
 ALC_API Alc_Type *alc_type_get_builtin(Alc_Type_Storage *storage, const char *name);
 ALC_API b8 alc_type_is_builtin(Alc_Type_Storage *storage, const char *name);
+
+ALC_API Alc_Type *alc_type_resolve_from_ast(Alc_Program *program, Alc_Source_File *sourcefile,
+                                            Alc_Ast *ast);
 
 #endif // __ALC_TYPE_H__

@@ -1,6 +1,7 @@
 #ifndef __ALC_SOURCE_FILE_H__
 #define __ALC_SOURCE_FILE_H__
 
+#include <alc/global_variable.h>
 #include <alc/type.h>
 #include <alc/hashtable.h>
 #include <alc/filesystem.h>
@@ -33,6 +34,11 @@ ALC_API b8 alc_source_file_parse(Alc_Source_File *file);
 ALC_API void alc_source_file_generate_entries(Alc_Source_File *file);
 
 ALC_API Alc_Type *alc_source_file_find_type(Alc_Source_File *file, const char *name);
+ALC_API Alc_Type *alc_source_file_put_type(Alc_Source_File *file, Alc_Type *type, const char *name);
+
+ALC_API Alc_Global_Variable *alc_source_file_find_global(Alc_Source_File *file, const char *name);
+ALC_API Alc_Global_Variable *
+alc_source_file_put_global(Alc_Source_File *file, Alc_Global_Variable *gvar, const char *name);
 
 ALC_API usize alc_source_file_get_path(Alc_Source_File *file, char *out, usize n);
 ALC_API usize alc_source_file_get_absolute_path(Alc_Source_File *file, char *out, usize n);

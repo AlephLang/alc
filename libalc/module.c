@@ -2,6 +2,7 @@
 #include "alc/defs.h"
 #include "alc/entry.h"
 #include "alc/filesystem.h"
+#include "alc/global_variable.h"
 #include "alc/hashtable.h"
 #include "alc/sourcefile.h"
 #include "alc/program.h"
@@ -12,9 +13,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void _submodule_destroy(usize index, void *value, void *user_data);
-static void _submodule_parse(usize index, void *value, void *user_data);
-static void _submodule_generate_entries(usize index, void *value, void *user_data);
+static Alc_Foreach_Result _submodule_destroy(usize index, void *value, void *user_data);
+static Alc_Foreach_Result _submodule_parse(usize index, void *value, void *user_data);
+static Alc_Foreach_Result _submodule_generate_entries(usize index, void *value, void *user_data);
 
 Alc_Module *alc_module_create(Alc_Program *program, const char *name, Alc_Module *parent)
 {
@@ -240,6 +241,25 @@ Alc_Type *alc_module_find_type(Alc_Module *module, const char *name)
   return nullptr;
 }
 
+Alc_Global_Variable *alc_module_find_global(Alc_Module *module, const char *name)
+{
+  while (module != nullptr) {
+    for (usize i = 0, source_files_len = alc_vector_get_length(module->source_files);
+         i < source_files_len; i++) {
+      Alc_Source_File *source_file = &module->source_files[i];
+
+      Alc_Global_Variable *gvar = alc_source_file_find_global(source_file, name);
+      if (gvar != nullptr &&
+          (gvar->scope == ALC_ENTRY_SCOPE_GLOBAL || gvar->scope == ALC_ENTRY_SCOPE_LOCAL_MODULE))
+        return gvar;
+    }
+
+    module = module->parent;
+  }
+
+  return nullptr;
+}
+
 usize alc_module_to_namespace_string(char *buf, usize n, const Alc_Module *module,
                                      const Alc_Module *relative_module)
 {
@@ -257,7 +277,7 @@ usize alc_module_to_namespace_string(char *buf, usize n, const Alc_Module *modul
   return snprintf(buf, n, "%s::", module->name);
 }
 
-static void _submodule_destroy(usize index, void *value, void *user_data)
+static Alc_Foreach_Result _submodule_destroy(usize index, void *value, void *user_data)
 {
   ALC_UNUSED_PERMIT(index);
   ALC_UNUSED_PERMIT(user_data);
@@ -265,9 +285,11 @@ static void _submodule_destroy(usize index, void *value, void *user_data)
   Alc_Module *submodule = value;
 
   alc_module_destroy(submodule);
+
+  return ALC_FOREACH_CONTINUE;
 }
 
-static void _submodule_parse(usize index, void *value, void *user_data)
+static Alc_Foreach_Result _submodule_parse(usize index, void *value, void *user_data)
 {
   ALC_UNUSED_PERMIT(index);
 
@@ -275,9 +297,11 @@ static void _submodule_parse(usize index, void *value, void *user_data)
   b8 *result = user_data;
 
   *result = *result && alc_module_parse_tree(submodule);
+
+  return ALC_FOREACH_CONTINUE;
 }
 
-static void _submodule_generate_entries(usize index, void *value, void *user_data)
+static Alc_Foreach_Result _submodule_generate_entries(usize index, void *value, void *user_data)
 {
   ALC_UNUSED_PERMIT(index);
   ALC_UNUSED_PERMIT(user_data);
@@ -285,4 +309,6 @@ static void _submodule_generate_entries(usize index, void *value, void *user_dat
   Alc_Module *submodule = value;
 
   alc_module_generate_entries(submodule);
+
+  return ALC_FOREACH_CONTINUE;
 }

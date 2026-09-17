@@ -165,7 +165,10 @@ void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn, vo
       void *slot = get_slot(ht->value_block, ht->stride, i);
       if (ht->is_pointer)
         slot = *(void **)slot;
-      foreach_fn(i, slot, user_data);
+
+      Alc_Foreach_Result result = foreach_fn(i, slot, user_data);
+      if (result == ALC_FOREACH_BREAK)
+        break;
     }
   }
 }

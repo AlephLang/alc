@@ -174,12 +174,6 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return out_v;
   }
 
-  case ALC_AST_KIND_VARIADIC: {
-    Alc_String *out_v = alc_vector_reserve(Alc_String, 1);
-    alc_vector_push(out_v, alc_string_create_from("VARIADIC"));
-    return out_v;
-  }
-
   case ALC_AST_KIND_STRUCT: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), ast->STRUCT.children_num + 1);
@@ -255,7 +249,10 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = safe_reserve(Alc_Vector(Alc_String), ast->ARGUMENT_LIST.arguments_num);
     array_to_strings(children_vs_v, ast->ARGUMENT_LIST.arguments, ast->ARGUMENT_LIST.arguments_num);
-    return build_tree(alc_string_create_from("ARGUMENT_LIST"), children_vs_v);
+
+    Alc_String header = alc_string_create_from("ARGUMENT_LIST { is_variadic: ");
+    alc_string_append_cstr(&header, ast->ARGUMENT_LIST.is_variadic ? "true }" : "false }");
+    return build_tree(header, children_vs_v);
   }
 
   case ALC_AST_KIND_NAMESPACE: {

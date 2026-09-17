@@ -15,7 +15,6 @@
   ALC_AST_KIND_X(EXTERN_VARDECL, "external variable declaration")                      \
   ALC_AST_KIND_X(QUALIFIER, "qualifier")                                               \
   ALC_AST_KIND_X(NONE, "none")                                                         \
-  ALC_AST_KIND_X(VARIADIC, "variadic argument")                                        \
   ALC_AST_KIND_X(STRUCT, "structure definition")                                       \
   ALC_AST_KIND_X(UNION, "union definition")                                            \
   ALC_AST_KIND_X(ENUM, "enum definition")                                              \
@@ -214,6 +213,7 @@ typedef struct __Alc_Ast {
     struct {
       struct __Alc_Ast **arguments;
       usize arguments_num;
+      b8 is_variadic;
     } ARGUMENT_LIST;
     struct {
       char *name;

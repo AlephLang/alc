@@ -82,8 +82,8 @@ b8 alc_program_analyze(Alc_Program *program)
   // result = result &&
   //          alc_analyzer_validate_and_emplace_import_entries(program, program->entries_import);
   result = result && alc_analyzer_validate_and_emplace_type_entries(program, program->entries_type);
-  // result = result &&
-  //          alc_analyzer_validate_and_emplace_global_entries(program, program->entries_global);
+  result = result &&
+           alc_analyzer_validate_and_emplace_global_entries(program, program->entries_global);
   // result = result &&
   //          alc_analyzer_validate_and_emplace_function_entries(program, program->entries_function);
 

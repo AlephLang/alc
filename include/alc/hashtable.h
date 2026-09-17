@@ -28,7 +28,6 @@ ALC_API void *alc_hashtable_get(Alc_Hashtable_Base *ht, const char *key);
 
 ALC_API b8 alc_hashtable_is_empty(Alc_Hashtable_Base *ht);
 
-typedef void (*Alc_Foreach_Fn)(usize index, void *value, void *user_data);
 ALC_API void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn,
                                    void *user_data);
 

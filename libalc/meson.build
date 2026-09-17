@@ -8,12 +8,14 @@ libalc_src += [
   'libalc/alc.c',
   'libalc/ast.c',
   'libalc/crypto.c',
+  'libalc/global_variable.c',
   'libalc/lexer.c',
   'libalc/module.c',
   'libalc/program.c',
   'libalc/sourcefile.c',
   'libalc/token.c',
   'libalc/type.c',
+  'libalc/variable.c',
 ]
 
 debug_conf_data = configuration_data()

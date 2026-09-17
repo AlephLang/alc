@@ -1,6 +1,7 @@
 #include "alc/sourcefile.h"
 #include "alc/ast.h"
 #include "alc/filesystem.h"
+#include "alc/global_variable.h"
 #include "alc/hashtable.h"
 #include "alc/program.h"
 #include "alc/module.h"
@@ -32,6 +33,8 @@
 #define _DEBUG_FILE
 #endif
 
+static Alc_Foreach_Result _destroy_globals(usize index, void *value, void *user_data);
+
 Alc_Source_File alc_source_file_create(struct __Alc_Module *module, const char *name,
                                        Alc_File *file)
 {
@@ -41,7 +44,7 @@ Alc_Source_File alc_source_file_create(struct __Alc_Module *module, const char *
 
   Alc_Source_File out = {
     .types = alc_hashtable_create(sizeof(Alc_Type *), true),
-    .globals = alc_hashtable_create(sizeof(s32), false), // TODO: Use proper type
+    .globals = alc_hashtable_create(sizeof(Alc_Global_Variable), false),
     .functions = alc_hashtable_create(sizeof(s32), false), // TODO: Use proper type
     .name = alc_alloc_arena_allocate_aligned(&ctx()->arena, sizeof(char) * name_len, 1),
     .module = module,
@@ -58,6 +61,8 @@ Alc_Source_File alc_source_file_create(struct __Alc_Module *module, const char *
 
 void alc_source_file_destroy(Alc_Source_File *file)
 {
+  alc_hashtable_foreach(&file->globals, _destroy_globals, nullptr);
+
   alc_hashtable_destroy(&file->types);
   alc_hashtable_destroy(&file->globals);
   alc_hashtable_destroy(&file->functions);
@@ -175,35 +180,6 @@ void alc_source_file_generate_entries(Alc_Source_File *file)
                                                        });
     } break;
 
-    case ALC_AST_KIND_QUALIFIER: {
-      Alc_Ast *qualified = toplevel;
-      while (qualified->kind == ALC_AST_KIND_QUALIFIER)
-        qualified = qualified->QUALIFIER.qualified;
-
-      switch (qualified->kind) {
-      case ALC_AST_KIND_FUNC:
-      case ALC_AST_KIND_GENERIC_FUNC: {
-        alc_program_add_entry(program->entries_function, (Alc_Entry){
-                                                           .file = file,
-                                                           .ast = toplevel,
-                                                           .scope = current_entry_scope,
-                                                         });
-      } break;
-
-      case ALC_AST_KIND_VAR_DECL:
-      case ALC_AST_KIND_VAR_DEF: {
-        alc_program_add_entry(program->entries_global, (Alc_Entry){
-                                                         .file = file,
-                                                         .ast = toplevel,
-                                                         .scope = current_entry_scope,
-                                                       });
-      } break;
-
-      default:
-        ALC_NOREACH();
-      }
-    } break;
-
     case ALC_AST_KIND_VAR_DECL:
     case ALC_AST_KIND_VAR_DEF:
     case ALC_AST_KIND_EXTERN_VARDECL: {
@@ -253,6 +229,22 @@ Alc_Type *alc_source_file_find_type(Alc_Source_File *file, const char *name)
   return alc_hashtable_get(&file->types, name);
 }
 
+Alc_Type *alc_source_file_put_type(Alc_Source_File *file, Alc_Type *type, const char *name)
+{
+  return alc_hashtable_put(&file->types, name, type);
+}
+
+Alc_Global_Variable *alc_source_file_find_global(Alc_Source_File *file, const char *name)
+{
+  return alc_hashtable_get(&file->globals, name);
+}
+
+Alc_Global_Variable *alc_source_file_put_global(Alc_Source_File *file, Alc_Global_Variable *gvar,
+                                                const char *name)
+{
+  return alc_hashtable_put(&file->globals, name, gvar);
+}
+
 usize alc_source_file_get_path(Alc_Source_File *file, char *out, usize n)
 {
   usize written = alc_module_get_path(file->module, out, n);
@@ -267,4 +259,15 @@ usize alc_source_file_get_absolute_path(Alc_Source_File *file, char *out, usize 
   n -= written;
   out += written;
   return written + snprintf(out, n, "%s", file->name);
+}
+
+static Alc_Foreach_Result _destroy_globals(usize index, void *value, void *user_data)
+{
+  ALC_UNUSED_PERMIT(index);
+  ALC_UNUSED_PERMIT(user_data);
+
+  Alc_Global_Variable *var = value;
+  alc_global_variable_destroy(var);
+
+  return ALC_FOREACH_CONTINUE;
 }

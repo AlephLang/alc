@@ -8,8 +8,6 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
-static Alc_Ast *parse_variadic_args(Alc_Parser *p);
-
 Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function_Kind kind)
 {
   ALC_ASSUME(p != nullptr);
@@ -173,14 +171,34 @@ Alc_Ast *parse_function_arguments(Alc_Parser *p)
 
   Alc_Vector(Alc_Ast *) args = alc_vector_create(Alc_Ast *);
   b8 first = true;
+  b8 is_variadic = false;
   while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN) {
     if (!first) {
       _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { alc_vector_destroy(args); });
       p->pos++;
     }
 
-    Alc_Ast *arg = p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD ? parse_variadic_args(p) :
-                                                                     parse_decldef_var(p, nullptr);
+    if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD) {
+      _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_PERIOD, { alc_vector_destroy(args); });
+
+      p->pos++;
+
+      _VERIFY_POS(p, p->pos, { alc_vector_destroy(args); });
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD, { alc_vector_destroy(args); });
+      _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_PERIOD, { alc_vector_destroy(args); });
+
+      p->pos++;
+
+      _VERIFY_POS(p, p->pos, { alc_vector_destroy(args); });
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD, { alc_vector_destroy(args); });
+
+      p->pos++;
+
+      is_variadic = true;
+      break;
+    }
+
+    Alc_Ast *arg = parse_decldef_var(p, nullptr);
     _VERIFY_AST(arg, { alc_vector_destroy(args); });
 
     alc_vector_push(args, arg);
@@ -196,35 +214,9 @@ Alc_Ast *parse_function_arguments(Alc_Parser *p)
   Alc_Ast *argument_list = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
   argument_list->ARGUMENT_LIST.arguments =
     alc_vector_to_array(args, &argument_list->ARGUMENT_LIST.arguments_num);
+  argument_list->ARGUMENT_LIST.is_variadic = is_variadic;
   argument_list->pos = pos;
   argument_list->kind = ALC_AST_KIND_ARGUMENT_LIST;
   alc_vector_destroy(args);
   return argument_list;
-}
-
-static Alc_Ast *parse_variadic_args(Alc_Parser *p)
-{
-  ALC_ASSUME(p != nullptr);
-
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
-  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
-
-  usize pos = p->pos++;
-
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
-  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
-
-  p->pos++;
-
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
-
-  p->pos++;
-
-  Alc_Ast *variadic_arg_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  variadic_arg_ast->pos = pos;
-  variadic_arg_ast->kind = ALC_AST_KIND_VARIADIC;
-  return variadic_arg_ast;
 }

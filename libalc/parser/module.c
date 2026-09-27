@@ -14,21 +14,14 @@ Alc_Ast *parse_module(Alc_Parser *p)
 
   const char *name = p->tokens[p->pos].value;
   usize name_len = strlen(name) + 1;
-  b8 has_ws = p->tokens[p->pos].has_whitespace_after;
 
   usize pos = p->pos++;
 
   Alc_Ast *submodule = nullptr;
 
-  if (!has_ws && p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_COLON) {
-    _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_COLON);
+  if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD) {
     p->pos++;
 
-    _VERIFY_POS(p, p->pos);
-    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COLON);
-    _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_ID);
-
-    p->pos++;
     submodule = parse_module(p);
     _VERIFY_AST(submodule);
   }

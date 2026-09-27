@@ -8,6 +8,7 @@
   ALC_AST_KIND_X(ROOT, "root")                                                         \
   ALC_AST_KIND_X(EXPR, "expression")                                                   \
   ALC_AST_KIND_X(PREFIX_EXPR, "prefix expression")                                     \
+  ALC_AST_KIND_X(PACKAGE, "package")                                                   \
   ALC_AST_KIND_X(MODULE, "module")                                                     \
   ALC_AST_KIND_X(IMPORT, "import")                                                     \
   ALC_AST_KIND_X(TYPEDEF, "type definition")                                           \
@@ -150,10 +151,15 @@ typedef struct __Alc_Ast {
     } PREFIX_EXPR;
     struct {
       char *name;
+      struct __Alc_Ast *module;
+    } PACKAGE;
+    struct {
+      char *name;
       struct __Alc_Ast *submodule;
     } MODULE;
     struct {
-      struct __Alc_Ast *module;
+      struct __Alc_Ast *package_or_module;
+      char *import_as;
     } IMPORT;
     struct {
       char *name;

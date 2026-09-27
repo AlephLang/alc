@@ -108,6 +108,16 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(alc_string_create_from("PREFIX_EXPR"), children_vs_v);
   }
 
+  case ALC_AST_KIND_PACKAGE: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    Alc_String header = alc_string_create_from("PACKAGE { name: \"");
+    alc_string_append_cstr(&header, ast->PACKAGE.name);
+    alc_string_append_cstr(&header, "\" }");
+    alc_vector_push(children_vs_v, to_string(ast->PACKAGE.module));
+    return build_tree(header, children_vs_v);
+  }
+
   case ALC_AST_KIND_MODULE: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
@@ -121,8 +131,16 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
   case ALC_AST_KIND_IMPORT: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
-    alc_vector_push(children_vs_v, to_string(ast->IMPORT.module));
-    return build_tree(alc_string_create_from("IMPORT"), children_vs_v);
+    alc_vector_push(children_vs_v, to_string(ast->IMPORT.package_or_module));
+    Alc_String header = alc_string_create_from("IMPORT { as: ");
+    if (ast->IMPORT.import_as != nullptr) {
+      alc_string_append_char(&header, '\"');
+      alc_string_append_cstr(&header, ast->IMPORT.import_as);
+      alc_string_append_cstr(&header, "\" }");
+    } else {
+      alc_string_append_cstr(&header, "- }");
+    }
+    return build_tree(header, children_vs_v);
   }
 
   case ALC_AST_KIND_TYPEDEF: {

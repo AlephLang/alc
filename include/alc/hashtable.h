@@ -3,10 +3,8 @@
 
 #include <alc/defs.h>
 
-typedef u8 Alc_Control;
-
 typedef struct {
-  Alc_Control *control_block;
+  u8 *control_block;
   char **key_block;
   void *value_block;
 

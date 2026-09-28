@@ -30,14 +30,14 @@ Alc_Hashtable_Base alc_hashtable_create(usize stride, b8 is_pointer)
 
   stride = is_pointer ? sizeof(void *) : stride;
 
-  usize block_size = (sizeof(Alc_Control) + sizeof(char *) + stride) * INITIAL_CAPACITY;
+  usize block_size = (sizeof(u8) + sizeof(char *) + stride) * INITIAL_CAPACITY;
   void *block = malloc(block_size);
   memset(block, 0, block_size);
 
   Alc_Hashtable_Base ht = {
     .control_block = block,
-    .key_block = block + (sizeof(Alc_Control) * INITIAL_CAPACITY),
-    .value_block = block + ((sizeof(Alc_Control) + sizeof(char *)) * INITIAL_CAPACITY),
+    .key_block = block + (sizeof(u8) * INITIAL_CAPACITY),
+    .value_block = block + ((sizeof(u8) + sizeof(char *)) * INITIAL_CAPACITY),
 
     .capacity = INITIAL_CAPACITY,
     .stride = stride,
@@ -55,7 +55,7 @@ void alc_hashtable_destroy(Alc_Hashtable_Base *ht)
 
   if (ht->occupied > 0) {
     for (usize i = 0; i < ht->capacity; i++) {
-      Alc_Control control = ht->control_block[i];
+      u8 control = ht->control_block[i];
       if (control != CONTROL_EMPTY)
         free(ht->key_block[i]);
     }
@@ -77,7 +77,7 @@ void *alc_hashtable_put(Alc_Hashtable_Base *ht, const char *key, const void *val
   usize pos = h1 % ht->capacity;
   loop
   {
-    Alc_Control control = ht->control_block[pos];
+    u8 control = ht->control_block[pos];
     if (control == CONTROL_EMPTY) {
       usize key_size = strlen(key) + 1;
       ht->key_block[pos] = malloc(sizeof(char) * key_size);
@@ -93,9 +93,8 @@ void *alc_hashtable_put(Alc_Hashtable_Base *ht, const char *key, const void *val
       ht->occupied++;
 
       b8 should_resize = (f32)ht->occupied / (f32)ht->capacity > MAX_OCCUPANCY;
-      if ALC_UNLIKELY (should_resize) {
+      if ALC_UNLIKELY (should_resize)
         grow_and_rehash(ht);
-      }
 
       if (ht->is_pointer)
         break;
@@ -131,7 +130,7 @@ void *alc_hashtable_get(Alc_Hashtable_Base *ht, const char *key)
   usize pos = h1 % ht->capacity;
   loop
   {
-    Alc_Control control = ht->control_block[pos];
+    u8 control = ht->control_block[pos];
 
     if (control == CONTROL_EMPTY)
       break;
@@ -160,7 +159,7 @@ void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn, vo
     return;
 
   for (usize i = 0; i < ht->capacity; i++) {
-    Alc_Control control = ht->control_block[i];
+    u8 control = ht->control_block[i];
     if (control != CONTROL_EMPTY) {
       void *slot = get_slot(ht->value_block, ht->stride, i);
       if (ht->is_pointer)
@@ -176,17 +175,17 @@ void alc_hashtable_foreach(Alc_Hashtable_Base *ht, Alc_Foreach_Fn foreach_fn, vo
 static void grow_and_rehash(Alc_Hashtable_Base *ht)
 {
   usize old_capacity = ht->capacity;
-  Alc_Control *old_control_block = ht->control_block;
+  u8 *old_control_block = ht->control_block;
   char **old_key_block = ht->key_block;
   void *old_value_block = ht->value_block;
 
   usize new_capacity = ht->capacity * GROW_FACTOR;
-  usize new_block_size = (sizeof(Alc_Control) + sizeof(char *) + ht->stride) * new_capacity;
+  usize new_block_size = (sizeof(u8) + sizeof(char *) + ht->stride) * new_capacity;
   void *new_block = malloc(new_block_size);
   memset(new_block, 0, new_block_size);
   ht->control_block = new_block;
-  ht->key_block = new_block + sizeof(Alc_Control) * new_capacity;
-  ht->value_block = new_block + ((sizeof(Alc_Control) + sizeof(char *)) * new_capacity);
+  ht->key_block = new_block + sizeof(u8) * new_capacity;
+  ht->value_block = new_block + ((sizeof(u8) + sizeof(char *)) * new_capacity);
   ht->capacity = new_capacity;
 
   for (usize i = 0; i < old_capacity; i++) {
@@ -200,7 +199,7 @@ static void grow_and_rehash(Alc_Hashtable_Base *ht)
     usize pos = h1 % ht->capacity;
     loop
     {
-      Alc_Control control = ht->control_block[pos];
+      u8 control = ht->control_block[pos];
       if (control == CONTROL_EMPTY) {
         ht->key_block[pos] = key;
         ht->control_block[pos] = h2;

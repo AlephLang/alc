@@ -31,5 +31,6 @@ ALC_API usize __alc_vector_get_length_impl(const void *vec);
 ALC_API void *__alc_vector_to_array_impl(const void *vec, usize *out_n);
 ALC_API void __alc_vector_clear_impl(void *vec);
 ALC_API void *__alc_vector_concat_impl(const void *vec1, const void *vec2);
+ALC_API b8 alc_vector_is_empty(const void *vec);
 
 #endif // __ALC_VECTOR_H__

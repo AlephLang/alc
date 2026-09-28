@@ -16,6 +16,11 @@ static inline __header_t *get_header(void *v)
   return (__header_t *)((char *)v - sizeof(__header_t));
 }
 
+static inline const __header_t *get_header_const(const void *v)
+{
+  return (__header_t *)((char *)v - sizeof(__header_t));
+}
+
 void *__alc_vector_create_impl(usize stride, usize capacity)
 {
   ALC_ASSUME(stride > 0);
@@ -74,21 +79,21 @@ usize __alc_vector_get_capacity_impl(const void *vec)
 {
   ALC_ASSUME(vec != nullptr);
 
-  return get_header((void *)vec)->capacity;
+  return get_header_const(vec)->capacity;
 }
 
 usize __alc_vector_get_stride_impl(const void *vec)
 {
   ALC_ASSUME(vec != nullptr);
 
-  return get_header((void *)vec)->stride;
+  return get_header_const(vec)->stride;
 }
 
 usize __alc_vector_get_length_impl(const void *vec)
 {
   ALC_ASSUME(vec != nullptr);
 
-  return get_header((void *)vec)->length;
+  return get_header_const(vec)->length;
 }
 
 void *__alc_vector_to_array_impl(const void *vec, usize *out_n)
@@ -96,7 +101,7 @@ void *__alc_vector_to_array_impl(const void *vec, usize *out_n)
   ALC_ASSUME(vec != nullptr);
   ALC_ASSUME(out_n != nullptr);
 
-  __header_t *h = get_header((void *)vec);
+  const __header_t *h = get_header_const(vec);
 
   if ALC_UNLIKELY (h->length == 0) {
     *out_n = 0;
@@ -122,8 +127,8 @@ void *__alc_vector_concat_impl(const void *vec1, const void *vec2)
   ALC_ASSUME(vec1 != nullptr);
   ALC_ASSUME(vec2 != nullptr);
 
-  __header_t *v1_h = get_header((void *)vec1);
-  __header_t *v2_h = get_header((void *)vec2);
+  const __header_t *v1_h = get_header_const(vec1);
+  const __header_t *v2_h = get_header_const(vec2);
 
   ALC_ASSERT(v1_h->stride == v2_h->stride);
 
@@ -152,6 +157,12 @@ void *__alc_vector_concat_impl(const void *vec1, const void *vec2)
   memcpy((void *)addr_2, vec2, size_2);
 
   return out_vec;
+}
+
+b8 alc_vector_is_empty(const void *vec)
+{
+  const __header_t *h = get_header_const(vec);
+  return h->length == 0;
 }
 
 static inline void *resize(void *v)

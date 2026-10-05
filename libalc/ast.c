@@ -273,16 +273,6 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(header, children_vs_v);
   }
 
-  case ALC_AST_KIND_NAMESPACE: {
-    Alc_Vector(Alc_Vector(Alc_String))
-      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
-    alc_vector_push(children_vs_v, to_string(ast->NAMESPACE.subobject));
-    Alc_String header = alc_string_create_from("NAMESPACE { name: \"");
-    alc_string_append_cstr(&header, ast->NAMESPACE.name);
-    alc_string_append_cstr(&header, "\" }");
-    return build_tree(header, children_vs_v);
-  }
-
   case ALC_AST_KIND_SCOPE: {
     Alc_String *out_v = alc_vector_reserve(Alc_String, 1);
     Alc_String header = alc_string_create_from("SCOPE { type: \"");
@@ -541,6 +531,26 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(alc_string_create_from("TYPE_TYPE_OF"), children_vs_v);
   }
 
+  case ALC_AST_KIND_TYPE_PACKAGE: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    alc_vector_push(children_vs_v, to_string(ast->TYPE_PACKAGE.symbol));
+    Alc_String header = alc_string_create_from("TYPE_PACKAGE { name: \"");
+    alc_string_append_cstr(&header, ast->TYPE_PACKAGE.name);
+    alc_string_append_cstr(&header, "\" }");
+    return build_tree(header, children_vs_v);
+  }
+
+  case ALC_AST_KIND_TYPE_MODULE: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    alc_vector_push(children_vs_v, to_string(ast->TYPE_MODULE.symbol));
+    Alc_String header = alc_string_create_from("TYPE_MODULE { name: \"");
+    alc_string_append_cstr(&header, ast->TYPE_MODULE.name);
+    alc_string_append_cstr(&header, "\" }");
+    return build_tree(header, children_vs_v);
+  }
+
   case ALC_AST_KIND_VAR_DECL: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
@@ -571,6 +581,18 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     alc_string_append_cstr(&header, "\" }");
     alc_vector_push(out_v, header);
     return out_v;
+  }
+
+  case ALC_AST_KIND_EXPR_OPERAND_IDENTIFIER_GENERIC: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    alc_vector_push(children_vs_v,
+                    to_string(ast->EXPR_OPERAND_IDENTIFIER_GENERIC.generic_type_list));
+
+    Alc_String header = alc_string_create_from("EXPR_OPERAND_IDENTIFIER_GENERIC { name: \"");
+    alc_string_append_cstr(&header, ast->EXPR_OPERAND_IDENTIFIER_GENERIC.name);
+    alc_string_append_cstr(&header, "\" }");
+    return build_tree(header, children_vs_v);
   }
 
   case ALC_AST_KIND_EXPR_OPERAND_NUMBER: {
@@ -616,26 +638,12 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
   }
 
   case ALC_AST_KIND_EXPR_OPERAND_CALL: {
-    Alc_Vector(Alc_Vector(Alc_String))
-      children_vs_v = safe_reserve(Alc_Vector(Alc_String), ast->EXPR_OPERAND_CALL.arguments_num);
+    Alc_Vector(Alc_Vector(Alc_String)) children_vs_v =
+      alc_vector_reserve(Alc_Vector(Alc_String), ast->EXPR_OPERAND_CALL.arguments_num + 1);
+    alc_vector_push(children_vs_v, to_string(ast->EXPR_OPERAND_CALL.base));
     array_to_strings(children_vs_v, ast->EXPR_OPERAND_CALL.arguments,
                      ast->EXPR_OPERAND_CALL.arguments_num);
-    Alc_String header = alc_string_create_from("EXPR_OPERAND_CALL { callee_name: \"");
-    alc_string_append_cstr(&header, ast->EXPR_OPERAND_CALL.callee_name);
-    alc_string_append_cstr(&header, "\" }");
-    return build_tree(header, children_vs_v);
-  }
-
-  case ALC_AST_KIND_EXPR_OPERAND_GENERIC_CALL: {
-    Alc_Vector(Alc_Vector(Alc_String)) children_vs_v =
-      alc_vector_reserve(Alc_Vector(Alc_String), ast->EXPR_OPERAND_GENERIC_CALL.arguments_num + 1);
-    alc_vector_push(children_vs_v, to_string(ast->EXPR_OPERAND_GENERIC_CALL.generic_type_list));
-    array_to_strings(children_vs_v, ast->EXPR_OPERAND_GENERIC_CALL.arguments,
-                     ast->EXPR_OPERAND_GENERIC_CALL.arguments_num);
-    Alc_String header = alc_string_create_from("EXPR_OPERAND_GENERIC_CALL { callee_name: \"");
-    alc_string_append_cstr(&header, ast->EXPR_OPERAND_GENERIC_CALL.callee_name);
-    alc_string_append_cstr(&header, "\" }");
-    return build_tree(header, children_vs_v);
+    return build_tree(alc_string_create_from("EXPR_OPERAND_CALL"), children_vs_v);
   }
 
   case ALC_AST_KIND_EXPR_OPERAND_STRING: {
@@ -664,12 +672,22 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return out_v;
   }
 
-  case ALC_AST_KIND_EXPR_OPERAND_ACCESS_MEMBER: {
+  case ALC_AST_KIND_EXPR_OPERAND_PACKAGE: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    alc_vector_push(children_vs_v, to_string(ast->EXPR_OPERAND_PACKAGE.symbol));
+    Alc_String header = alc_string_create_from("PACKAGE { name: \"");
+    alc_string_append_cstr(&header, ast->EXPR_OPERAND_PACKAGE.name);
+    alc_string_append_cstr(&header, "\" }");
+    return build_tree(header, children_vs_v);
+  }
+
+  case ALC_AST_KIND_EXPR_OPERAND_ACCESS: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
-    alc_vector_push(children_vs_v, to_string(ast->EXPR_OPERAND_ACCESS_MEMBER.from));
-    alc_vector_push(children_vs_v, to_string(ast->EXPR_OPERAND_ACCESS_MEMBER.what));
-    return build_tree(alc_string_create_from("EXPR_OPERAND_ACCESS_MEMBER"), children_vs_v);
+    alc_vector_push(children_vs_v, to_string(ast->EXPR_OPERAND_ACCESS.from));
+    alc_vector_push(children_vs_v, to_string(ast->EXPR_OPERAND_ACCESS.what));
+    return build_tree(alc_string_create_from("EXPR_OPERAND_ACCESS"), children_vs_v);
   }
 
   case ALC_AST_KIND_EXPR_OPERAND_ACCESS_FIELD_TUPLE: {
@@ -1028,17 +1046,6 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     alc_vector_push(children_vs_v, to_string(ast->GENERIC_TYPE.generic_type_list));
     Alc_String header = alc_string_create_from("GENERIC_TYPE { name: \"");
     alc_string_append_cstr(&header, ast->GENERIC_TYPE.name);
-    alc_string_append_cstr(&header, "\" }");
-    return build_tree(header, children_vs_v);
-  }
-
-  case ALC_AST_KIND_GENERIC_NAMESPACE: {
-    Alc_Vector(Alc_Vector(Alc_String))
-      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
-    alc_vector_push(children_vs_v, to_string(ast->GENERIC_NAMESPACE.generic_type_list));
-    alc_vector_push(children_vs_v, to_string(ast->GENERIC_NAMESPACE.subobject));
-    Alc_String header = alc_string_create_from("GENERIC_NAMESPACE { name: \"");
-    alc_string_append_cstr(&header, ast->GENERIC_NAMESPACE.name);
     alc_string_append_cstr(&header, "\" }");
     return build_tree(header, children_vs_v);
   }

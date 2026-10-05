@@ -58,18 +58,18 @@ Alc_Ast *parse_generic_type_list(Alc_Parser *p)
 
   _VERIFY_POS(p, p->pos);
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_EXCLMARK);
-  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_LARROW);
+  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_LPAREN);
 
   usize pos = p->pos++;
 
   _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LARROW);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LPAREN);
 
   p->pos++;
 
   Alc_Vector(Alc_Ast *) types_in_type_list = alc_vector_create(Alc_Ast *);
   b8 first = true;
-  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN) {
     if (!first) {
       _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { alc_vector_destroy(types_in_type_list); });
       p->pos++;
@@ -84,7 +84,7 @@ Alc_Ast *parse_generic_type_list(Alc_Parser *p)
   }
 
   _VERIFY_POS(p, p->pos, { alc_vector_destroy(types_in_type_list); });
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RARROW, { alc_vector_destroy(types_in_type_list); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN, { alc_vector_destroy(types_in_type_list); });
 
   p->pos++;
 

@@ -21,20 +21,17 @@ s32 main(s32 argc, char **argv)
     return -1;
   }
 
-  char *path;
+  char *path = nullptr;
   if (argc >= 2) {
     path = argv[1]; // TODO: make it more robust
 
     if ALC_UNLIKELY (!alc_filesystem_directory_exists(path)) {
       Alc_Error e = { .kind = ALC_ERROR_KIND_DIRECTORY };
-      memcpy(e.DIRECTORY.path, path,
-             sizeof(char) * ALC_MIN(sizeof(e.DIRECTORY.path), strlen(path) + 1));
+      e.DIRECTORY.path = path;
       handle_error(&e);
       alc_shutdown();
       return -2;
     }
-  } else {
-    path = nullptr;
   }
 
   Alc_Program *program_context = alc_program_create(path);

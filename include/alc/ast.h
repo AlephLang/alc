@@ -23,7 +23,6 @@
   ALC_AST_KIND_X(FUNC, "function definition")                                          \
   ALC_AST_KIND_X(FUNC_ALIAS, "function alias")                                         \
   ALC_AST_KIND_X(ARGUMENT_LIST, "argument list")                                       \
-  ALC_AST_KIND_X(NAMESPACE, "namespace")                                               \
   ALC_AST_KIND_X(SCOPE, "scope")                                                       \
   ALC_AST_KIND_X(CASE_CHAIN, "case chain")                                             \
   ALC_AST_KIND_X(CASE, "case")                                                         \
@@ -55,18 +54,21 @@
   ALC_AST_KIND_X(TYPE_FUNCTION_POINTER, "function pointer type")                       \
   ALC_AST_KIND_X(TYPE_TUPLE, "tuple")                                                  \
   ALC_AST_KIND_X(TYPE_TYPE_OF, "type of")                                              \
+  ALC_AST_KIND_X(TYPE_PACKAGE, "type package")                                         \
+  ALC_AST_KIND_X(TYPE_MODULE, "type module")                                           \
   ALC_AST_KIND_X(VAR_DECL, "variable declaration")                                     \
   ALC_AST_KIND_X(VAR_DEF, "variable definition")                                       \
   ALC_AST_KIND_X(EXPR_OPERAND_IDENTIFIER, "identifier operand")                        \
+  ALC_AST_KIND_X(EXPR_OPERAND_IDENTIFIER_GENERIC, "generic identifier operand")        \
   ALC_AST_KIND_X(EXPR_OPERAND_NUMBER, "number operand")                                \
   ALC_AST_KIND_X(EXPR_OPERAND_NUMBER_FLOAT, "floating-point number operand")           \
   ALC_AST_KIND_X(EXPR_OPERAND_ARRAY_ELEMENT, "array element operand")                  \
   ALC_AST_KIND_X(EXPR_OPERAND_CAST_TO, "cast-to operand")                              \
   ALC_AST_KIND_X(EXPR_OPERAND_CALL, "call operand")                                    \
-  ALC_AST_KIND_X(EXPR_OPERAND_GENERIC_CALL, "generic call operand")                    \
   ALC_AST_KIND_X(EXPR_OPERAND_STRING, "string operand")                                \
   ALC_AST_KIND_X(EXPR_OPERAND_SYMBOL, "symbol operand")                                \
-  ALC_AST_KIND_X(EXPR_OPERAND_ACCESS_MEMBER, "access member operand")                  \
+  ALC_AST_KIND_X(EXPR_OPERAND_PACKAGE, "package operand")                              \
+  ALC_AST_KIND_X(EXPR_OPERAND_ACCESS, "access operand")                                \
   ALC_AST_KIND_X(EXPR_OPERAND_ACCESS_FIELD_TUPLE, "access tuple's field operand")      \
   ALC_AST_KIND_X(EXPR_OPERAND_SIZE_OF, "size of operand")                              \
   ALC_AST_KIND_X(EXPR_OPERAND_ALIGN_OF, "align of operand")                            \
@@ -118,8 +120,7 @@
   ALC_AST_KIND_X(GENERIC_PLACEHOLDER_TYPE_LIST, "generic placeholder type list")       \
   ALC_AST_KIND_X(GENERIC_PLACEHOLDER_TYPE, "generic placeholder type")                 \
   ALC_AST_KIND_X(GENERIC_TYPE_LIST, "generic type list")                               \
-  ALC_AST_KIND_X(GENERIC_TYPE, "generic type")                                         \
-  ALC_AST_KIND_X(GENERIC_NAMESPACE, "generic namespace")
+  ALC_AST_KIND_X(GENERIC_TYPE, "generic type")
 
 #define ALC_AST_KIND_FULL_NAME(_name) ALC_AST_KIND_##_name
 
@@ -221,10 +222,6 @@ typedef struct __Alc_Ast {
       usize arguments_num;
       b8 is_variadic;
     } ARGUMENT_LIST;
-    struct {
-      char *name;
-      struct __Alc_Ast *subobject;
-    } NAMESPACE;
     struct {
       char *type;
     } SCOPE;
@@ -338,6 +335,14 @@ typedef struct __Alc_Ast {
     } TYPE_TYPE_OF;
     struct {
       char *name;
+      struct __Alc_Ast *symbol;
+    } TYPE_PACKAGE;
+    struct {
+      char *name;
+      struct __Alc_Ast *symbol;
+    } TYPE_MODULE;
+    struct {
+      char *name;
       struct __Alc_Ast *type;
       struct __Alc_Ast *attribute_list;
     } VAR_DECL;
@@ -350,6 +355,10 @@ typedef struct __Alc_Ast {
     struct {
       char *name;
     } EXPR_OPERAND_IDENTIFIER;
+    struct {
+      char *name;
+      struct __Alc_Ast *generic_type_list;
+    } EXPR_OPERAND_IDENTIFIER_GENERIC;
     struct {
       u64 value;
       char *typespec;
@@ -367,16 +376,10 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *expression;
     } EXPR_OPERAND_CAST_TO;
     struct {
-      char *callee_name;
+      struct __Alc_Ast *base;
       struct __Alc_Ast **arguments;
       usize arguments_num;
     } EXPR_OPERAND_CALL;
-    struct {
-      char *callee_name;
-      struct __Alc_Ast *generic_type_list;
-      struct __Alc_Ast **arguments;
-      usize arguments_num;
-    } EXPR_OPERAND_GENERIC_CALL;
     struct {
       char *content;
       char *typespec;
@@ -386,9 +389,13 @@ typedef struct __Alc_Ast {
       char *typespec;
     } EXPR_OPERAND_SYMBOL;
     struct {
+      char *name;
+      struct __Alc_Ast *symbol;
+    } EXPR_OPERAND_PACKAGE;
+    struct {
       struct __Alc_Ast *from;
       struct __Alc_Ast *what;
-    } EXPR_OPERAND_ACCESS_MEMBER;
+    } EXPR_OPERAND_ACCESS;
     struct {
       u64 index;
       struct __Alc_Ast *tuple;
@@ -461,11 +468,6 @@ typedef struct __Alc_Ast {
       char *name;
       struct __Alc_Ast *generic_type_list;
     } GENERIC_TYPE;
-    struct {
-      char *name;
-      struct __Alc_Ast *generic_type_list;
-      struct __Alc_Ast *subobject;
-    } GENERIC_NAMESPACE;
   };
 
   usize pos;

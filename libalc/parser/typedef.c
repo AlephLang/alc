@@ -27,7 +27,7 @@ Alc_Ast *parse_typedef(Alc_Parser *p)
   usize pos = p->pos++;
 
   Alc_Ast *generic_placeholder_type_list = nullptr;
-  if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LARROW) {
+  if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_LPAREN) {
     generic_placeholder_type_list = parse_generic_placeholder_type_list(p);
     _VERIFY_AST(generic_placeholder_type_list);
   }

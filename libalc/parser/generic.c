@@ -15,13 +15,13 @@ Alc_Ast *parse_generic_placeholder_type_list(Alc_Parser *p)
   ALC_ASSUME(p != nullptr);
 
   _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LARROW);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LPAREN);
 
   usize pos = p->pos++;
 
   b8 first = true;
   Alc_Vector(Alc_Ast *) placeholder_types = alc_vector_create(Alc_Ast *);
-  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RARROW) {
+  while (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN) {
     if (!first) {
       _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { alc_vector_destroy(placeholder_types); });
       p->pos++;
@@ -36,7 +36,7 @@ Alc_Ast *parse_generic_placeholder_type_list(Alc_Parser *p)
   }
 
   _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RARROW);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN);
 
   p->pos++;
 

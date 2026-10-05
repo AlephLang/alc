@@ -20,6 +20,12 @@ Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function
 
   usize pos = p->pos++;
 
+  Alc_Ast *generic_placeholder_type_list = nullptr;
+  if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LPAREN) {
+    generic_placeholder_type_list = parse_generic_placeholder_type_list(p);
+    _VERIFY_AST(generic_placeholder_type_list);
+  }
+
   _VERIFY_POS(p, p->pos);
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COLON);
   _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_COLON);
@@ -30,13 +36,6 @@ Alc_Ast *parse_function(Alc_Parser *p, Alc_Ast *attribute_list, Alc_Ast_Function
   _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COLON);
 
   p->pos++;
-
-  Alc_Ast *generic_placeholder_type_list = nullptr;
-  if (kind != ALC_AST_FUNCTION_KIND_EXPORTED && p->pos < p->tokens_num &&
-      p->tokens[p->pos].type == ALC_TOKEN_TYPE_LARROW) {
-    generic_placeholder_type_list = parse_generic_placeholder_type_list(p);
-    _VERIFY_AST(generic_placeholder_type_list);
-  }
 
   Alc_Ast *argument_list = parse_function_arguments(p);
   _VERIFY_AST(argument_list);

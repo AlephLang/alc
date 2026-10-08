@@ -56,6 +56,7 @@
   ALC_AST_KIND_X(TYPE_TYPE_OF, "type of")                                              \
   ALC_AST_KIND_X(TYPE_PACKAGE, "type package")                                         \
   ALC_AST_KIND_X(TYPE_MODULE, "type module")                                           \
+  ALC_AST_KIND_X(TYPE_NONNULL, "non-null type")                                        \
   ALC_AST_KIND_X(VAR_DECL, "variable declaration")                                     \
   ALC_AST_KIND_X(VAR_DEF, "variable definition")                                       \
   ALC_AST_KIND_X(EXPR_OPERAND_IDENTIFIER, "identifier operand")                        \
@@ -341,6 +342,9 @@ typedef struct __Alc_Ast {
       char *name;
       struct __Alc_Ast *symbol;
     } TYPE_MODULE;
+    struct {
+      struct __Alc_Ast *type;
+    } TYPE_NONNULL;
     struct {
       char *name;
       struct __Alc_Ast *type;

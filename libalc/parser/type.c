@@ -11,6 +11,7 @@
 static Alc_Ast *parse_function_pointer(Alc_Parser *p);
 static Alc_Ast *parse_tuple(Alc_Parser *p);
 static Alc_Ast *parse_typeof(Alc_Parser *p);
+static Alc_Ast *parse_nonnull(Alc_Parser *p);
 static Alc_Ast *parse_package_or_type(Alc_Parser *p);
 static Alc_Ast *parse_id(Alc_Parser *p);
 
@@ -28,7 +29,8 @@ Alc_Ast *parse_type_raw(Alc_Parser *p)
     return parse_tuple(p);
 
   case ALC_TOKEN_TYPE_ID: {
-    if (strcmp(p->tokens[p->pos].value, "typeof") == 0)
+    const char *value = p->tokens[p->pos].value;
+    if (strcmp(value, "typeof") == 0)
       return parse_typeof(p);
     return parse_package_or_type(p);
   }
@@ -160,6 +162,11 @@ Alc_Ast *parse_type(Alc_Parser *p)
   ALC_ASSUME(p != nullptr);
 
   _VERIFY_POS(p, p->pos);
+
+  if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_ID &&
+      strcmp(p->tokens[p->pos].value, "nonnull") == 0) {
+    return parse_nonnull(p);
+  }
 
   struct Array_Ast_And_Pos {
     Alc_Ast *size_expression;
@@ -322,4 +329,23 @@ static Alc_Ast *parse_typeof(Alc_Parser *p)
   typeof_ast->pos = pos;
   typeof_ast->kind = ALC_AST_KIND_TYPE_TYPE_OF;
   return typeof_ast;
+}
+
+static Alc_Ast *parse_nonnull(Alc_Parser *p)
+{
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
+  _VERIFY_VALUE(p, p->pos, "nonnull");
+
+  usize pos = p->pos++;
+
+  Alc_Ast *type = parse_type(p);
+  _VERIFY_AST(type);
+
+  Alc_Ast *nonnull_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  nonnull_ast->TYPE_NONNULL.type = type;
+  nonnull_ast->pos = pos;
+  nonnull_ast->kind = ALC_AST_KIND_TYPE_NONNULL;
+
+  return nonnull_ast;
 }

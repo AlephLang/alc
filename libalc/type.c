@@ -862,6 +862,19 @@ __after_bound_struct:
     return out;
   }
 
+  case ALC_AST_KIND_TYPE_NONNULL: {
+    Alc_Type *pointer_type = alc_type_resolve_from_ast(program, sourcefile, ast->TYPE_NONNULL.type);
+    if ALC_UNLIKELY (alc_type_is_error(pointer_type))
+      return program->type_storage.builtins.type_error;
+    else if ALC_UNLIKELY (!alc_type_is_pointer(pointer_type)) {
+      // TODO: Error. Only pointers are allowed to be non-null.
+      return program->type_storage.builtins.type_error;
+    }
+
+    // TODO: Nonnull pointer must be contructed here.
+    return pointer_type;
+  }
+
   default:
     ALC_NOREACH();
   }

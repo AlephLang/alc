@@ -12,6 +12,7 @@
   ALC_AST_KIND_X(MODULE, "module")                                                     \
   ALC_AST_KIND_X(IMPORT, "import")                                                     \
   ALC_AST_KIND_X(TYPEDEF, "type definition")                                           \
+  ALC_AST_KIND_X(NAME, "name")                                                         \
   ALC_AST_KIND_X(EXTERN_FUNC, "external function declaration")                         \
   ALC_AST_KIND_X(EXTERN_VARDECL, "external variable declaration")                      \
   ALC_AST_KIND_X(QUALIFIER, "qualifier")                                               \
@@ -171,11 +172,15 @@ typedef struct __Alc_Ast {
     } TYPEDEF;
     struct {
       char *name;
+    } NAME;
+    struct {
+      char *name;
       struct __Alc_Ast *argument_list;
       struct __Alc_Ast *return_type;
     } EXTERN_FUNC;
     struct {
-      char *name;
+      struct __Alc_Ast **names;
+      usize names_num;
       struct __Alc_Ast *type;
     } EXTERN_VARDECL;
     struct {
@@ -346,12 +351,14 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *type;
     } TYPE_NONNULL;
     struct {
-      char *name;
+      struct __Alc_Ast **names;
+      usize names_num;
       struct __Alc_Ast *type;
       struct __Alc_Ast *attribute_list;
     } VAR_DECL;
     struct {
-      char *name;
+      struct __Alc_Ast **names;
+      usize names_num;
       struct __Alc_Ast *type;
       struct __Alc_Ast *expression;
       struct __Alc_Ast *attribute_list;

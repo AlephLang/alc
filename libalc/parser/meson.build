@@ -11,6 +11,7 @@ libalc_src += [
   'libalc/parser/label.c',
   'libalc/parser/lambda.c',
   'libalc/parser/module.c',
+  'libalc/parser/name.c',
   'libalc/parser/package.c',
   'libalc/parser/parser.c',
   'libalc/parser/scope.c',

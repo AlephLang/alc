@@ -155,6 +155,15 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(header, children_vs_v);
   }
 
+  case ALC_AST_KIND_NAME: {
+    Alc_Vector(Alc_String) out_v = alc_vector_reserve(Alc_String, 1);
+    Alc_String header = alc_string_create_from("NAME { name: \"");
+    alc_string_append_cstr(&header, ast->NAME.name);
+    alc_string_append_cstr(&header, "\" }");
+    alc_vector_push(out_v, header);
+    return out_v;
+  }
+
   case ALC_AST_KIND_EXTERN_FUNC: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
@@ -168,12 +177,10 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
 
   case ALC_AST_KIND_EXTERN_VARDECL: {
     Alc_Vector(Alc_Vector(Alc_String))
-      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1 + ast->EXTERN_VARDECL.names_num);
+    array_to_strings(children_vs_v, ast->EXTERN_VARDECL.names, ast->EXTERN_VARDECL.names_num);
     alc_vector_push(children_vs_v, to_string(ast->EXTERN_VARDECL.type));
-    Alc_String header = alc_string_create_from("EXTERN_VARDECL { name: \"");
-    alc_string_append_cstr(&header, ast->EXTERN_VARDECL.name);
-    alc_string_append_cstr(&header, "\" }");
-    return build_tree(header, children_vs_v);
+    return build_tree(alc_string_create_from("EXTERN_VARDECL"), children_vs_v);
   }
 
   case ALC_AST_KIND_QUALIFIER: {
@@ -560,25 +567,21 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
 
   case ALC_AST_KIND_VAR_DECL: {
     Alc_Vector(Alc_Vector(Alc_String))
-      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2 + ast->VAR_DECL.names_num);
     add_to_strings_opt(children_vs_v, ast->VAR_DECL.attribute_list);
+    array_to_strings(children_vs_v, ast->VAR_DECL.names, ast->VAR_DECL.names_num);
     alc_vector_push(children_vs_v, to_string(ast->VAR_DECL.type));
-    Alc_String header = alc_string_create_from("VAR_DECL { name: \"");
-    alc_string_append_cstr(&header, ast->VAR_DEF.name);
-    alc_string_append_cstr(&header, "\" }");
-    return build_tree(header, children_vs_v);
+    return build_tree(alc_string_create_from("VAR_DECL"), children_vs_v);
   }
 
   case ALC_AST_KIND_VAR_DEF: {
     Alc_Vector(Alc_Vector(Alc_String))
-      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 3);
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 3 + ast->VAR_DEF.names_num);
     add_to_strings_opt(children_vs_v, ast->VAR_DEF.attribute_list);
+    array_to_strings(children_vs_v, ast->VAR_DEF.names, ast->VAR_DEF.names_num);
     add_to_strings_opt(children_vs_v, ast->VAR_DEF.type);
     alc_vector_push(children_vs_v, to_string(ast->VAR_DEF.expression));
-    Alc_String header = alc_string_create_from("VAR_DEF { name: \"");
-    alc_string_append_cstr(&header, ast->VAR_DEF.name);
-    alc_string_append_cstr(&header, "\" }");
-    return build_tree(header, children_vs_v);
+    return build_tree(alc_string_create_from("VAR_DEF"), children_vs_v);
   }
 
   case ALC_AST_KIND_EXPR_OPERAND_IDENTIFIER: {

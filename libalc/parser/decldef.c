@@ -34,8 +34,8 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
     // There's no real need to initialize it to nullptr but Mr. Compiler said that he wouldn't
     // compile library if I don't initialize it.
     Alc_Ast *qualifier_ast = nullptr;
-    for (sptr i = alc_vector_get_length(names) - 1; i >= 0; i--) {
-      usize name_len = strlen(names[i]) + 1;
+    for (usize i = 0, names_len = alc_vector_get_length(names); i < names_len; i++) {
+      usize name_len = strlen(names[names_len - i - 1]) + 1;
       qualifier_ast =
         alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
       qualifier_ast->QUALIFIER.name = (char *)qualifier_ast + sizeof(Alc_Ast);
@@ -65,15 +65,11 @@ Alc_Ast *parse_decldef(Alc_Parser *p, Alc_Ast *attribute_list)
       return parse_function_alias(p, attribute_list);
   } else if (tok2->type == ALC_TOKEN_TYPE_LPAREN) {
     return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_DEFAULT);
-  } else if ALC_UNLIKELY (tok2->type != ALC_TOKEN_TYPE_COLON) {
-    p->pos++;
-    add_error_unexpected_token(p, p->pos++, ALC_TOKEN_TYPE_COLON);
-    return nullptr;
+  } else if (tok2->type == ALC_TOKEN_TYPE_COLON) {
+    Alc_Token *tok3 = peek(p, 2);
+    if (tok3 != nullptr && !tok2->has_whitespace_after && tok3->type == ALC_TOKEN_TYPE_COLON)
+      return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_DEFAULT);
   }
-
-  Alc_Token *tok3 = peek(p, 2);
-  if (tok3 != nullptr && !tok2->has_whitespace_after && tok3->type == ALC_TOKEN_TYPE_COLON)
-    return parse_function(p, attribute_list, ALC_AST_FUNCTION_KIND_DEFAULT);
 
   Alc_Ast *decldef = parse_decldef_var(p, attribute_list);
   _VERIFY_AST(decldef);
@@ -91,17 +87,27 @@ Alc_Ast *parse_decldef_var(Alc_Parser *p, Alc_Ast *attribute_list)
   ALC_ASSUME(p != nullptr);
 
   _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
 
   usize pos = p->pos;
 
-  const char *name = p->tokens[p->pos].value;
-  usize name_len = strlen(name) + 1;
+  Alc_Vector(Alc_Ast *) names_v = alc_vector_create(Alc_Ast *);
+  while (p->pos < p->tokens_num) {
+    Alc_Ast *name_ast = parse_name(p);
+    _VERIFY_AST(name_ast, { alc_vector_destroy(names_v); });
 
-  p->pos++;
+    alc_vector_push(names_v, name_ast);
 
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COLON);
+    if (p->pos >= p->tokens_num || p->tokens[p->pos].type != ALC_TOKEN_TYPE_COMMA)
+      break;
+
+    _VERIFY_POS(p, p->pos, { alc_vector_destroy(names_v); });
+    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { alc_vector_destroy(names_v); });
+
+    p->pos++;
+  }
+
+  _VERIFY_POS(p, p->pos, { alc_vector_destroy(names_v); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COLON, { alc_vector_destroy(names_v); });
 
   Alc_Ast *type = nullptr;
   if (!p->tokens[p->pos].has_whitespace_after && p->pos + 1 < p->tokens_num &&
@@ -114,7 +120,7 @@ Alc_Ast *parse_decldef_var(Alc_Parser *p, Alc_Ast *attribute_list)
   p->pos++;
 
   type = parse_type(p);
-  _VERIFY_AST(type);
+  _VERIFY_AST(type, { alc_vector_destroy(names_v); });
 
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_EQ) {
     p->pos++;
@@ -135,27 +141,23 @@ __vardef:
       expr = parse_expr(p, false);
     } break;
     }
-    _VERIFY_AST(expr);
+    _VERIFY_AST(expr, { alc_vector_destroy(names_v); });
 
-    Alc_Ast *vardef_ast =
-      alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-    vardef_ast->VAR_DEF.name = (char *)vardef_ast + sizeof(Alc_Ast);
+    Alc_Ast *vardef_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+    vardef_ast->VAR_DEF.names = alc_vector_to_array(names_v, &vardef_ast->VAR_DEF.names_num);
     vardef_ast->VAR_DEF.type = type;
     vardef_ast->VAR_DEF.expression = expr;
     vardef_ast->VAR_DEF.attribute_list = attribute_list;
     vardef_ast->pos = pos;
     vardef_ast->kind = ALC_AST_KIND_VAR_DEF;
-    memcpy(vardef_ast->VAR_DEF.name, name, name_len);
     return vardef_ast;
   }
 
-  Alc_Ast *vardecl_ast =
-    alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + sizeof(char) * name_len);
-  vardecl_ast->VAR_DECL.name = (char *)vardecl_ast + sizeof(Alc_Ast);
+  Alc_Ast *vardecl_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  vardecl_ast->VAR_DECL.names = alc_vector_to_array(names_v, &vardecl_ast->VAR_DECL.names_num);
   vardecl_ast->VAR_DECL.type = type;
   vardecl_ast->VAR_DECL.attribute_list = attribute_list;
   vardecl_ast->pos = pos;
   vardecl_ast->kind = ALC_AST_KIND_VAR_DECL;
-  memcpy(vardecl_ast->VAR_DECL.name, name, name_len);
   return vardecl_ast;
 }

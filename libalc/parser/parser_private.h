@@ -11,6 +11,7 @@
 
 Alc_Token *peek(const Alc_Parser *p, s32 adv);
 
+Alc_Ast *parse_name(Alc_Parser *p);
 Alc_Ast *parse_top(Alc_Parser *p);
 Alc_Ast *parse_ids(Alc_Parser *p); // Returns (void *)-1 if nothing was parsed
 Alc_Ast *parse_import(Alc_Parser *p);

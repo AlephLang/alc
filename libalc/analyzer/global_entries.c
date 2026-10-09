@@ -22,21 +22,25 @@ b8 alc_analyzer_validate_and_emplace_global_entries(Alc_Program *program,
 
     Alc_Ast *ast = entry->ast;
 
-    const char *name;
+    Alc_Ast **name_asts;
+    usize names_num;
     Alc_Ast *type_ast;
     switch (ast->kind) {
     case ALC_AST_KIND_VAR_DECL: {
-      name = ast->VAR_DECL.name;
+      name_asts = ast->VAR_DECL.names;
+      names_num = ast->VAR_DECL.names_num;
       type_ast = ast->VAR_DECL.type;
     } break;
 
     case ALC_AST_KIND_VAR_DEF: {
-      name = ast->VAR_DEF.name;
+      name_asts = ast->VAR_DEF.names;
+      names_num = ast->VAR_DEF.names_num;
       type_ast = ast->VAR_DEF.type;
     } break;
 
     case ALC_AST_KIND_EXTERN_VARDECL: {
-      name = ast->EXTERN_VARDECL.name;
+      name_asts = ast->EXTERN_VARDECL.names;
+      names_num = ast->EXTERN_VARDECL.names_num;
       type_ast = ast->EXTERN_VARDECL.type;
     } break;
 
@@ -44,30 +48,34 @@ b8 alc_analyzer_validate_and_emplace_global_entries(Alc_Program *program,
       ALC_NOREACH();
     }
 
-    // TODO: Maybe also test for functions
-    Alc_Global_Variable *found_gvar = alc_module_find_global(entry->file->module, name);
-    if ALC_LIKELY (found_gvar == nullptr)
-      found_gvar = alc_source_file_find_global(entry->file, name);
+    for (usize j = 0; j < names_num; j++) {
+      const char *name = name_asts[j]->NAME.name;
 
-    if ALC_UNLIKELY (found_gvar != nullptr) {
-      fprintf(stderr, "Variable '%s' was already declared\n", name);
-      // TODO: Error: Redeclaration of the variable.
-      result = false;
-      continue;
-    }
+      // TODO: Maybe also test for functions
+      Alc_Global_Variable *found_gvar = alc_module_find_global(entry->file->module, name);
+      if ALC_LIKELY (found_gvar == nullptr)
+        found_gvar = alc_source_file_find_global(entry->file, name);
 
-    Alc_Type *type = nullptr;
-    if (type_ast != nullptr) {
-      type = alc_type_resolve_from_ast(program, entry->file, type_ast);
-      if ALC_UNLIKELY (alc_type_is_error(type))
+      if ALC_UNLIKELY (found_gvar != nullptr) {
+        fprintf(stderr, "Variable '%s' was already declared\n", name);
+        // TODO: Error: Redeclaration of the variable.
         result = false;
-    }
+        continue;
+      }
 
-    Alc_Variable *var = ast->kind == ALC_AST_KIND_EXTERN_VARDECL ?
-                          alc_variable_extern_create(name, type) :
-                          alc_variable_create(name, type);
-    Alc_Global_Variable gvar = { .var_data = var, .scope = entry->scope };
-    alc_source_file_put_global(entry->file, &gvar, name);
+      Alc_Type *type = nullptr;
+      if (type_ast != nullptr) {
+        type = alc_type_resolve_from_ast(program, entry->file, type_ast);
+        if ALC_UNLIKELY (alc_type_is_error(type))
+          result = false;
+      }
+
+      Alc_Variable *var = ast->kind == ALC_AST_KIND_EXTERN_VARDECL ?
+                            alc_variable_extern_create(name, type) :
+                            alc_variable_create(name, type);
+      Alc_Global_Variable gvar = { .var_data = var, .scope = entry->scope };
+      alc_source_file_put_global(entry->file, &gvar, name);
+    }
   }
 
   return result;

@@ -25,7 +25,7 @@ Alc_Ast *parse_type_raw(Alc_Parser *p)
   case ALC_TOKEN_TYPE_LPAREN:
     return parse_function_pointer(p);
 
-  case ALC_TOKEN_TYPE_PIPE:
+  case ALC_TOKEN_TYPE_PERIOD:
     return parse_tuple(p);
 
   case ALC_TOKEN_TYPE_ID: {
@@ -267,13 +267,19 @@ static Alc_Ast *parse_function_pointer(Alc_Parser *p)
 static Alc_Ast *parse_tuple(Alc_Parser *p)
 {
   _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PIPE);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
 
   usize pos = p->pos++;
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LPAREN);
+
+  p->pos++;
+
   Alc_Vector(Alc_Ast *) types_v = alc_vector_create(Alc_Ast *);
 
   b8 first = true;
-  while (p->pos < p->tokens_num && (p->tokens[p->pos].type != ALC_TOKEN_TYPE_PIPE || first)) {
+  while (p->pos < p->tokens_num && (p->tokens[p->pos].type != ALC_TOKEN_TYPE_RPAREN)) {
     if ALC_LIKELY (!first) {
       _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_COMMA, { alc_vector_destroy(types_v); });
 
@@ -290,7 +296,7 @@ static Alc_Ast *parse_tuple(Alc_Parser *p)
   }
 
   _VERIFY_POS(p, p->pos, { alc_vector_destroy(types_v); });
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PIPE, { alc_vector_destroy(types_v); });
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN, { alc_vector_destroy(types_v); });
   p->pos++;
 
   Alc_Ast *tuple_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));

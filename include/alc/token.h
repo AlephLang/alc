@@ -1,9 +1,9 @@
 #ifndef __ALC_TOKEN_H__
 #define __ALC_TOKEN_H__
 
-// #define ALC_TOKEN_TYPE_X(_name, _str_value)
-
 #include <alc/defs.h>
+
+// #define ALC_TOKEN_TYPE_X(_name, _str_value)
 #define ALC_TOKEN_TYPES                         \
   ALC_TOKEN_TYPE_X(ERROR, "<error>")            \
   ALC_TOKEN_TYPE_X(ID, "<id>")                  \
@@ -31,6 +31,7 @@
   ALC_TOKEN_TYPE_X(CIRCUMFLEX, "^")             \
   ALC_TOKEN_TYPE_X(TILDE, "~")                  \
   ALC_TOKEN_TYPE_X(EXCLMARK, "!")               \
+  ALC_TOKEN_TYPE_X(QUEMARK, "?")                \
   ALC_TOKEN_TYPE_X(PLUS, "+")                   \
   ALC_TOKEN_TYPE_X(MINUS, "-")                  \
   ALC_TOKEN_TYPE_X(ASTERISK, "*")               \

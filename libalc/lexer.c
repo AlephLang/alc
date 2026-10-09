@@ -11,6 +11,7 @@
   CHAR_CASE_X('.', PERIOD)     \
   CHAR_CASE_X(',', COMMA)      \
   CHAR_CASE_X('!', EXCLMARK)   \
+  CHAR_CASE_X('?', QUEMARK)    \
   CHAR_CASE_X('*', ASTERISK)   \
   CHAR_CASE_X('+', PLUS)       \
   CHAR_CASE_X('-', MINUS)      \

@@ -206,6 +206,15 @@ Alc_Ast *parse_type(Alc_Parser *p)
       p->pos++;
     } break;
 
+    case ALC_TOKEN_TYPE_QUEMARK: {
+      new_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+      new_ast->pos = p->pos;
+      new_ast->kind = ALC_AST_KIND_TYPE_OPTIONAL;
+      new_type_slot = &new_ast->TYPE_OPTIONAL.type;
+
+      p->pos++;
+    } break;
+
     case ALC_TOKEN_TYPE_LBRACK: {
       p->pos++;
 

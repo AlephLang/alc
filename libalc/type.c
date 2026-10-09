@@ -680,6 +680,10 @@ Alc_Type *alc_type_resolve_from_ast(Alc_Program *program, Alc_Source_File *sourc
     return out;
   }
 
+  case ALC_AST_KIND_TYPE_OPTIONAL: {
+    ALC_TODO("Construct optional.");
+  }
+
   case ALC_AST_KIND_TYPE_SLICE: {
     Alc_Type *stored_type = alc_type_resolve_from_ast(program, sourcefile, ast->TYPE_SLICE.type);
     if ALC_UNLIKELY (alc_type_is_error(stored_type))

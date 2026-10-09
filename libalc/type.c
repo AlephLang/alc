@@ -553,7 +553,7 @@ usize __alc_type_to_string_impl(char *buf, usize n, const Alc_Type *t,
   }
 
   case ALC_TYPE_KIND_CARRAY: {
-    usize written = snprintf(buf, n, "c[%zu]", t->CARRAY.length);
+    usize written = snprintf(buf, n, ".[%zu]", t->CARRAY.length);
     buf += written;
     n -= written;
 
@@ -680,13 +680,13 @@ Alc_Type *alc_type_resolve_from_ast(Alc_Program *program, Alc_Source_File *sourc
     return out;
   }
 
-  case ALC_AST_KIND_TYPE_ARRAY: {
-    Alc_Type *stored_type = alc_type_resolve_from_ast(program, sourcefile, ast->TYPE_ARRAY.type);
+  case ALC_AST_KIND_TYPE_SLICE: {
+    Alc_Type *stored_type = alc_type_resolve_from_ast(program, sourcefile, ast->TYPE_SLICE.type);
     if ALC_UNLIKELY (alc_type_is_error(stored_type))
       return program->type_storage.builtins.type_error;
 
     u64 length = -1ULL;
-    if (ast->TYPE_ARRAY.size_expression != nullptr) {
+    if (ast->TYPE_SLICE.size_expression != nullptr) {
       // TODO: Get compile-time value from it and verify that it is a positive
       // integer.
     }
@@ -699,6 +699,28 @@ Alc_Type *alc_type_resolve_from_ast(Alc_Program *program, Alc_Source_File *sourc
       .kind = ALC_TYPE_KIND_SLICE,
     };
     Alc_Type *out = alc_type_storage_add_type(&program->type_storage, &slice_type);
+    return out;
+  }
+
+  case ALC_AST_KIND_TYPE_ARRAY: {
+    Alc_Type *stored_type = alc_type_resolve_from_ast(program, sourcefile, ast->TYPE_ARRAY.type);
+    if ALC_UNLIKELY (alc_type_is_error(stored_type))
+      return program->type_storage.builtins.type_error;
+
+    u64 length = -1ULL;
+    if (ast->TYPE_ARRAY.size_expression != nullptr) {
+      // TODO: Get compile-time value from it and verify that it is a positive
+      // integer.
+    }
+
+    Alc_Type array_type = {
+      .CARRAY = {
+        .length = length,
+        .stored_type = stored_type,
+      },
+      .kind = ALC_TYPE_KIND_CARRAY,
+    };
+    Alc_Type *out = alc_type_storage_add_type(&program->type_storage, &array_type);
     return out;
   }
 

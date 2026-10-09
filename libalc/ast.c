@@ -506,6 +506,14 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
     return build_tree(alc_string_create_from("TYPE_POINTER"), children_vs_v);
   }
 
+  case ALC_AST_KIND_TYPE_SLICE: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
+    alc_vector_push(children_vs_v, to_string(ast->TYPE_SLICE.type));
+    add_to_strings_opt(children_vs_v, ast->TYPE_SLICE.size_expression);
+    return build_tree(alc_string_create_from("TYPE_SLICE"), children_vs_v);
+  }
+
   case ALC_AST_KIND_TYPE_ARRAY: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
@@ -563,6 +571,13 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
     alc_vector_push(children_vs_v, to_string(ast->TYPE_NONNULL.type));
     return build_tree(alc_string_create_from("TYPE_NONNULL"), children_vs_v);
+  }
+
+  case ALC_AST_KIND_TYPE_OPTIONAL: {
+    Alc_Vector(Alc_Vector(Alc_String))
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+    alc_vector_push(children_vs_v, to_string(ast->TYPE_NONNULL.type));
+    return build_tree(alc_string_create_from("TYPE_OPTIONAL"), children_vs_v);
   }
 
   case ALC_AST_KIND_VAR_DECL: {

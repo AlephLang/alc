@@ -11,7 +11,6 @@
 static Alc_Ast *parse_function_pointer(Alc_Parser *p);
 static Alc_Ast *parse_tuple(Alc_Parser *p);
 static Alc_Ast *parse_typeof(Alc_Parser *p);
-static Alc_Ast *parse_nonnull(Alc_Parser *p);
 static Alc_Ast *parse_package_or_type(Alc_Parser *p);
 static Alc_Ast *parse_id(Alc_Parser *p);
 
@@ -177,75 +176,111 @@ static Alc_Ast *parse_id(Alc_Parser *p)
 
 Alc_Ast *parse_type(Alc_Parser *p)
 {
-  ALC_ASSUME(p != nullptr);
+  Alc_Ast *host_ast = nullptr;
+  Alc_Ast **type_slot = nullptr;
 
-  _VERIFY_POS(p, p->pos);
+  while (p->pos < p->tokens_num) {
+    Alc_Ast *new_ast = nullptr;
+    Alc_Ast **new_type_slot = nullptr;
 
-  if (p->tokens[p->pos].type == ALC_TOKEN_TYPE_ID &&
-      strcmp(p->tokens[p->pos].value, "nonnull") == 0) {
-    return parse_nonnull(p);
-  }
+    Alc_Token *cur_tok = &p->tokens[p->pos];
+    switch (cur_tok->type) {
+    case ALC_TOKEN_TYPE_ID: {
+      if (strcmp(cur_tok->value, "nonnull") != 0)
+        break;
 
-  struct Array_Ast_And_Pos {
-    Alc_Ast *size_expression;
-    usize pos;
-  };
-  Alc_Vector(struct Array_Ast_And_Pos) arrays_v = alc_vector_create(struct Array_Ast_And_Pos);
-  while (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LBRACK) {
-    usize pos = p->pos++;
+      new_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+      new_ast->pos = p->pos;
+      new_ast->kind = ALC_AST_KIND_TYPE_NONNULL;
+      new_type_slot = &new_ast->TYPE_NONNULL.type;
 
-    Alc_Ast *size_expression = nullptr;
-    if (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
-      size_expression = parse_expr(p, false);
-      _VERIFY_AST(size_expression, { alc_vector_destroy(arrays_v); });
+      p->pos++;
+    } break;
+
+    case ALC_TOKEN_TYPE_ASTERISK: {
+      new_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+      new_ast->pos = p->pos;
+      new_ast->kind = ALC_AST_KIND_TYPE_POINTER;
+      new_type_slot = &new_ast->TYPE_POINTER.type;
+
+      p->pos++;
+    } break;
+
+    case ALC_TOKEN_TYPE_LBRACK: {
+      p->pos++;
+
+      Alc_Ast *size_expression = nullptr;
+      if (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
+        size_expression = parse_expr(p, false);
+        _VERIFY_AST(size_expression);
+      }
+      _VERIFY_POS(p, p->pos);
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK);
+
+      p->pos++;
+
+      new_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+      new_ast->TYPE_SLICE.size_expression = size_expression;
+      new_ast->pos = p->pos;
+      new_ast->kind = ALC_AST_KIND_TYPE_SLICE;
+      new_type_slot = &new_ast->TYPE_SLICE.type;
+    } break;
+
+    case ALC_TOKEN_TYPE_PERIOD: {
+      if (p->pos + 1 >= p->tokens_num || p->tokens[p->pos + 1].type != ALC_TOKEN_TYPE_LBRACK)
+        break;
+
+      p->pos++;
+
+      _VERIFY_POS(p, p->pos);
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_LBRACK);
+
+      p->pos++;
+
+      Alc_Ast *size_expression = nullptr;
+      if (p->pos < p->tokens_num && p->tokens[p->pos].type != ALC_TOKEN_TYPE_RBRACK) {
+        size_expression = parse_expr(p, false);
+        _VERIFY_AST(size_expression);
+      }
+      _VERIFY_POS(p, p->pos);
+      _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK);
+
+      p->pos++;
+
+      new_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+      new_ast->TYPE_ARRAY.size_expression = size_expression;
+      new_ast->pos = p->pos;
+      new_ast->kind = ALC_AST_KIND_TYPE_ARRAY;
+      new_type_slot = &new_ast->TYPE_ARRAY.type;
+    } break;
+
+    default:
+      break;
     }
 
-    _VERIFY_POS(p, p->pos, { alc_vector_destroy(arrays_v); });
-    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RBRACK, { alc_vector_destroy(arrays_v); });
+    if (new_ast == nullptr)
+      break;
 
-    p->pos++;
+    if (host_ast == nullptr)
+      host_ast = new_ast;
+    else {
+      ALC_ASSUME(type_slot != nullptr);
+      *type_slot = new_ast;
+    }
 
-    struct Array_Ast_And_Pos array = {
-      .size_expression = size_expression,
-      .pos = pos,
-    };
-    alc_vector_push(arrays_v, array);
+    type_slot = new_type_slot;
   }
 
-  usize ptr_start_pos = p->pos;
+  Alc_Ast *raw = parse_type_raw(p);
+  _VERIFY_AST(raw);
 
-  usize ptr_num = 0;
-  for (; p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_ASTERISK;
-       ptr_num++, p->pos++)
-    ;
-
-  Alc_Ast *type_raw = parse_type_raw(p);
-  _VERIFY_AST(type_raw, { alc_vector_destroy(arrays_v); });
-
-  Alc_Ast *cur_type = type_raw;
-
-  for (; ptr_num; ptr_num--) {
-    Alc_Ast *ptr_type = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-    ptr_type->TYPE_POINTER.type = cur_type;
-    ptr_type->pos = ptr_start_pos + ptr_num - 1;
-    ptr_type->kind = ALC_AST_KIND_TYPE_POINTER;
-    cur_type = ptr_type;
+  if (host_ast != nullptr) {
+    *type_slot = raw;
+  } else {
+    host_ast = raw;
   }
 
-  for (usize i = 0, arrays_v_len = alc_vector_get_length(arrays_v); i < arrays_v_len; i++) {
-    struct Array_Ast_And_Pos *array = &arrays_v[arrays_v_len - i - 1];
-
-    Alc_Ast *array_type = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-    array_type->TYPE_ARRAY.type = cur_type;
-    array_type->TYPE_ARRAY.size_expression = array->size_expression;
-    array_type->pos = array->pos;
-    array_type->kind = ALC_AST_KIND_TYPE_ARRAY;
-    cur_type = array_type;
-  }
-
-  alc_vector_destroy(arrays_v);
-
-  return cur_type;
+  return host_ast;
 }
 
 static Alc_Ast *parse_function_pointer(Alc_Parser *p)
@@ -353,23 +388,4 @@ static Alc_Ast *parse_typeof(Alc_Parser *p)
   typeof_ast->pos = pos;
   typeof_ast->kind = ALC_AST_KIND_TYPE_TYPE_OF;
   return typeof_ast;
-}
-
-static Alc_Ast *parse_nonnull(Alc_Parser *p)
-{
-  _VERIFY_POS(p, p->pos);
-  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID);
-  _VERIFY_VALUE(p, p->pos, "nonnull");
-
-  usize pos = p->pos++;
-
-  Alc_Ast *type = parse_type(p);
-  _VERIFY_AST(type);
-
-  Alc_Ast *nonnull_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
-  nonnull_ast->TYPE_NONNULL.type = type;
-  nonnull_ast->pos = pos;
-  nonnull_ast->kind = ALC_AST_KIND_TYPE_NONNULL;
-
-  return nonnull_ast;
 }

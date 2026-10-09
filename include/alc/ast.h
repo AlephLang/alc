@@ -51,6 +51,7 @@
   ALC_AST_KIND_X(STMT_ELSE, "else statement")                                          \
   ALC_AST_KIND_X(TYPE_PLAIN, "plain type")                                             \
   ALC_AST_KIND_X(TYPE_POINTER, "pointer type")                                         \
+  ALC_AST_KIND_X(TYPE_SLICE, "slice type")                                             \
   ALC_AST_KIND_X(TYPE_ARRAY, "array type")                                             \
   ALC_AST_KIND_X(TYPE_FUNCTION_POINTER, "function pointer type")                       \
   ALC_AST_KIND_X(TYPE_TUPLE, "tuple")                                                  \
@@ -58,6 +59,7 @@
   ALC_AST_KIND_X(TYPE_PACKAGE, "type package")                                         \
   ALC_AST_KIND_X(TYPE_MODULE, "type module")                                           \
   ALC_AST_KIND_X(TYPE_NONNULL, "non-null type")                                        \
+  ALC_AST_KIND_X(TYPE_OPTIONAL, "optional type")                                       \
   ALC_AST_KIND_X(VAR_DECL, "variable declaration")                                     \
   ALC_AST_KIND_X(VAR_DEF, "variable definition")                                       \
   ALC_AST_KIND_X(EXPR_OPERAND_IDENTIFIER, "identifier operand")                        \
@@ -328,6 +330,10 @@ typedef struct __Alc_Ast {
     struct {
       struct __Alc_Ast *type;
       struct __Alc_Ast *size_expression;
+    } TYPE_SLICE;
+    struct {
+      struct __Alc_Ast *type;
+      struct __Alc_Ast *size_expression;
     } TYPE_ARRAY;
     struct {
       struct __Alc_Ast *argument_list;
@@ -351,6 +357,9 @@ typedef struct __Alc_Ast {
     struct {
       struct __Alc_Ast *type;
     } TYPE_NONNULL;
+    struct {
+      struct __Alc_Ast *type;
+    } TYPE_OPTIONAL;
     struct {
       struct __Alc_Ast **names;
       usize names_num;

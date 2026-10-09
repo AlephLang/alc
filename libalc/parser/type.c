@@ -133,6 +133,7 @@ static Alc_Ast *parse_id(Alc_Parser *p)
   usize pos = p->pos++;
 
   Alc_Ast *type_ast;
+  Alc_Ast **bitwidth_expr_place;
   if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_EXCLMARK) {
     Alc_Ast *generic_type_list = parse_generic_type_list(p);
     _VERIFY_AST(generic_type_list);
@@ -143,13 +144,30 @@ static Alc_Ast *parse_id(Alc_Parser *p)
     type_ast->pos = pos;
     type_ast->kind = ALC_AST_KIND_GENERIC_TYPE;
     memcpy(type_ast->GENERIC_TYPE.name, name, name_len);
+
+    bitwidth_expr_place = &type_ast->GENERIC_TYPE.bitwidth_expr;
   } else {
     type_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast) + name_len);
     type_ast->TYPE_PLAIN.name = (char *)type_ast + sizeof(Alc_Ast);
     type_ast->pos = pos;
     type_ast->kind = ALC_AST_KIND_TYPE_PLAIN;
     memcpy(type_ast->TYPE_PLAIN.name, name, name_len);
+
+    bitwidth_expr_place = &type_ast->TYPE_PLAIN.bitwidth_expr;
   }
+
+  Alc_Ast *bitwidth_expr = nullptr;
+  if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_LPAREN) {
+    p->pos++;
+
+    _VERIFY_POS(p, p->pos);
+    bitwidth_expr = parse_expr(p, false);
+    _VERIFY_AST(bitwidth_expr);
+    _VERIFY_POS(p, p->pos);
+    _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_RPAREN);
+    p->pos++;
+  }
+  *bitwidth_expr_place = bitwidth_expr;
 
   if (last_module != nullptr)
     last_module->TYPE_MODULE.symbol = type_ast;

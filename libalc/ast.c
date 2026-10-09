@@ -491,12 +491,12 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
   }
 
   case ALC_AST_KIND_TYPE_PLAIN: {
-    Alc_String *out_v = alc_vector_reserve(Alc_String, 1);
+    Alc_Vector(Alc_Vector(Alc_String)) children_vs_v = alc_vector_reserve(Alc_String, 1);
+    add_to_strings_opt(children_vs_v, ast->TYPE_PLAIN.bitwidth_expr);
     Alc_String header = alc_string_create_from("TYPE_PLAIN { name: \"");
     alc_string_append_cstr(&header, ast->TYPE_PLAIN.name);
     alc_string_append_cstr(&header, "\" }");
-    alc_vector_push(out_v, header);
-    return out_v;
+    return build_tree(header, children_vs_v);
   }
 
   case ALC_AST_KIND_TYPE_POINTER: {
@@ -1052,8 +1052,9 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
 
   case ALC_AST_KIND_GENERIC_TYPE: {
     Alc_Vector(Alc_Vector(Alc_String))
-      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
+      children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 2);
     alc_vector_push(children_vs_v, to_string(ast->GENERIC_TYPE.generic_type_list));
+    add_to_strings_opt(children_vs_v, ast->GENERIC_TYPE.bitwidth_expr);
     Alc_String header = alc_string_create_from("GENERIC_TYPE { name: \"");
     alc_string_append_cstr(&header, ast->GENERIC_TYPE.name);
     alc_string_append_cstr(&header, "\" }");

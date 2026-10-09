@@ -320,6 +320,7 @@ typedef struct __Alc_Ast {
     } STMT_ELSE;
     struct {
       char *name;
+      struct __Alc_Ast *bitwidth_expr;
     } TYPE_PLAIN;
     struct {
       struct __Alc_Ast *type;
@@ -478,6 +479,7 @@ typedef struct __Alc_Ast {
     struct {
       char *name;
       struct __Alc_Ast *generic_type_list;
+      struct __Alc_Ast *bitwidth_expr; // When type checking this must always be a nullptr.
     } GENERIC_TYPE;
   };
 

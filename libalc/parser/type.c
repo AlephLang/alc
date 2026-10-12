@@ -8,6 +8,7 @@
 #include "parser/parser_private.h"
 #include <string.h>
 
+static Alc_Ast *parse_variadic(Alc_Parser *p, Alc_Ast *base_type);
 static Alc_Ast *parse_function_pointer(Alc_Parser *p);
 static Alc_Ast *parse_tuple(Alc_Parser *p);
 static Alc_Ast *parse_typeof(Alc_Parser *p);
@@ -43,6 +44,33 @@ Alc_Ast *parse_type_raw(Alc_Parser *p)
     return nullptr;
   }
   }
+}
+
+static Alc_Ast *parse_variadic(Alc_Parser *p, Alc_Ast *base_type)
+{
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
+  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
+
+  usize pos = p->pos++;
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
+  _VERIFY_NO_WS(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
+
+  p->pos++;
+
+  _VERIFY_POS(p, p->pos);
+  _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_PERIOD);
+
+  p->pos++;
+
+  Alc_Ast *type_variadic_ast = alc_alloc_arena_allocate(&ctx()->arena, sizeof(Alc_Ast));
+  type_variadic_ast->TYPE_VARIADIC.base_type = base_type;
+  type_variadic_ast->pos = pos;
+  type_variadic_ast->kind = ALC_AST_KIND_TYPE_VARIADIC;
+
+  return type_variadic_ast;
 }
 
 static Alc_Ast *parse_package_or_type(Alc_Parser *p)
@@ -94,7 +122,8 @@ static Alc_Ast *parse_id(Alc_Parser *p)
   while (p->pos < p->tokens_num) {
     _VERIFY_TOKEN(p, p->pos, ALC_TOKEN_TYPE_ID, { alc_vector_destroy(module_list); });
 
-    if (p->pos + 1 >= p->tokens_num || p->tokens[p->pos + 1].type != ALC_TOKEN_TYPE_PERIOD)
+    if (p->pos + 1 >= p->tokens_num || p->tokens[p->pos + 1].type != ALC_TOKEN_TYPE_PERIOD ||
+        (p->pos + 2 < p->tokens_num && p->tokens[p->pos + 2].type == ALC_TOKEN_TYPE_PERIOD))
       break;
 
     const char *module_name = p->tokens[p->pos].value;
@@ -176,6 +205,10 @@ static Alc_Ast *parse_id(Alc_Parser *p)
 
 Alc_Ast *parse_type(Alc_Parser *p)
 {
+  if (p->pos + 1 < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD &&
+      p->tokens[p->pos + 1].type == ALC_TOKEN_TYPE_PERIOD)
+    return parse_variadic(p, nullptr);
+
   Alc_Ast *host_ast = nullptr;
   Alc_Ast **type_slot = nullptr;
 
@@ -283,11 +316,13 @@ Alc_Ast *parse_type(Alc_Parser *p)
   Alc_Ast *raw = parse_type_raw(p);
   _VERIFY_AST(raw);
 
-  if (host_ast != nullptr) {
+  if (host_ast != nullptr)
     *type_slot = raw;
-  } else {
+  else
     host_ast = raw;
-  }
+
+  if (p->pos < p->tokens_num && p->tokens[p->pos].type == ALC_TOKEN_TYPE_PERIOD)
+    return parse_variadic(p, host_ast);
 
   return host_ast;
 }

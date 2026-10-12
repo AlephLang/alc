@@ -902,6 +902,10 @@ __after_bound_struct:
     ALC_TODO("Construct Non-null pointer");
   }
 
+  case ALC_AST_KIND_TYPE_VARIADIC: {
+    ALC_TODO("Construct variadic type");
+  }
+
   default:
     ALC_NOREACH();
   }

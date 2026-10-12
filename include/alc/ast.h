@@ -362,7 +362,7 @@ typedef struct __Alc_Ast {
       struct __Alc_Ast *type;
     } TYPE_OPTIONAL;
     struct {
-      struct __Alc_Ast *type;
+      struct __Alc_Ast *base_type;
     } TYPE_VARIADIC;
     struct {
       struct __Alc_Ast **names;

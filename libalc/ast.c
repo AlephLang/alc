@@ -583,7 +583,7 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
   case ALC_AST_KIND_TYPE_VARIADIC: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
-    add_to_strings_opt(children_vs_v, ast->TYPE_VARIADIC.type);
+    add_to_strings_opt(children_vs_v, ast->TYPE_VARIADIC.base_type);
     return build_tree(alc_string_create_from("TYPE_VARIADIC"), children_vs_v);
   }
 

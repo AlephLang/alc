@@ -576,7 +576,7 @@ static Alc_Vector(Alc_String) to_string(const Alc_Ast *ast)
   case ALC_AST_KIND_TYPE_OPTIONAL: {
     Alc_Vector(Alc_Vector(Alc_String))
       children_vs_v = alc_vector_reserve(Alc_Vector(Alc_String), 1);
-    alc_vector_push(children_vs_v, to_string(ast->TYPE_NONNULL.type));
+    alc_vector_push(children_vs_v, to_string(ast->TYPE_OPTIONAL.type));
     return build_tree(alc_string_create_from("TYPE_OPTIONAL"), children_vs_v);
   }
 

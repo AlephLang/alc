@@ -60,6 +60,7 @@
   ALC_AST_KIND_X(TYPE_MODULE, "type module")                                           \
   ALC_AST_KIND_X(TYPE_NONNULL, "non-null type")                                        \
   ALC_AST_KIND_X(TYPE_OPTIONAL, "optional type")                                       \
+  ALC_AST_KIND_X(TYPE_VARIADIC, "variadic type")                                       \
   ALC_AST_KIND_X(VAR_DECL, "variable declaration")                                     \
   ALC_AST_KIND_X(VAR_DEF, "variable definition")                                       \
   ALC_AST_KIND_X(EXPR_OPERAND_IDENTIFIER, "identifier operand")                        \
@@ -360,6 +361,9 @@ typedef struct __Alc_Ast {
     struct {
       struct __Alc_Ast *type;
     } TYPE_OPTIONAL;
+    struct {
+      struct __Alc_Ast *type;
+    } TYPE_VARIADIC;
     struct {
       struct __Alc_Ast **names;
       usize names_num;
